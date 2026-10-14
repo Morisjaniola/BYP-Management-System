@@ -1,0 +1,2390 @@
+﻿@model IEnumerable<BYPManagementSystem.Models.YouthProgram>
+
+@{
+    ViewData["Title"] = "Programs";
+
+    bool isUser = User.IsInRole("User");
+    bool isAdmin = User.IsInRole("Admin");
+    bool isStaff = User.IsInRole("Staff");
+
+    var programs =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.YouthProgram>();
+
+    var search = ViewBag.Search as string ?? "";
+
+    int totalPrograms = programs.Count;
+
+    int activePrograms =
+        programs.Count(p => p.Status == "Active");
+
+    int inactivePrograms =
+        programs.Count(p =>
+            p.Status != "Active" &&
+            p.Status != "Completed");
+
+    int completedPrograms =
+        programs.Count(p =>
+            p.Status == "Completed");
+}
+
+
+<style>
+
+/* =========================================================
+   PROGRAMS PAGE
+   ========================================================= */
+
+.programs-page {
+
+    width: 100%;
+
+    min-height:
+        calc(100vh - 76px);
+
+    padding:
+        12px 18px 18px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+
+        radial-gradient(
+            circle at 85% 5%,
+            rgba(12,144,150,.14),
+            transparent 26%
+        ),
+
+        #031716;
+
+    color:
+        #FFFFFF;
+
+}
+
+
+/* =========================================================
+   TOP HEADER
+   ========================================================= */
+
+.programs-header {
+
+    min-height: 84px;
+
+    padding:
+        14px 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius: 13px;
+
+    background:
+
+        linear-gradient(
+            110deg,
+            rgba(12,144,150,.25),
+            rgba(5,45,46,.82)
+        );
+
+    border:
+        1px solid
+        rgba(183,215,229,.16);
+
+    box-shadow:
+        0 8px 20px
+        rgba(0,0,0,.14);
+
+}
+
+
+.programs-header::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+
+    height: 180px;
+
+    right: -70px;
+
+    top: -100px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(105,199,232,.08);
+
+}
+
+
+.programs-header-content {
+
+    position: relative;
+
+    z-index: 2;
+
+}
+
+
+.programs-eyebrow {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color:
+        #69DDF2;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+}
+
+
+.programs-title-row {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+
+.programs-title-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    color:
+        #8DDCF2;
+
+    background:
+        rgba(105,199,232,.10);
+
+    border:
+        1px solid
+        rgba(141,220,242,.18);
+
+    font-size: 16px;
+
+}
+
+
+.programs-title {
+
+    margin: 0;
+
+    color:
+        #FFFFFF;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+}
+
+
+.programs-subtitle {
+
+    margin:
+        3px 0 0;
+
+    color:
+        #C4DDE2;
+
+    font-size: 8px;
+
+}
+
+
+.programs-header-action {
+
+    position: relative;
+
+    z-index: 3;
+
+}
+
+
+.create-program-button {
+
+    min-height: 30px;
+
+    padding:
+        0 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    border-radius: 7px;
+
+    color:
+        #052D2E;
+
+    background:
+        #69C7E8;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 4px 12px
+        rgba(105,199,232,.15);
+
+}
+
+
+.create-program-button:hover {
+
+    color:
+        #052D2E;
+
+    background:
+        #8DDCF2;
+
+    text-decoration: none;
+
+}
+
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
+
+.program-summary {
+
+    margin-top: 8px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 8px;
+
+}
+
+
+.program-summary-card {
+
+    padding:
+        10px 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        rgba(183,215,229,.13);
+
+    background:
+        rgba(5,45,46,.72);
+
+}
+
+
+.summary-total {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12,144,150,.25),
+            rgba(3,23,22,.88)
+        );
+
+}
+
+
+.summary-active {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(43,166,126,.23),
+            rgba(3,23,22,.88)
+        );
+
+}
+
+
+.summary-inactive {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(104,157,184,.23),
+            rgba(3,23,22,.88)
+        );
+
+}
+
+
+.summary-completed {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(104,125,184,.22),
+            rgba(3,23,22,.88)
+        );
+
+}
+
+
+.summary-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    min-width: 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background:
+        rgba(255,255,255,.07);
+
+    font-size: 14px;
+
+}
+
+
+.summary-total .summary-icon {
+
+    color:
+        #69DDF2;
+
+}
+
+
+.summary-active .summary-icon {
+
+    color:
+        #69F0AE;
+
+}
+
+
+.summary-inactive .summary-icon {
+
+    color:
+        #8DDCF2;
+
+}
+
+
+.summary-completed .summary-icon {
+
+    color:
+        #B9BFFF;
+
+}
+
+
+.summary-label {
+
+    display: block;
+
+    color:
+        #91B9C1;
+
+    font-size: 6px;
+
+}
+
+
+.summary-value {
+
+    display: block;
+
+    margin-top: 1px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+}
+
+
+.summary-small {
+
+    display: block;
+
+    margin-top: 1px;
+
+    color:
+        #668B94;
+
+    font-size: 6px;
+
+}
+
+
+/* =========================================================
+   PROGRAM TABLE CARD
+   ========================================================= */
+
+.programs-card {
+
+    margin-top: 8px;
+
+    padding:
+        10px;
+
+    border-radius: 11px;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.95)
+        );
+
+    border:
+        1px solid
+        rgba(183,215,229,.14);
+
+}
+
+
+/* =========================================================
+   SECTION HEADER
+   ========================================================= */
+
+.program-list-header {
+
+    margin-bottom: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+}
+
+
+.program-list-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.program-list-icon {
+
+    width: 30px;
+
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background:
+        rgba(105,199,232,.10);
+
+    color:
+        #8DDCF2;
+
+    font-size: 12px;
+
+}
+
+
+.program-list-eyebrow {
+
+    display: block;
+
+    color:
+        #69DDF2;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    letter-spacing: .8px;
+
+}
+
+
+.program-list-title h2 {
+
+    margin:
+        2px 0 0;
+
+    color:
+        #FFFFFF;
+
+    font-size: 12px;
+
+}
+
+
+.program-list-title p {
+
+    margin:
+        2px 0 0;
+
+    color:
+        #769BA3;
+
+    font-size: 7px;
+
+}
+
+
+.program-count {
+
+    padding:
+        4px 7px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    border-radius: 5px;
+
+    color:
+        #8DDCF2;
+
+    background:
+        rgba(105,199,232,.08);
+
+    border:
+        1px solid
+        rgba(105,199,232,.14);
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   TABLE WRAPPER
+   ========================================================= */
+
+.program-table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        rgba(105,199,232,.20);
+
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.program-table {
+
+    width: 100%;
+
+    min-width: 950px;
+
+    margin: 0;
+
+    border-collapse: collapse;
+
+    table-layout: fixed;
+
+}
+
+
+/* =========================================================
+   TABLE HEADER
+   ========================================================= */
+
+.program-table thead {
+
+    background:
+
+        linear-gradient(
+            90deg,
+            #69C7E8,
+            #8DDCF2
+        );
+
+}
+
+
+.program-table th {
+
+    height: 32px;
+
+    padding:
+        0 8px;
+
+    vertical-align: middle;
+
+    text-align: left;
+
+    color:
+        #06363B;
+
+    font-size: 7px;
+
+    font-weight: 800;
+
+    letter-spacing: .6px;
+
+    border-right:
+        1px solid
+        rgba(5,45,46,.10);
+
+}
+
+
+.program-table th:last-child {
+
+    border-right: 0;
+
+}
+
+
+/* =========================================================
+   COLUMN WIDTHS
+   ========================================================= */
+
+.program-table th:nth-child(1) {
+
+    width: 17%;
+
+}
+
+
+.program-table th:nth-child(2) {
+
+    width: 23%;
+
+}
+
+
+.program-table th:nth-child(3) {
+
+    width: 20%;
+
+}
+
+
+.program-table th:nth-child(4) {
+
+    width: 9%;
+
+}
+
+
+.program-table th:nth-child(5) {
+
+    width: 11%;
+
+}
+
+
+.program-table th:nth-child(6) {
+
+    width: 20%;
+
+    text-align: center;
+
+}
+
+
+/* =========================================================
+   TABLE BODY
+   ========================================================= */
+
+.program-table tbody tr {
+
+    height: 58px;
+
+    background:
+        rgba(255,255,255,.035);
+
+    border-top:
+        1px solid
+        rgba(183,215,229,.10);
+
+    transition:
+        background .15s ease;
+
+}
+
+
+.program-table tbody tr:nth-child(even) {
+
+    background:
+        rgba(105,199,232,.035);
+
+}
+
+
+.program-table tbody tr:hover {
+
+    background:
+        rgba(105,199,232,.09);
+
+}
+
+
+.program-table td {
+
+    padding:
+        7px 8px;
+
+    vertical-align: middle;
+
+    color:
+        #C8DDE1;
+
+    font-size: 7px;
+
+    border-right:
+        1px solid
+        rgba(183,215,229,.07);
+
+}
+
+
+.program-table td:last-child {
+
+    border-right: 0;
+
+}
+
+
+/* =========================================================
+   PROGRAM NAME
+   ========================================================= */
+
+.program-name-wrapper {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.program-icon {
+
+    width: 30px;
+
+    height: 30px;
+
+    min-width: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 7px;
+
+    color:
+        #69DDF2;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            rgba(105,199,232,.17),
+            rgba(12,144,150,.10)
+        );
+
+    border:
+        1px solid
+        rgba(105,221,242,.16);
+
+    font-size: 11px;
+
+}
+
+
+.program-name {
+
+    color:
+        #FFFFFF;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    line-height: 1.3;
+
+}
+
+
+.program-label {
+
+    margin-top: 1px;
+
+    color:
+        #668B94;
+
+    font-size: 6px;
+
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.program-description {
+
+    display: -webkit-box;
+
+    overflow: hidden;
+
+    color:
+        #AFC8CD;
+
+    font-size: 8px;
+
+    line-height: 1.45;
+
+    -webkit-box-orient: vertical;
+
+    -webkit-line-clamp: 2;
+
+}
+
+
+.no-description {
+
+    color:
+        #668B94;
+
+    font-style: italic;
+
+}
+
+
+/* =========================================================
+   SCHEDULE
+   ========================================================= */
+
+.program-schedule {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 6px;
+
+    color:
+        #C3DADF;
+
+    line-height: 1.45;
+
+}
+
+
+.program-schedule i {
+
+    margin-top: 1px;
+
+    color:
+        #69C7E8;
+
+    font-size: 8px;
+
+}.program-schedule-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.program-schedule-datetime {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color:
+        #69DDF2;
+
+    font-size:
+        6px;
+
+    font-weight:
+        700;
+
+}
+
+
+html[data-theme="light"] .user-programs-page .program-schedule-datetime {
+    color: #0c9096;
+}
+
+
+/* =========================================================
+   CAPACITY
+   ========================================================= */
+
+.capacity-value {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    color:
+        #D7E9EC;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+}
+
+
+.capacity-value i {
+
+    color:
+        #8DDCF2;
+
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.program-status {
+
+    min-height: 18px;
+
+    padding:
+        0 6px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    border-radius: 999px;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+}
+
+
+.status-dot {
+
+    width: 5px;
+
+    height: 5px;
+
+    border-radius: 50%;
+
+    background:
+        currentColor;
+
+}
+
+
+.status-active {
+
+    color:
+        #69F0AE;
+
+    background:
+        rgba(43,166,126,.12);
+
+    border:
+        1px solid
+        rgba(105,240,174,.17);
+
+}
+
+
+.status-inactive {
+
+    color:
+        #8DDCF2;
+
+    background:
+        rgba(104,157,184,.10);
+
+    border:
+        1px solid
+        rgba(141,220,242,.15);
+
+}
+
+
+.status-completed {
+
+    color:
+        #B9BFFF;
+
+    background:
+        rgba(104,125,184,.11);
+
+    border:
+        1px solid
+        rgba(185,191,255,.15);
+
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.program-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+}
+
+
+.program-action {
+
+    width: 25px;
+
+    height: 25px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 6px;
+
+    background:
+        rgba(255,255,255,.04);
+
+    border:
+        1px solid
+        rgba(183,215,229,.15);
+
+    text-decoration: none;
+
+    font-size: 8px;
+
+    cursor: pointer;
+
+}
+
+
+.program-action:hover {
+
+    background:
+        rgba(255,255,255,.09);
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+.action-view {
+
+    color:
+        #69C7E8;
+
+}
+
+
+.action-register {
+
+    color:
+        #69F0AE;
+
+}
+
+
+.action-edit {
+
+    color:
+        #FFD166;
+
+}
+
+
+.action-status {
+
+    color:
+        #B9BFFF;
+
+}
+
+
+.action-delete {
+
+    color:
+        #FF7B8A;
+
+}
+
+
+.program-action-form {
+
+    margin: 0;
+
+    padding: 0;
+
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.program-empty {
+
+    min-height: 90px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+}
+
+
+.program-empty-icon {
+
+    width: 36px;
+
+    height: 36px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 8px;
+
+    color:
+        #8DDCF2;
+
+    background:
+        rgba(105,199,232,.08);
+
+    border:
+        1px solid
+        rgba(105,199,232,.13);
+
+    font-size: 14px;
+
+}
+
+
+.program-empty h3 {
+
+    margin:
+        6px 0 3px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 10px;
+
+}
+
+
+.program-empty p {
+
+    margin: 0;
+
+    color:
+        #769BA3;
+
+    font-size: 7px;
+
+}
+
+
+
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@@media (max-width: 1100px) {
+
+    .program-summary {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+}
+
+
+@@media (max-width: 700px) {
+
+    .programs-page {
+
+        padding:
+            15px;
+
+    }
+
+
+    .programs-header {
+
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+    }
+
+
+    .programs-header-action {
+
+        width: 100%;
+
+    }
+
+
+    .create-program-button {
+
+        width: 100%;
+
+        justify-content: center;
+
+    }
+
+
+    .program-summary {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .program-list-header {
+
+        align-items:
+            flex-start;
+
+        gap: 10px;
+
+        flex-direction:
+            column;
+
+    }
+
+}
+
+
+    /* ============================================================
+       DARK MODE OVERRIDES (Youth/User Portal)
+    ============================================================ */
+
+    html[data-theme="dark"] .user-programs-page {
+        background: radial-gradient(
+            circle at 85% 5%,
+            rgba(12,144,150,.14),
+            transparent 26%
+        ),
+        #001F1F;
+    }
+
+    html[data-theme="dark"] .user-programs-page .programs-header {
+        background: linear-gradient(
+            110deg,
+            rgba(12,144,150,.32),
+            rgba(5,45,46,.88)
+        );
+    }
+
+    html[data-theme="dark"] .user-programs-page .programs-eyebrow {
+        color: #69DDF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .programs-title {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .programs-subtitle {
+        color: #C4DDE2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .create-program-button {
+        color: #052D2E;
+        background: #69C7E8;
+    }
+
+    html[data-theme="dark"] .user-programs-page .create-program-button:hover {
+        background: #8DDCF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-summary-card {
+        border-color: rgba(80,220,220,.18);
+        background: rgba(5,45,46,.72);
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-icon {
+        background: rgba(255,255,255,.07);
+        color: #8DDCF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-total .summary-icon {
+        color: #69DDF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-active .summary-icon {
+        color: #69F0AE;
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-inactive .summary-icon {
+        color: #8DDCF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-completed .summary-icon {
+        color: #B9BFFF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-label {
+        color: #91B9C1;
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-value {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .summary-small {
+        color: #668B94;
+    }
+
+    html[data-theme="dark"] .user-programs-page .programs-card {
+        background: linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.95)
+        );
+        border-color: rgba(183,215,229,.14);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-list-eyebrow {
+        color: #69DDF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-list-title h2 {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-list-title p {
+        color: #769BA3;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-count {
+        color: #8DDCF2;
+        background: rgba(105,199,232,.08);
+        border-color: rgba(105,199,232,.14);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-table-wrapper {
+        border-color: rgba(105,199,232,.20);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-table thead {
+        background: linear-gradient(
+            90deg,
+            #69C7E8,
+            #8DDCF2
+        );
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-table th {
+        color: #06363B;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-table tbody tr {
+        background: rgba(255,255,255,.035);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-table tbody tr:nth-child(even) {
+        background: rgba(105,199,232,.035);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-table tbody tr:hover {
+        background: rgba(105,199,232,.09);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-table td {
+        color: #C8DDE1;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-name {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-label {
+        color: #668B94;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-description {
+        color: #AFC8CD;
+    }
+
+    html[data-theme="dark"] .user-programs-page .no-description {
+        color: #668B94;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-schedule {
+        color: #C3DADF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-schedule i {
+        color: #69C7E8;
+    }
+
+    html[data-theme="dark"] .user-programs-page .capacity-value {
+        color: #D7E9EC;
+    }
+
+    html[data-theme="dark"] .user-programs-page .capacity-value i {
+        color: #8DDCF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-status {
+        color: #8DDCF2;
+    }
+
+    html[data-theme="dark"] .user-programs-page .status-active {
+        color: #69F0AE;
+        background: rgba(43,166,126,.12);
+        border-color: rgba(105,240,174,.17);
+    }
+
+    html[data-theme="dark"] .user-programs-page .status-inactive {
+        color: #8DDCF2;
+        background: rgba(104,157,184,.10);
+        border-color: rgba(141,220,242,.15);
+    }
+
+    html[data-theme="dark"] .user-programs-page .status-completed {
+        color: #B9BFFF;
+        background: rgba(104,125,184,.11);
+        border-color: rgba(185,191,255,.15);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-action {
+        background: rgba(255,255,255,.04);
+        border-color: rgba(183,215,229,.15);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-action:hover {
+        background: rgba(255,255,255,.09);
+    }
+
+    html[data-theme="dark"] .user-programs-page .action-view {
+        color: #69C7E8;
+    }
+
+    html[data-theme="dark"] .user-programs-page .action-register {
+        color: #69F0AE;
+    }
+
+    html[data-theme="dark"] .user-programs-page .action-edit {
+        color: #FFD166;
+    }
+
+    html[data-theme="dark"] .user-programs-page .action-status {
+        color: #B9BFFF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .action-delete {
+        color: #FF7B8A;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-empty-icon {
+        color: #8DDCF2;
+        background: rgba(105,199,232,.08);
+        border-color: rgba(105,199,232,.13);
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-empty h3 {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .user-programs-page .program-empty p {
+        color: #769BA3;
+    }
+
+    /* ============================================================
+       ALERTS (TempData messages)
+    ============================================================ */
+
+    .alert-box {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 12px 14px;
+
+        margin-bottom: 15px;
+
+        border-radius: 7px;
+
+        font-size: .73rem;
+
+    }
+
+
+    .alert-box.success {
+
+        background: #edf5ef;
+
+        border: 1px solid #dcebdd;
+
+        color: #52735b;
+
+    }
+
+
+    .alert-box.error {
+
+        background: #f8eeee;
+
+        border: 1px solid #efdede;
+
+        color: #955c5c;
+
+    }
+
+
+    /* ============================================================
+       END DARK MODE OVERRIDES
+    ============================================================ */
+
+</style>
+
+
+<div class="programs-page @(isUser ? "user-programs-page" : "")">
+
+
+    <!-- =====================================================
+         ALERTS (TempData success / error messages)
+         ===================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-box success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-box error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <section class="programs-header">
+
+        <div class="programs-header-content">
+
+            <div class="programs-title-row">
+
+                <div class="programs-title-icon">
+
+                    <i class="bi bi-calendar-event-fill"></i>
+
+                </div>
+
+
+                <div>
+
+                    <span class="programs-eyebrow">
+                        BARANGAY YOUTH PROGRAM
+                    </span>
+
+                    <h1 class="programs-title">
+                        Programs
+                    </h1>
+
+                    <p class="programs-subtitle">
+
+                        @(isUser
+                            ? "Browse available barangay youth programs and activities."
+                            : "Create, manage, and monitor youth programs and activities.")
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        @if (isAdmin || isStaff)
+        {
+
+            <div class="programs-header-action">
+
+                <a asp-controller="Programs"
+                   asp-action="Create"
+                   class="create-program-button">
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    Create Program
+
+                </a>
+
+            </div>
+
+        }
+
+    </section>
+
+
+    <!-- =====================================================
+         SUMMARY
+         ===================================================== -->
+
+    <section class="program-summary">
+
+
+        <!-- TOTAL -->
+
+        <div class="program-summary-card summary-total">
+
+            <div class="summary-icon">
+
+                <i class="bi bi-calendar-event"></i>
+
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+
+                    @(isUser
+                        ? "Available Programs"
+                        : "Total Programs")
+
+                </span>
+
+                <strong class="summary-value">
+                    @totalPrograms
+                </strong>
+
+                <small class="summary-small">
+                    Program records
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE -->
+
+        <div class="program-summary-card summary-active">
+
+            <div class="summary-icon">
+
+                <i class="bi bi-play-circle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+                    Active Programs
+                </span>
+
+                <strong class="summary-value">
+                    @activePrograms
+                </strong>
+
+                <small class="summary-small">
+                    Currently active
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVE -->
+
+        <div class="program-summary-card summary-inactive">
+
+            <div class="summary-icon">
+
+                <i class="bi bi-pause-circle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+                    Inactive Programs
+                </span>
+
+                <strong class="summary-value">
+                    @inactivePrograms
+                </strong>
+
+                <small class="summary-small">
+                    Not currently active
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+
+        <div class="program-summary-card summary-completed">
+
+            <div class="summary-icon">
+
+                <i class="bi bi-check2-circle"></i>
+
+            </div>
+
+            <div>
+
+                <span class="summary-label">
+                    Completed
+                </span>
+
+                <strong class="summary-value">
+                    @completedPrograms
+                </strong>
+
+                <small class="summary-small">
+                    Completed programs
+                </small>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =====================================================
+         PROGRAM LIST
+         ===================================================== -->
+
+    <section class="programs-card">
+
+
+        <!-- SECTION HEADER -->
+
+        <div class="program-list-header">
+
+
+            <div class="program-list-title">
+
+                <div class="program-list-icon">
+
+                    <i class="bi bi-table"></i>
+
+                </div>
+
+
+                <div>
+
+                    <span class="program-list-eyebrow">
+                        PROGRAM DIRECTORY
+                    </span>
+
+                    <h2>
+                        @(isUser
+                            ? "Available Programs"
+                            : "Program List")
+                    </h2>
+
+                    <p>
+
+                        @(isUser
+                            ? "Choose a program that you would like to join."
+                            : "View and manage youth programs in the system.")
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="program-count">
+
+                <i class="bi bi-calendar2-week"></i>
+
+                @totalPrograms
+
+                @(totalPrograms == 1
+                    ? "Program"
+                    : "Programs")
+
+            </div>
+
+        </div>
+
+        <form asp-controller="Programs" asp-action="Index" method="get" class="program-search-form">
+            <label for="program-search">Search Programs</label>
+            <div class="program-search-controls">
+                <input id="program-search" name="search" value="@search" type="search"
+                       placeholder="Search programs..." />
+                <button type="submit" class="search-button"><i class="bi bi-search"></i> Search</button>
+                <a asp-controller="Programs" asp-action="Index" class="reset-button">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+            </div>
+        </form>
+
+
+        @if (!programs.Any())
+        {
+
+            <!-- =================================================
+                 EMPTY
+                 ================================================= -->
+
+            <div class="program-empty">
+
+                <div class="program-empty-icon">
+
+                    <i class="bi bi-calendar-x"></i>
+
+                </div>
+
+                <h3>
+                    No Programs Found
+                </h3>
+
+                <p>
+                    There are currently no youth programs available.
+                </p>
+
+
+            </div>
+
+        }
+        else
+        {
+
+            <!-- =================================================
+                 TABLE
+                 ================================================= -->
+
+            <div class="program-table-wrapper">
+
+                <table class="program-table">
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                PROGRAM
+                            </th>
+
+                            <th>
+                                DESCRIPTION
+                            </th>
+
+                            <th>
+                                SCHEDULE
+                            </th>
+
+                            <th>
+                                CAPACITY
+                            </th>
+
+                            <th>
+                                STATUS
+                            </th>
+
+                            <th>
+                                ACTIONS
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var program in programs)
+                        {
+
+                            <tr>
+
+
+                                <!-- =================================
+                                     PROGRAM
+                                ================================== -->
+
+                                <td>
+
+                                    <div class="program-name-wrapper">
+
+                                        <div class="program-icon">
+
+                                            <i class="bi bi-calendar-event"></i>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <div class="program-name">
+
+                                                @program.Name
+
+                                            </div>
+
+                                            <div class="program-label">
+
+                                                Youth Program
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     DESCRIPTION
+                                ================================== -->
+
+                                <td>
+
+                                    @if (string.IsNullOrWhiteSpace(
+                                        program.Description))
+                                    {
+
+                                        <span class="no-description">
+
+                                            No description provided.
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <div class="program-description">
+
+                                            @program.Description
+
+                                        </div>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- =================================
+                                     SCHEDULE
+                                ================================== -->
+
+                                <td>
+
+                                    <div class="program-schedule">
+
+                                        <i class="bi bi-clock-fill"></i>
+
+                                        <span class="program-schedule-text">
+
+                                            @program.Schedule
+
+                                            @if (program.ScheduleStart.HasValue && program.ScheduleEnd.HasValue)
+                                            {
+                                                <span class="program-schedule-datetime">
+
+                                                    @(program.ScheduleStart.Value.ToString("MMM d, yyyy h:mm tt")) – @(program.ScheduleEnd.Value.ToString("MMM d, yyyy h:mm tt"))
+
+                                                </span>
+                                            }
+                                            else if (program.ScheduleStart.HasValue)
+                                            {
+                                                <span class="program-schedule-datetime">
+
+                                                    Starts: @(program.ScheduleStart.Value.ToString("MMM d, yyyy h:mm tt"))
+
+                                                </span>
+                                            }
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     CAPACITY
+                                ================================== -->
+
+                                <td>
+
+                                    <span class="capacity-value">
+
+                                        <i class="bi bi-people-fill"></i>
+
+                                        @program.Capacity
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- =================================
+                                     STATUS
+                                ================================== -->
+
+                                <td>
+
+                                    @if (program.Status == "Active")
+                                    {
+
+                                        <span class="program-status status-active">
+
+                                            <span class="status-dot"></span>
+
+                                            Active
+
+                                        </span>
+
+                                    }
+                                    else if (program.Status == "Completed")
+                                    {
+
+                                        <span class="program-status status-completed">
+
+                                            <span class="status-dot"></span>
+
+                                            Completed
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="program-status status-inactive">
+
+                                            <span class="status-dot"></span>
+
+                                            @program.Status
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- =================================
+                                     ACTIONS
+                                ================================== -->
+
+                                <td>
+
+                                    <div class="program-actions">
+
+
+                                        <!-- VIEW DETAILS -->
+
+                                        <a asp-controller="Programs"
+                                           asp-action="Details"
+                                           asp-route-id="@program.Id"
+                                           class="program-action action-view"
+                                           title="View Details">
+
+                                            <i class="bi bi-eye-fill"></i>
+
+                                        </a>
+
+
+                                        @if (isUser)
+                                        {
+
+                                            <!-- REGISTER -->
+
+                                            @if (program.Status == "Active")
+                                            {
+
+                                                <a asp-controller="Registration"
+                                                   asp-action="Register"
+                                                   asp-route-programId="@program.Id"
+                                                   class="program-action action-register"
+                                                   title="Register">
+
+                                                    <i class="bi bi-person-plus-fill"></i>
+
+                                                </a>
+
+                                            }
+
+                                        }
+                                        else
+                                        {
+
+                                            <!-- EDIT -->
+
+                                            <a asp-controller="Programs"
+                                               asp-action="Edit"
+                                               asp-route-id="@program.Id"
+                                               class="program-action action-edit"
+                                               title="Edit">
+
+                                                <i class="bi bi-pencil-fill"></i>
+
+                                            </a>
+
+
+                                            <!-- ACTIVATE / DEACTIVATE -->
+
+                                            <form asp-controller="Programs"
+                                                  asp-action="SetStatus"
+                                                  asp-route-id="@program.Id"
+                                                  method="post"
+                                                  class="program-action-form">
+
+                                                @Html.AntiForgeryToken()
+
+
+                                                @if (program.Status == "Active")
+                                                {
+
+                                                    <input type="hidden"
+                                                           name="status"
+                                                           value="Inactive" />
+
+                                                    <button type="submit"
+                                                            class="program-action action-status"
+                                                            title="Deactivate">
+
+                                                        <i class="bi bi-pause-circle-fill"></i>
+
+                                                    </button>
+
+                                                }
+                                                else
+                                                {
+
+                                                    <input type="hidden"
+                                                           name="status"
+                                                           value="Active" />
+
+                                                    <button type="submit"
+                                                            class="program-action action-status"
+                                                            title="Activate">
+
+                                                        <i class="bi bi-play-circle-fill"></i>
+
+                                                    </button>
+
+                                                }
+
+                                            </form>
+
+
+                                            <!-- DELETE -->
+
+                                            @if (isAdmin)
+                                            {
+
+                                                <form asp-controller="Programs"
+                                                      asp-action="Delete"
+                                                      asp-route-id="@program.Id"
+                                                      method="post"
+                                                      class="program-action-form"
+                                                      onsubmit="return confirm('Delete this program?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="program-action action-delete"
+                                                            title="Delete">
+
+                                                        <i class="bi bi-trash-fill"></i>
+
+                                                    </button>
+
+                                                </form>
+
+                                            }
+
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+
+    </section>
+
+
+</div>
+
+<style>
+    .program-search-form { margin: 0 0 12px; }
+    .program-search-form label { display:block; margin-bottom:6px; color:#b7d7e5; font-size:10px; font-weight:700; }
+    .program-search-controls { display:flex; gap:8px; align-items:center; }
+    .program-search-controls input { flex:1; min-width:0; height:38px; padding:0 11px; border:1px solid rgba(183,215,229,.25); border-radius:8px; background:rgba(104,157,184,.08); color:#fff; }
+    .program-search-controls button, .program-search-controls a { height:38px; padding:0 13px; display:inline-flex; align-items:center; gap:5px; border:1px solid #0c9096; border-radius:8px; background:#0c9096; color:#fff; font-size:10px; font-weight:700; text-decoration:none; }
+    .program-search-controls a { background:transparent; border-color:rgba(183,215,229,.25); color:#b7d7e5; }
+    .user-programs-page { background:linear-gradient(135deg,#f5fbff 0%,#f9f5ff 52%,#f1fff8 100%); color:#21344a; }
+    .user-programs-page .programs-header, .user-programs-page .programs-card, .user-programs-page .program-summary-card { background:rgba(255,255,255,.88); border-color:rgba(68,105,140,.14); box-shadow:0 8px 24px rgba(36,78,113,.08); }
+    .user-programs-page .programs-title, .user-programs-page .program-list-title h2, .user-programs-page .program-table td { color:#1f3650; }
+    .user-programs-page .programs-subtitle, .user-programs-page .program-list-title p, .user-programs-page .summary-label { color:#61758c; }
+    .user-programs-page .program-summary { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .user-programs-page .program-table th { background:#eef7fb; color:#48647c; }
+    .user-programs-page .program-search-form label { color:#4b657d; }
+    .user-programs-page .program-search-controls input { background:#fff; border-color:#d7e4ee; color:#1f3650; }
+    /* Header geometry is owned by the shared .programs-header rules in theme.css. */
+    /* Light-mode readability: inner text still uses dark-theme pale colors */
+    html[data-theme="light"] .user-programs-page .programs-eyebrow { color:#0c9096; }
+    html[data-theme="light"] .user-programs-page .summary-label, html[data-theme="light"] .user-programs-page .summary-small { color:#61758c; }
+    html[data-theme="light"] .user-programs-page .summary-value { color:#1f3650; }
+    html[data-theme="light"] .user-programs-page .summary-icon { background:rgba(12,144,150,.10); color:#0c9096; }
+    html[data-theme="light"] .user-programs-page .programs-count { color:#4b657d; background:rgba(68,105,140,.08); }
+    html[data-theme="light"] .user-programs-page .program-action { background:#eef7fb; border-color:#d7e4ee; color:#0c9096; }
+    html[data-theme="light"] .user-programs-page .action-delete { color:#dc3545; }
+    /* Dark-mode status badges keep readable backgrounds; icons on dark header */
+    html[data-theme="dark"] .user-programs-page .programs-title-icon { color:#8DDCF2; background:rgba(105,199,232,.10); }
+    html[data-theme="light"] .program-empty { min-height:140px !important; }
+    @@media (max-width: 1050px) { .user-programs-page .program-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @@media (max-width: 640px) { .program-search-controls { flex-wrap:wrap; } .program-search-controls input { flex-basis:100%; } }
+    @@media (max-width: 700px) { .program-summary, .user-programs-page .program-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @@media (max-width: 520px) { .program-summary, .user-programs-page .program-summary { grid-template-columns:1fr; } .programs-header { flex-direction:column; align-items:stretch; } .programs-header-action a { width:100%; justify-content:center; } }
+</style>

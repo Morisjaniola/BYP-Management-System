@@ -1,0 +1,3568 @@
+@model BYPManagementSystem.Models.ReportsDashboardViewModel
+
+@{
+    ViewData["Title"] = "Reports";
+
+    var isUser = User.IsInRole("User");
+
+    // ------------------------------------------------------
+    // REPORT FILTER STATE (from query string)
+    // ------------------------------------------------------
+
+    var pSearchVal = Context.Request.Query["pSearch"].ToString();
+    var pStatusVal = Context.Request.Query["pStatus"].ToString();
+
+    var progSearchVal = Context.Request.Query["progSearch"].ToString();
+    var progStatusVal = Context.Request.Query["progStatus"].ToString();
+
+    var regSearchVal = Context.Request.Query["regSearch"].ToString();
+    var regStatusVal = Context.Request.Query["regStatus"].ToString();
+
+    var attSearchVal = Context.Request.Query["attSearch"].ToString();
+    var attStatusVal = Context.Request.Query["attStatus"].ToString();
+
+    var pS_All = string.IsNullOrEmpty(pStatusVal) || pStatusVal == "All";
+    var pS_Active = pStatusVal == "Active";
+    var pS_Inactive = pStatusVal == "Inactive";
+
+    var prS_All = string.IsNullOrEmpty(progStatusVal) || progStatusVal == "All";
+    var prS_Active = progStatusVal == "Active";
+    var prS_Inactive = progStatusVal == "Inactive";
+    var prS_Completed = progStatusVal == "Completed";
+
+    var rS_All = string.IsNullOrEmpty(regStatusVal) || regStatusVal == "All";
+    var rS_Pending = regStatusVal == "Pending";
+    var rS_Approved = regStatusVal == "Approved";
+    var rS_Rejected = regStatusVal == "Rejected";
+
+    var aS_All = string.IsNullOrEmpty(attStatusVal) || attStatusVal == "All";
+    var aS_Present = attStatusVal == "Present";
+    var aS_Absent = attStatusVal == "Absent";
+    var aS_Late = attStatusVal == "Late";
+    var aS_Excused = attStatusVal == "Excused";
+}
+
+
+<div class="reports-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+                <div class="header-icon">
+
+                    <i class="bi bi-bar-chart-line-fill"></i>
+
+                </div>
+                <div>
+
+                    <span class="page-eyebrow">
+                        SYSTEM REPORTS
+                    </span>
+
+                    <h1>
+                        Reports
+                    </h1>
+
+                    <p>
+                        @(isUser
+                            ? "View your personal registration and attendance information."
+                            : "View participant, program, registration, and attendance information.")
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         ADMIN / STAFF
+    ========================================================== -->
+
+    @if (!isUser)
+    {
+
+        <!-- =====================================================
+             SUMMARY CARDS
+        ====================================================== -->
+
+        <div class="summary-grid">
+
+
+            <!-- PARTICIPANTS -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon participants">
+
+                    <i class="bi bi-people"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        Youth Participants
+                    </span>
+
+
+                    <strong>
+                        @Model.TotalParticipants
+                    </strong>
+
+
+                    <small>
+                        @Model.ActiveParticipants active
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROGRAMS -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon programs">
+
+                    <i class="bi bi-calendar-event"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        Programs
+                    </span>
+
+
+                    <strong>
+                        @Model.TotalPrograms
+                    </strong>
+
+
+                    <small>
+                        @Model.ActivePrograms active
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- REGISTRATIONS -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon registrations">
+
+                    <i class="bi bi-person-plus"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        Registrations
+                    </span>
+
+
+                    <strong>
+                        @Model.TotalRegistrations
+                    </strong>
+
+
+                    <small>
+                        @Model.PendingRegistrations pending
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- ATTENDANCE -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon attendance">
+
+                    <i class="bi bi-clipboard-check"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        Attendance Records
+                    </span>
+
+
+                    <strong>
+                        @Model.TotalAttendanceRecords
+                    </strong>
+
+
+                    <small>
+                        @Model.PresentCount present
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             REGISTRATION SUMMARY
+        ====================================================== -->
+
+        <section class="report-panel report-section" id="registration-summary-report">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        REGISTRATION REPORT
+                    </span>
+
+
+                    <h2>
+                        Registration Summary
+                    </h2>
+
+
+                    <p>
+                        Current registration status totals.
+                    </p>
+
+                </div>
+
+
+                <i class="bi bi-person-check panel-header-icon"></i>
+
+            </div>
+
+
+            <div class="metric-grid">
+
+
+                <div class="metric-card pending">
+
+                    <div class="metric-icon">
+
+                        <i class="bi bi-hourglass-split"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Pending
+                        </span>
+
+
+                        <strong>
+                            @Model.PendingRegistrations
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric-card approved">
+
+                    <div class="metric-icon">
+
+                        <i class="bi bi-check-circle"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Approved
+                        </span>
+
+
+                        <strong>
+                            @Model.ApprovedRegistrations
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric-card rejected">
+
+                    <div class="metric-icon">
+
+                        <i class="bi bi-x-circle"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Rejected
+                        </span>
+
+
+                        <strong>
+                            @Model.RejectedRegistrations
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             ATTENDANCE SUMMARY
+        ====================================================== -->
+
+        <section class="report-panel report-section" id="attendance-summary-report">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        ATTENDANCE REPORT
+                    </span>
+
+
+                    <h2>
+                        Attendance Summary
+                    </h2>
+
+
+                    <p>
+                        Summary of recorded attendance statuses.
+                    </p>
+
+                </div>
+
+
+                <i class="bi bi-clipboard-data panel-header-icon"></i>
+
+            </div>
+
+
+            <div class="metric-grid four">
+
+
+                <div class="metric-card present">
+
+                    <div class="metric-icon">
+
+                        <i class="bi bi-check-lg"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Present
+                        </span>
+
+
+                        <strong>
+                            @Model.PresentCount
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric-card absent">
+
+                    <div class="metric-icon">
+
+                        <i class="bi bi-x-lg"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Absent
+                        </span>
+
+
+                        <strong>
+                            @Model.AbsentCount
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric-card late">
+
+                    <div class="metric-icon">
+
+                        <i class="bi bi-clock"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Late
+                        </span>
+
+
+                        <strong>
+                            @Model.LateCount
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric-card excused">
+
+                    <div class="metric-icon">
+
+                        <i class="bi bi-info-circle"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Excused
+                        </span>
+
+
+                        <strong>
+                            @Model.ExcusedCount
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             PARTICIPANTS TABLE
+        ====================================================== -->
+
+        <section class="report-panel report-section" id="youth-participants-report">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        YOUTH PARTICIPANTS
+                    </span>
+
+
+                    <h2>
+                        Participant Report
+                    </h2>
+
+
+                    <p>
+                        Registered youth participant records.
+                    </p>
+
+                </div>
+
+
+                <div class="record-count">
+
+                    @(
+                        Model.YouthParticipants?.Count()
+                        ?? 0
+                    )
+                    records
+
+                </div>
+
+                <button type="button" class="panel-print-button" onclick="printReport('youth-participants-report')">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+
+            </div>
+
+
+            <form asp-controller="Reports" asp-action="Index" method="get" class="report-filter-bar">
+
+                <span class="report-filter-label">
+                    Filter
+                </span>
+
+                <input type="search" name="pSearch" value="@pSearchVal"
+                       class="report-filter-input"
+                       placeholder="Search name or barangay..." />
+
+                <select name="pStatus" class="report-filter-select">
+                    <option value="All" selected="@(pS_All ? "selected" : null)">All Statuses</option>
+                    <option value="Active" selected="@(pS_Active ? "selected" : null)">Active</option>
+                    <option value="Inactive" selected="@(pS_Inactive ? "selected" : null)">Inactive</option>
+                </select>
+
+                <button type="submit" class="report-filter-button">
+                    <i class="bi bi-funnel"></i> Apply
+                </button>
+
+                <input type="hidden" name="progSearch" value="@progSearchVal" />
+                <input type="hidden" name="progStatus" value="@progStatusVal" />
+                <input type="hidden" name="regSearch" value="@regSearchVal" />
+                <input type="hidden" name="regStatus" value="@regStatusVal" />
+                <input type="hidden" name="attSearch" value="@attSearchVal" />
+                <input type="hidden" name="attStatus" value="@attStatusVal" />
+
+                <a asp-controller="Reports" asp-action="Index" class="report-filter-reset">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+
+            </form>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Name
+                            </th>
+
+                            <th>
+                                Birth Date
+                            </th>
+
+                            <th>
+                                Contact
+                            </th>
+
+                            <th>
+                                Barangay
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.YouthParticipants == null ||
+                            !Model.YouthParticipants.Any())
+                        {
+                            <tr>
+
+                                <td colspan="5"
+                                    class="empty-table">
+
+                                    No participant records found.
+
+                                </td>
+
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var participant in Model.YouthParticipants)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <div class="name-cell">
+
+                                            <div class="mini-avatar">
+
+                                                @(
+                                                    !string.IsNullOrWhiteSpace(
+                                                        participant.FirstName)
+                                                    ? participant.FirstName
+                                                        .Substring(0, 1)
+                                                        .ToUpper()
+                                                    : "U"
+                                                )
+
+                                            </div>
+
+
+                                            <strong>
+                                                @participant.FullName
+                                            </strong>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(participant.BirthDate.HasValue
+                                            ? participant.BirthDate.Value
+                                                .ToString("MMM dd, yyyy")
+                                            : "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(participant.ContactNumber ?? "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @participant.Barangay
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (participant.IsActive)
+                                        {
+                                            <span class="table-status active">
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="table-status inactive">
+                                                Inactive
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             PROGRAM TABLE
+        ====================================================== -->
+
+        <section class="report-panel report-section" id="programs-report">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        YOUTH PROGRAMS
+                    </span>
+
+
+                    <h2>
+                        Program Report
+                    </h2>
+
+
+                    <p>
+                        Programs and their current status.
+                    </p>
+
+                </div>
+
+
+                <div class="record-count">
+
+                    @(
+                        Model.Programs?.Count()
+                        ?? 0
+                    )
+                    records
+
+                </div>
+
+                <button type="button" class="panel-print-button" onclick="printReport('programs-report')">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+
+            </div>
+
+
+            <form asp-controller="Reports" asp-action="Index" method="get" class="report-filter-bar">
+
+                <span class="report-filter-label">
+                    Filter
+                </span>
+
+                <input type="search" name="progSearch" value="@progSearchVal"
+                       class="report-filter-input"
+                       placeholder="Search name or description..." />
+
+                <select name="progStatus" class="report-filter-select">
+                    <option value="All" selected="@(prS_All ? "selected" : null)">All Statuses</option>
+                    <option value="Active" selected="@(prS_Active ? "selected" : null)">Active</option>
+                    <option value="Inactive" selected="@(prS_Inactive ? "selected" : null)">Inactive</option>
+                    <option value="Completed" selected="@(prS_Completed ? "selected" : null)">Completed</option>
+                </select>
+
+                <button type="submit" class="report-filter-button">
+                    <i class="bi bi-funnel"></i> Apply
+                </button>
+
+                <input type="hidden" name="pSearch" value="@pSearchVal" />
+                <input type="hidden" name="pStatus" value="@pStatusVal" />
+                <input type="hidden" name="regSearch" value="@regSearchVal" />
+                <input type="hidden" name="regStatus" value="@regStatusVal" />
+                <input type="hidden" name="attSearch" value="@attSearchVal" />
+                <input type="hidden" name="attStatus" value="@attStatusVal" />
+
+                <a asp-controller="Reports" asp-action="Index" class="report-filter-reset">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+
+            </form>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Program
+                            </th>
+
+                            <th>
+                                Schedule
+                            </th>
+
+                            <th>
+                                Barangay
+                            </th>
+
+                            <th>
+                                Capacity
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Created
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.Programs == null ||
+                            !Model.Programs.Any())
+                        {
+                            <tr>
+
+                                <td colspan="6"
+                                    class="empty-table">
+
+                                    No program records found.
+
+                                </td>
+
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var program in Model.Programs)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <div class="name-cell">
+
+                                            <div class="mini-avatar program-avatar">
+
+                                                <i class="bi bi-calendar-event"></i>
+
+                                            </div>
+
+
+                                            <strong>
+                                                @program.Name
+                                            </strong>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+                                        @program.Schedule
+                                    </td>
+
+
+                                    <td>
+                                        @program.Barangay
+                                    </td>
+
+
+                                    <td>
+                                        @program.Capacity
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (program.Status == "Active")
+                                        {
+                                            <span class="table-status active">
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="table-status inactive">
+                                                @program.Status
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(program.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy"))
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             REGISTRATION TABLE
+        ====================================================== -->
+
+        <section class="report-panel report-section" id="registrations-report">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        REGISTRATIONS
+                    </span>
+
+
+                    <h2>
+                        Registration Details
+                    </h2>
+
+
+                    <p>
+                        Program registration records and their status.
+                    </p>
+
+                </div>
+
+
+                <div class="record-count">
+
+                    @(
+                        Model.Registrations?.Count()
+                        ?? 0
+                    )
+                    records
+
+                </div>
+
+                <button type="button" class="panel-print-button" onclick="printReport('registrations-report')">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+
+            </div>
+
+
+            <form asp-controller="Reports" asp-action="Index" method="get" class="report-filter-bar">
+
+                <span class="report-filter-label">
+                    Filter
+                </span>
+
+                <input type="search" name="regSearch" value="@regSearchVal"
+                       class="report-filter-input"
+                       placeholder="Search program, youth, or email..." />
+
+                <select name="regStatus" class="report-filter-select">
+                    <option value="All" selected="@(rS_All ? "selected" : null)">All Statuses</option>
+                    <option value="Pending" selected="@(rS_Pending ? "selected" : null)">Pending</option>
+                    <option value="Approved" selected="@(rS_Approved ? "selected" : null)">Approved</option>
+                    <option value="Rejected" selected="@(rS_Rejected ? "selected" : null)">Rejected</option>
+                </select>
+
+                <button type="submit" class="report-filter-button">
+                    <i class="bi bi-funnel"></i> Apply
+                </button>
+
+                <input type="hidden" name="pSearch" value="@pSearchVal" />
+                <input type="hidden" name="pStatus" value="@pStatusVal" />
+                <input type="hidden" name="progSearch" value="@progSearchVal" />
+                <input type="hidden" name="progStatus" value="@progStatusVal" />
+                <input type="hidden" name="attSearch" value="@attSearchVal" />
+                <input type="hidden" name="attStatus" value="@attStatusVal" />
+
+                <a asp-controller="Reports" asp-action="Index" class="report-filter-reset">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+
+            </form>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Program
+                            </th>
+
+                            <th>
+                                Participant
+                            </th>
+
+                            <th>
+                                Account
+                            </th>
+
+                            <th>
+                                Registered
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.Registrations == null ||
+                            !Model.Registrations.Any())
+                        {
+                            <tr>
+
+                                <td colspan="5"
+                                    class="empty-table">
+
+                                    No registration records found.
+
+                                </td>
+
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var registration in Model.Registrations)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <strong class="table-main-text">
+
+                                            @(registration.Program?.Name
+                                                ?? "-")
+
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(registration.YouthParticipant?.FullName
+                                            ?? "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(registration.UserEmail
+                                            ?? "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(registration.RegisteredAt.ToLocalTime().ToString("MMM dd, yyyy"))
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (registration.Status == "Approved")
+                                        {
+                                            <span class="table-status approved">
+                                                Approved
+                                            </span>
+                                        }
+                                        else if (registration.Status == "Pending")
+                                        {
+                                            <span class="table-status pending">
+                                                Pending
+                                            </span>
+                                        }
+                                        else if (registration.Status == "Rejected")
+                                        {
+                                            <span class="table-status rejected">
+                                                Rejected
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="table-status inactive">
+                                                @registration.Status
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             ATTENDANCE TABLE
+        ====================================================== -->
+
+        <section class="report-panel report-section" id="attendance-report">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        ATTENDANCE
+                    </span>
+
+
+                    <h2>
+                        Attendance Details
+                    </h2>
+
+
+                    <p>
+                        Recorded attendance for program participants.
+                    </p>
+
+                </div>
+
+
+                <div class="record-count">
+
+                    @(
+                        Model.AttendanceRecords?.Count()
+                        ?? 0
+                    )
+                    records
+
+                </div>
+
+                <button type="button" class="panel-print-button" onclick="printReport('attendance-report')">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+
+            </div>
+
+
+            <form asp-controller="Reports" asp-action="Index" method="get" class="report-filter-bar">
+
+                <span class="report-filter-label">
+                    Filter
+                </span>
+
+                <input type="search" name="attSearch" value="@attSearchVal"
+                       class="report-filter-input"
+                       placeholder="Search program, youth, or notes..." />
+
+                <select name="attStatus" class="report-filter-select">
+                    <option value="All" selected="@(aS_All ? "selected" : null)">All Statuses</option>
+                    <option value="Present" selected="@(aS_Present ? "selected" : null)">Present</option>
+                    <option value="Absent" selected="@(aS_Absent ? "selected" : null)">Absent</option>
+                    <option value="Late" selected="@(aS_Late ? "selected" : null)">Late</option>
+                    <option value="Excused" selected="@(aS_Excused ? "selected" : null)">Excused</option>
+                </select>
+
+                <button type="submit" class="report-filter-button">
+                    <i class="bi bi-funnel"></i> Apply
+                </button>
+
+                <input type="hidden" name="pSearch" value="@pSearchVal" />
+                <input type="hidden" name="pStatus" value="@pStatusVal" />
+                <input type="hidden" name="progSearch" value="@progSearchVal" />
+                <input type="hidden" name="progStatus" value="@progStatusVal" />
+                <input type="hidden" name="regSearch" value="@regSearchVal" />
+                <input type="hidden" name="regStatus" value="@regStatusVal" />
+
+                <a asp-controller="Reports" asp-action="Index" class="report-filter-reset">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+
+            </form>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Program
+                            </th>
+
+                            <th>
+                                Participant
+                            </th>
+
+                            <th>
+                                Account
+                            </th>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Notes
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.AttendanceRecords == null ||
+                            !Model.AttendanceRecords.Any())
+                        {
+                            <tr>
+
+                                <td colspan="6"
+                                    class="empty-table">
+
+                                    No attendance records found.
+
+                                </td>
+
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var attendance in Model.AttendanceRecords)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <strong class="table-main-text">
+
+                                            @(attendance.Registration?.Program?.Name
+                                                ?? "-")
+
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.Registration
+                                            ?.YouthParticipant
+                                            ?.FullName
+                                            ?? "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.Registration?.UserEmail
+                                            ?? "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.AttendanceDate.ToString("MMM dd, yyyy"))
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (attendance.Status == "Present")
+                                        {
+                                            <span class="table-status present">
+                                                Present
+                                            </span>
+                                        }
+                                        else if (attendance.Status == "Absent")
+                                        {
+                                            <span class="table-status rejected">
+                                                Absent
+                                            </span>
+                                        }
+                                        else if (attendance.Status == "Late")
+                                        {
+                                            <span class="table-status pending">
+                                                Late
+                                            </span>
+                                        }
+                                        else if (attendance.Status == "Excused")
+                                        {
+                                            <span class="table-status approved">
+                                                Excused
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="table-status inactive">
+                                                @attendance.Status
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(string.IsNullOrWhiteSpace(
+                                            attendance.Notes)
+                                            ? "-"
+                                            : attendance.Notes)
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    }
+    else
+    {
+
+        <!-- =====================================================
+             USER SUMMARY
+        ====================================================== -->
+
+        <div class="summary-grid">
+
+
+            <div class="summary-card">
+
+                <div class="summary-icon registrations">
+
+                    <i class="bi bi-person-check"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        My Registrations
+                    </span>
+
+
+                    <strong>
+                        @Model.TotalRegistrations
+                    </strong>
+
+
+                    <small>
+                        Total registrations
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-icon approved">
+
+                    <i class="bi bi-check-circle"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        Approved
+                    </span>
+
+
+                    <strong>
+                        @Model.ApprovedRegistrations
+                    </strong>
+
+
+                    <small>
+                        Approved programs
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-icon pending">
+
+                    <i class="bi bi-hourglass-split"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        Pending
+                    </span>
+
+
+                    <strong>
+                        @Model.PendingRegistrations
+                    </strong>
+
+
+                    <small>
+                        Waiting for processing
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-icon present">
+
+                    <i class="bi bi-clipboard-check"></i>
+
+                </div>
+
+
+                <div class="summary-content">
+
+                    <span>
+                        Present
+                    </span>
+
+
+                    <strong>
+                        @Model.PresentCount
+                    </strong>
+
+
+                    <small>
+                        Attendance records
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             USER REGISTRATIONS
+        ====================================================== -->
+
+        <section class="report-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        MY REGISTRATIONS
+                    </span>
+
+
+                    <h2>
+                        Registration History
+                    </h2>
+
+
+                    <p>
+                        Programs you have registered for.
+                    </p>
+
+                </div>
+
+
+                <a asp-controller="Registration"
+                   asp-action="MyRegistrations"
+                   class="panel-link">
+
+                    View All
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Program
+                            </th>
+
+                            <th>
+                                Registered
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.Registrations == null ||
+                            !Model.Registrations.Any())
+                        {
+                            <tr>
+
+                                <td colspan="3"
+                                    class="empty-table">
+
+                                    You have no registration records.
+
+                                </td>
+
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var registration in Model.Registrations)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <strong class="table-main-text">
+
+                                            @(registration.Program?.Name
+                                                ?? "-")
+
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(registration.RegisteredAt.ToLocalTime().ToString("MMM dd, yyyy"))
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (registration.Status == "Approved")
+                                        {
+                                            <span class="table-status approved">
+                                                Approved
+                                            </span>
+                                        }
+                                        else if (registration.Status == "Pending")
+                                        {
+                                            <span class="table-status pending">
+                                                Pending
+                                            </span>
+                                        }
+                                        else if (registration.Status == "Rejected")
+                                        {
+                                            <span class="table-status rejected">
+                                                Rejected
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="table-status inactive">
+                                                @registration.Status
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             USER ATTENDANCE
+        ====================================================== -->
+
+        <section class="report-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span>
+                        MY ATTENDANCE
+                    </span>
+
+
+                    <h2>
+                        Attendance History
+                    </h2>
+
+
+                    <p>
+                        Your personal participation records.
+                    </p>
+
+                </div>
+
+
+                <a asp-controller="Attendance"
+                   asp-action="MyAttendance"
+                   class="panel-link">
+
+                    View All
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Program
+                            </th>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Notes
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.AttendanceRecords == null ||
+                            !Model.AttendanceRecords.Any())
+                        {
+                            <tr>
+
+                                <td colspan="4"
+                                    class="empty-table">
+
+                                    You have no attendance records.
+
+                                </td>
+
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var attendance in Model.AttendanceRecords)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <strong class="table-main-text">
+
+                                            @(attendance.Registration?.Program?.Name
+                                                ?? "-")
+
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.AttendanceDate.ToString("MMM dd, yyyy"))
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (attendance.Status == "Present")
+                                        {
+                                            <span class="table-status present">
+                                                Present
+                                            </span>
+                                        }
+                                        else if (attendance.Status == "Absent")
+                                        {
+                                            <span class="table-status rejected">
+                                                Absent
+                                            </span>
+                                        }
+                                        else if (attendance.Status == "Late")
+                                        {
+                                            <span class="table-status pending">
+                                                Late
+                                            </span>
+                                        }
+                                        else if (attendance.Status == "Excused")
+                                        {
+                                            <span class="table-status approved">
+                                                Excused
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="table-status inactive">
+                                                @attendance.Status
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(string.IsNullOrWhiteSpace(
+                                            attendance.Notes)
+                                            ? "-"
+                                            : attendance.Notes)
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    }
+
+
+    <!-- =========================================================
+         FOOTER ACTIONS
+    ========================================================== -->
+
+    <div class="bottom-actions">
+
+        @if (isUser)
+        {
+            <a asp-controller="Registration"
+               asp-action="MyRegistrations"
+               class="bottom-button secondary">
+
+                <i class="bi bi-person-check"></i>
+
+                My Registrations
+
+            </a>
+
+
+            <a asp-controller="Attendance"
+               asp-action="MyAttendance"
+               class="bottom-button primary">
+
+                <i class="bi bi-clipboard-check"></i>
+
+                My Attendance
+
+            </a>
+        }
+    </div>
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .reports-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+        font-family: Arial, Helvetica, sans-serif;
+
+        color: #FFFFFF;
+
+        background:
+
+            radial-gradient(
+
+                circle at 85% 5%,
+
+                rgba(12,144,150,.14),
+
+                transparent 27%
+
+            ),
+
+            #031716;
+
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================== */
+
+    .page-header {
+
+        margin-bottom: 12px;
+
+        display: flex;
+
+        align-items: flex-end;
+
+        justify-content: space-between;
+
+        gap: 14px;
+
+    }
+
+
+
+
+
+    .page-eyebrow {
+
+        display: block;
+
+        color: #69DDF2;
+
+        font-size: .56rem;
+
+        font-weight: 700;
+
+        letter-spacing: .8px;
+
+    }
+
+
+
+
+
+    .page-header h1 {
+
+        margin: 2px 0 1px;
+
+        color: #FFFFFF;
+
+        font-size: 20px;
+
+        font-weight: 700;
+
+        letter-spacing: -.3px;
+
+    }
+
+
+
+
+
+    .page-header p {
+
+        margin: 0;
+
+        color: #C5DDE2;
+
+        font-size: 8px;
+
+    }
+
+
+    .header-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+    }
+
+    .header-button {
+
+        min-height: 30px;
+
+        padding: 0 10px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 5px;
+
+        border-radius: 6px;
+
+        font-family: inherit;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+        cursor: pointer;
+
+    }
+
+
+
+    .header-button.secondary {
+
+        border: 1px solid rgba(183,215,229,.16);
+
+        background: rgba(255,255,255,.06);
+
+        color: #C5DDE2;
+
+    }
+
+
+
+    .header-button.secondary:hover {
+
+        background: rgba(255,255,255,.10);
+
+        color: #69DDF2;
+
+    }
+
+
+
+    .header-button.primary {
+
+        border: 1px solid #0C9096;
+
+        background: #0C9096;
+
+        color: #FFFFFF;
+
+    }
+
+
+
+    .header-button.primary:hover {
+
+        background: #0A7D82;
+
+        border-color: #0A7D82;
+
+        color: #FFFFFF;
+    }
+
+    /* =========================================================
+       PRINT BUTTON + RECORD COUNT
+    ========================================================== */
+
+
+
+
+    .panel-print-button {
+
+        margin-left: auto;
+
+        min-height: 26px;
+
+        padding: 0 9px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 4px;
+
+        border: 1px solid #0C9096;
+
+        border-radius: 6px;
+
+        background: #0C9096;
+
+        color: #FFFFFF;
+
+        font: inherit;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+    }
+
+
+
+    .panel-print-button:hover {
+
+        background: #0A7D82;
+
+        border-color: #0A7D82;
+
+        color: #FFFFFF;
+
+    }
+
+
+
+    .record-count {
+
+        min-height: 24px;
+
+        padding: 0 8px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        border: 1px solid rgba(183,215,229,.13);
+
+        border-radius: 5px;
+
+        background: rgba(105,199,232,.08);
+
+        color: #8DDCF2;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+
+    }
+
+
+    /* =========================================================
+       SUMMARY
+    ========================================================== */
+
+    .summary-grid {
+
+        margin-bottom: 8px;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 6px;
+
+    }
+
+
+    .summary-card {
+
+        padding: 10px 11px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        border: 1px solid rgba(183,215,229,.13);
+
+        border-radius: 7px;
+
+        background: rgba(255,255,255,.06);
+
+        box-shadow:
+            0 6px 18px
+            rgba(15, 23, 42, .025);
+
+    }
+
+
+    .summary-icon {
+
+        width: 28px;
+
+        height: 28px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 5px;
+
+        font-size: 12px;
+
+    }
+
+
+    .summary-icon.participants {
+
+        background: #eff6ff;
+
+        color: #0d6efd;
+
+    }
+
+
+    .summary-icon.programs {
+
+        background: #f5f3ff;
+
+        color: #7c3aed;
+
+    }
+
+
+    .summary-icon.registrations {
+
+        background: #fff7ed;
+
+        color: #ea580c;
+
+    }
+
+
+    .summary-icon.attendance {
+
+        background: #ecfdf5;
+
+        color: #16a34a;
+
+    }
+
+
+    .summary-icon.approved {
+
+        background: #ecfdf5;
+
+        color: #16a34a;
+
+    }
+
+
+    .summary-icon.pending {
+
+        background: #fff7ed;
+
+        color: #ea580c;
+
+    }
+
+
+    .summary-icon.present {
+        background: #ecfdf5;
+        color: #16a34a;
+    }
+
+    /* =========================================================
+       PRINT STYLES
+    ========================================================== */
+
+    @@media print {
+
+        body.printing-report * {
+            visibility: hidden;
+        }
+
+        body.printing-report .report-section.report-selected,
+        body.printing-report .report-section.report-selected * {
+            visibility: visible;
+        }
+
+        body.printing-report .report-section.report-selected {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            background: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+            border: none;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        body.printing-report .report-section {
+            visibility: hidden;
+        }
+
+        .report-section .panel-header {
+            border-bottom: 2px solid #000000;
+            margin-bottom: 12px;
+        }
+
+        .report-section .panel-header span,
+        .report-section .panel-header h2 {
+            color: #000000;
+        }
+
+        .report-section .panel-header p {
+            color: #333333;
+        }
+
+        .report-section .table-wrapper {
+            border: 1px solid #000000;
+            overflow: visible;
+        }
+
+        .report-section table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .report-section table th {
+            background: #f1f5f9 !important;
+            color: #000000 !important;
+            border: 1px solid #000000;
+            padding: 6px 8px;
+        }
+
+        .report-section table td {
+            border: 1px solid #000000;
+            color: #000000 !important;
+            padding: 6px 8px;
+        }
+
+        .report-section .table-status {
+            border: 1px solid currentColor;
+            color: #000000 !important;
+            background: transparent !important;
+        }
+
+        .report-section .name-cell strong,
+        .report-section .table-main-text {
+            color: #000000 !important;
+        }
+
+        .report-section .mini-avatar {
+            background: #e2e8f0 !important;
+            color: #000000 !important;
+        }
+
+        .report-section .mini-avatar.program-avatar {
+            background: #f1f5f9 !important;
+        }
+
+        .report-section .empty-table {
+            color: #64748b !important;
+        }
+
+        .panel-print-button,
+        .bottom-actions,
+        .summary-grid,
+        .header-actions,
+        .page-header {
+            display: none !important;
+        }
+
+        body.printing-report .report-section:not(.report-selected) {
+            display: none !important;
+        }
+
+        body.printing-report .report-section.report-selected {
+            display: block !important;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            background: #FFFFFF;
+            color: #000000;
+            padding: 20px;
+            overflow: visible;
+        }
+
+        body.printing-report .report-section.report-selected .panel-header {
+            border-bottom: 2px solid #000000;
+            margin-bottom: 12px;
+        }
+
+        body.printing-report .report-section.report-selected .panel-header span,
+        body.printing-report .report-section.report-selected .panel-header h2 {
+            color: #000000;
+        }
+
+        body.printing-report .report-section.report-selected .panel-header p {
+            color: #333333;
+        }
+
+        body.printing-report .report-section.report-selected .table-wrapper {
+            border: 1px solid #000000;
+        }
+
+        body.printing-report .report-section.report-selected table th {
+            background: #f1f5f9 !important;
+            color: #000000 !important;
+            border: 1px solid #000000;
+        }
+
+        body.printing-report .report-section.report-selected table td {
+            border: 1px solid #000000;
+            color: #000000 !important;
+        }
+
+        body.printing-report .report-section.report-selected .table-status {
+            background: transparent !important;
+            color: #000000 !important;
+        }
+
+        body.printing-report .report-section.report-selected .name-cell strong,
+        body.printing-report .report-section.report-selected .table-main-text {
+            color: #000000 !important;
+        }
+
+        body.printing-report .report-section.report-selected .mini-avatar {
+            background: #e2e8f0 !important;
+            color: #000000 !important;
+        }
+
+        body.printing-report .report-section.report-selected .empty-table {
+            color: #64748b !important;
+        }
+
+        body.printing-report .panel-print-button,
+        body.printing-report .bottom-actions,
+        body.printing-report .summary-grid,
+        body.printing-report .header-actions,
+        body.printing-report .page-header {
+            display: none !important;
+        }
+
+    }
+
+    .summary-content {
+
+        min-width: 0;
+
+    }
+
+
+    .summary-content span {
+
+        display: block;
+
+        color: #C5DDE2;
+
+        font-size: .53rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .summary-content strong {
+
+        display: block;
+
+        margin-top: 1px;
+
+        color: #FFFFFF;
+
+        font-size: 1.1rem;
+
+        line-height: 1;
+
+    }
+
+
+    .summary-content small {
+
+        display: block;
+
+        margin-top: 2px;
+
+        color: #A9D5DE;
+
+        font-size: .46rem;
+
+    }
+
+
+    /* =========================================================
+       REPORT PANEL
+    ========================================================== */
+
+    .report-panel {
+
+        margin-bottom: 12px;
+
+        padding:
+            14px;
+
+        border: 1px solid rgba(183,215,229,.13);
+
+        border-radius: 11px;
+
+        background: rgba(255,255,255,.06);
+
+        box-shadow:
+            0 7px 20px
+            rgba(15, 23, 42, .025);
+
+    }
+
+
+    .panel-header {
+
+        margin-bottom: 13px;
+
+        display: flex;
+
+        align-items: flex-start;
+
+        justify-content: space-between;
+
+        gap: 6px;
+
+    }
+
+
+    .panel-header > div:first-child > span {
+
+        display: block;
+
+        color: #69DDF2;
+
+        font-size: .56rem;
+
+        font-weight: 850;
+
+        letter-spacing: .08em;
+
+    }
+
+
+    .panel-header h2 {
+
+        margin:
+            4px 0 3px;
+
+        color: #FFFFFF;
+
+        font-size: .9rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .panel-header p {
+
+        margin: 0;
+
+        color: #A9D5DE;
+
+        font-size: 7px;
+
+    }
+
+
+    .panel-header-icon {
+
+        color: #69C7E8;
+
+        font-size: .82rem;
+
+    }
+
+
+    .panel-link {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        color: #69DDF2;
+
+        font-size: .51rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .panel-link:hover {
+
+        color: #FFFFFF;
+
+    }
+
+
+    .record-count {
+
+        min-height: 22px;
+
+        padding:
+            0 8px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        border: 1px solid rgba(183,215,229,.13);
+
+        border-radius: 5px;
+
+        background: rgba(105,199,232,.08);
+
+        color: #8DDCF2;
+
+        font-size: .49rem;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+
+    }
+
+
+    /* =========================================================
+       METRICS
+    ========================================================== */
+
+    .metric-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 6px;
+
+    }
+
+
+    .metric-grid.four {
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+    }
+
+
+    .metric-card {
+
+        min-height: 67px;
+
+        padding:
+            10px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        border:
+            1px solid rgba(183,215,229,.13);
+
+        border-radius: 5px;
+
+        background: rgba(255,255,255,.04);
+
+    }
+
+
+    .metric-icon {
+
+        width: 31px;
+
+        height: 31px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 6px;
+
+        font-size: .63rem;
+
+    }
+
+
+    .metric-card.pending .metric-icon {
+
+        background: #fff7ed;
+
+        color: #ea580c;
+
+    }
+
+
+    .metric-card.approved .metric-icon,
+    .metric-card.present .metric-icon {
+
+        background: #ecfdf5;
+
+        color: #16a34a;
+
+    }
+
+
+    .metric-card.rejected .metric-icon,
+    .metric-card.absent .metric-icon {
+
+        background: #fef2f2;
+
+        color: #dc2626;
+
+    }
+
+
+    .metric-card.late .metric-icon {
+
+        background: #fff7ed;
+
+        color: #ea580c;
+
+    }
+
+
+    .metric-card.excused .metric-icon {
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+    }
+
+
+    .metric-card > div:last-child {
+
+        min-width: 0;
+
+    }
+
+
+    .metric-card span {
+
+        display: block;
+
+        color: #A9D5DE;
+
+        font-size: .47rem;
+
+    }
+
+
+    .metric-card strong {
+
+        display: block;
+
+        margin-top: 2px;
+
+        color: #8DDCF2;
+
+        font-size: .84rem;
+
+        font-weight: 800;
+
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================== */
+
+    .table-wrapper {
+
+        overflow-x: auto;
+
+        border:
+            1px solid rgba(183,215,229,.13);
+
+        border-radius: 5px;
+
+    }
+
+
+    .report-table {
+
+        width: 100%;
+
+        min-width: 760px;
+
+        border-collapse: collapse;
+
+    }
+
+
+    .report-table thead th {
+
+        padding:
+            10px 11px;
+
+        border-bottom:
+            1px solid rgba(183,215,229,.12);
+
+        background: rgba(105,199,232,.06);
+
+        color: #8DDCF2;
+
+        font-size: .48rem;
+
+        font-weight: 800;
+
+        text-align: left;
+
+        white-space: nowrap;
+
+    }
+
+
+    .report-table tbody td {
+
+        padding:
+            10px 11px;
+
+        border-bottom:
+            1px solid rgba(183,215,229,.09);
+
+        color: #C5DDE2;
+
+        font-size: .51rem;
+
+        vertical-align: middle;
+
+    }
+
+
+    .report-table tbody tr:last-child td {
+
+        border-bottom: none;
+
+    }
+
+
+    .report-table tbody tr:hover {
+
+        background: rgba(105,199,232,.06);
+
+    }
+
+
+    .name-cell {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        min-width: 160px;
+
+    }
+
+
+    .mini-avatar {
+
+        width: 28px;
+
+        height: 28px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: rgba(105,199,232,.12);
+
+        color: #69DDF2;
+
+        font-size: .47rem;
+
+        font-weight: 850;
+
+    }
+
+
+    .program-avatar {
+
+        border-radius: 5px;
+
+        font-size: 6px;
+
+    }
+
+
+    .name-cell strong,
+    .table-main-text {
+
+        max-width: 260px;
+
+        overflow: hidden;
+
+        color: #8DDCF2;
+
+        font-size: .53rem;
+
+        font-weight: 700;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+    }
+
+
+    .table-status {
+
+        min-height: 20px;
+
+        padding:
+            0 6px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        border-radius: 999px;
+
+        font-size: .45rem;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+
+    }
+
+
+    .table-status.active,
+    .table-status.approved,
+    .table-status.present {
+
+        background: #ecfdf5;
+
+        color: #15803d;
+
+    }
+
+
+    .table-status.pending {
+
+        background: #fff7ed;
+
+        color: #c2410c;
+
+    }
+
+
+    .table-status.rejected {
+
+        background: #fef2f2;
+
+        color: #dc2626;
+
+    }
+
+
+    .table-status.inactive {
+
+        background: rgba(104,157,184,.08);
+
+        color: #C5DDE2;
+
+    }
+
+
+    .empty-table {
+
+        padding:
+            35px 15px !important;
+
+        color: #A9D5DE !important;
+
+        text-align: center;
+
+    }
+
+
+    /* =========================================================
+       BOTTOM
+    ========================================================== */
+
+    .bottom-actions {
+
+        margin-top: 8px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 6px;
+
+    }
+
+
+    .bottom-button {
+
+        min-height: 26px;
+
+        padding:
+            0 11px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 4px;
+
+        border-radius: 6px;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .bottom-button.secondary {
+
+        border: 1px solid rgba(183,215,229,.16);
+
+        background: rgba(255,255,255,.06);
+
+        color: #C5DDE2;
+
+    }
+
+
+    .bottom-button.secondary:hover {
+
+        background: rgba(255,255,255,.10);
+
+        color: #69DDF2;
+
+    }
+
+
+    .bottom-button.primary {
+
+        border: 1px solid #0C9096;
+
+        background: #0C9096;
+
+        color: #FFFFFF;
+
+    }
+
+
+    .bottom-button.primary:hover {
+
+        background: #0A7D82;
+
+        border-color: #0A7D82;
+
+        color: #FFFFFF;
+
+    }
+
+
+    /* =========================================================
+       PRINT
+    ========================================================== */
+
+    @@media print {
+
+        body.printing-report .app-sidebar,
+        body.printing-report .app-topbar,
+        body.printing-report .page-header,
+        body.printing-report .summary-grid,
+        body.printing-report .report-section,
+        body.printing-report .bottom-actions {
+            display: none !important;
+        }
+
+        body.printing-report .report-section.report-selected {
+            display: block !important;
+        }
+
+        .panel-print-button {
+            display: none !important;
+        }
+
+        .header-actions,
+        .bottom-actions,
+        .panel-link {
+
+            display: none !important;
+
+        }
+
+
+        .reports-page {
+
+            max-width: 100%;
+
+            padding: 0;
+
+        }
+
+
+        .report-panel,
+        .summary-card {
+
+            box-shadow: none !important;
+
+            break-inside: avoid;
+
+        }
+
+    }
+
+    .panel-print-button {
+        min-height: 26px;
+        padding: 0 9px;
+        border: 1px solid #0C9096;
+        border-radius: 5px;
+        background: #0C9096;
+        color: #fff;
+        font: inherit;
+        font-size: 7px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 1050px) {
+
+        .summary-grid {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+        }
+
+
+        .metric-grid.four {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+        }
+
+    }
+
+
+    @@media (max-width: 800px) {
+
+        .page-header {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+        }
+
+
+        .header-actions {
+
+            width: 100%;
+
+        }
+
+
+        .header-button {
+
+            flex: 1;
+
+        }
+
+
+        .metric-grid {
+
+            grid-template-columns:
+                1fr;
+
+        }
+
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .reports-page {
+
+            padding:
+                21px 17px 35px;
+
+        }
+
+
+        .summary-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .metric-grid,
+        .metric-grid.four {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .panel-header {
+
+            flex-direction: column;
+
+        }
+
+
+        .record-count {
+
+            align-self: flex-start;
+
+        }
+
+
+        .bottom-actions {
+
+            flex-direction: column;
+
+        }
+
+
+        .bottom-button {
+
+            width: 100%;
+
+        }
+
+    }
+
+
+    @@media (max-width: 430px) {
+
+        .header-actions {
+
+            display: grid;
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .header-button {
+
+            width: 100%;
+
+        }
+
+    }
+
+
+    /* =========================================================
+       REPORT FILTER BARS
+       Scoped to this view; hidden when printing.
+    ========================================================== */
+
+    .report-filter-bar {
+
+        display: flex;
+
+        align-items: center;
+
+        flex-wrap: wrap;
+
+        gap: 6px;
+
+        margin: 0 0 10px;
+
+        padding: 7px 8px;
+
+        border: 1px solid rgba(183,215,229,.14);
+
+        border-radius: 8px;
+
+        background: rgba(255,255,255,.04);
+
+    }
+
+
+    .report-filter-label {
+
+        color: #A9D5DE;
+
+        font-size: 7px;
+
+        font-weight: 800;
+
+        letter-spacing: .05em;
+
+        text-transform: uppercase;
+
+    }
+
+
+    .report-filter-input {
+
+        flex: 1;
+
+        min-width: 130px;
+
+        height: 26px;
+
+        padding: 0 8px;
+
+        border: 1px solid rgba(183,215,229,.20);
+
+        border-radius: 6px;
+
+        background: rgba(3,23,22,.55);
+
+        color: #FFFFFF;
+
+        font-size: 7px;
+
+        font-family: Arial, Helvetica, sans-serif;
+
+    }
+
+
+    .report-filter-input::placeholder {
+
+        color: #6E969E;
+
+    }
+
+
+    .report-filter-select {
+
+        height: 26px;
+
+        padding: 0 6px;
+
+        border: 1px solid rgba(183,215,229,.20);
+
+        border-radius: 6px;
+
+        background: rgba(3,23,22,.55);
+
+        color: #FFFFFF;
+
+        font-size: 7px;
+
+        font-family: Arial, Helvetica, sans-serif;
+
+    }
+
+
+    .report-filter-button {
+
+        height: 26px;
+
+        padding: 0 9px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        border: 1px solid #69C7E8;
+
+        border-radius: 6px;
+
+        background: #69C7E8;
+
+        color: #052D2E;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+    }
+
+
+    .report-filter-button:hover {
+
+        background: #8DDCF2;
+
+    }
+
+
+    .report-filter-reset {
+
+        height: 26px;
+
+        padding: 0 9px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        border: 1px solid rgba(183,215,229,.25);
+
+        border-radius: 6px;
+
+        background: transparent;
+
+        color: #A9D5DE;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .report-filter-reset:hover {
+
+        color: #FFFFFF;
+
+        text-decoration: none;
+
+    }
+
+
+    html[data-theme="light"] .report-filter-bar {
+
+        background: rgba(12,144,150,.04);
+
+        border-color: rgba(68,105,140,.16);
+
+    }
+
+
+    html[data-theme="light"] .report-filter-label {
+
+        color: #4b657d;
+
+    }
+
+
+    html[data-theme="light"] .report-filter-input,
+
+    html[data-theme="light"] .report-filter-select {
+
+        background: #fff;
+
+        border-color: #d7e4ee;
+
+        color: #1f3650;
+
+    }
+
+
+    html[data-theme="light"] .report-filter-input::placeholder {
+
+        color: #8fa3b5;
+
+    }
+
+
+    html[data-theme="light"] .report-filter-button {
+
+        background: #0c9096;
+
+        border-color: #0c9096;
+
+        color: #fff;
+
+    }
+
+
+    html[data-theme="light"] .report-filter-button:hover {
+
+        background: #0a7c81;
+
+    }
+
+
+    html[data-theme="light"] .report-filter-reset {
+
+        color: #4b657d;
+
+        border-color: #d7e4ee;
+
+    }
+
+
+    html[data-theme="light"] .report-filter-reset:hover {
+
+        color: #0c9096;
+
+    }
+
+
+    html[data-theme="dark"] .report-filter-bar {
+
+        background: rgba(255,255,255,.04);
+
+        border-color: rgba(183,215,229,.14);
+
+    }
+
+
+    html[data-theme="dark"] .report-filter-input,
+
+    html[data-theme="dark"] .report-filter-select {
+
+        background: rgba(3,23,22,.55);
+
+        color: #FFFFFF;
+
+        border-color: rgba(183,215,229,.20);
+
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .report-filter-bar {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+        }
+
+
+        .report-filter-input,
+
+        .report-filter-select,
+
+        .report-filter-button,
+
+        .report-filter-reset {
+
+            width: 100%;
+
+            justify-content: center;
+
+        }
+
+    }
+
+
+    @@media print {
+
+        .report-filter-bar {
+
+            display: none !important;
+
+        }
+
+    }
+
+</style>
+
+<script>
+    function printReport(reportId) {
+        const report = document.getElementById(reportId);
+        if (!report) return;
+
+        document.querySelectorAll('.report-section').forEach(section =>
+            section.classList.toggle('report-selected', section === report));
+        document.body.classList.add('printing-report');
+        window.print();
+        window.setTimeout(() => {
+            document.body.classList.remove('printing-report');
+            document.querySelectorAll('.report-section').forEach(section =>
+                section.classList.remove('report-selected'));
+        }, 0);
+    }
+</script>
+
+
+

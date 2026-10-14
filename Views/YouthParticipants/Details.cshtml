@@ -1,0 +1,1357 @@
+﻿@model BYPManagementSystem.Models.YouthParticipant
+
+@{
+    ViewData["Title"] = "Participant Details";
+
+    var initials =
+        !string.IsNullOrWhiteSpace(Model.FirstName)
+            ? Model.FirstName.Substring(0, 1).ToUpper()
+            : "Y";
+
+    var hasAccount =
+        !string.IsNullOrWhiteSpace(Model.UserId);
+
+    var isAdmin =
+        User.IsInRole("Admin");
+
+    var isStaff =
+        User.IsInRole("Staff");
+
+    var canEdit =
+        isAdmin || isStaff;
+}
+
+<div class="participant-details-page">
+
+    <!-- ==========================================================
+         HEADER
+         ========================================================== -->
+
+    <section class="form-header">
+
+        <div class="form-header-icon">
+            <i class="bi bi-person-vcard-fill"></i>
+        </div>
+
+        <div class="form-header-content">
+
+            <span class="form-header-kicker">
+                YOUTH PARTICIPANTS
+            </span>
+
+            <h1>
+                Participant Details
+            </h1>
+
+            <p>
+                View the youth participant's profile and connected
+                registration information.
+            </p>
+
+        </div>
+
+        <a asp-controller="YouthParticipants"
+           asp-action="Index"
+           class="form-back-button">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Youth Participants
+
+        </a>
+
+    </section>
+
+
+    <!-- ==========================================================
+         PROFILE HEADER
+         ========================================================== -->
+
+    <div class="profile-summary">
+
+        <div class="profile-avatar">
+            @initials
+        </div>
+
+        <div class="profile-main">
+
+            <span>
+                YOUTH PARTICIPANT
+            </span>
+
+            <h2>
+                @Model.FullName
+            </h2>
+
+            <div class="profile-meta">
+
+                <span>
+                    <i class="bi bi-geo-alt-fill"></i>
+                    @(string.IsNullOrWhiteSpace(Model.Barangay)
+                        ? "Barangay not set"
+                        : Model.Barangay)
+                </span>
+
+                <span>
+                    <i class="bi bi-calendar3"></i>
+                    Added @(Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy"))
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="profile-status">
+
+            @if (Model.IsActive)
+            {
+                <span class="status-badge active">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Active
+                </span>
+            }
+            else
+            {
+                <span class="status-badge inactive">
+                    <i class="bi bi-x-circle-fill"></i>
+                    Inactive
+                </span>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         PERSONAL INFORMATION
+         ========================================================== -->
+
+    <div class="section-card">
+
+        <div class="section-header">
+
+            <div class="section-heading">
+
+                <div class="section-icon blue">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Personal Information
+                    </h2>
+
+                    <p>
+                        Basic information of the youth participant.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="information-grid">
+
+            <div class="information-item">
+                <span>First Name</span>
+                <strong>@Model.FirstName</strong>
+            </div>
+
+            <div class="information-item">
+                <span>Last Name</span>
+                <strong>@Model.LastName</strong>
+            </div>
+
+            <div class="information-item">
+                <span>Birth Date</span>
+                <strong>
+                    @(Model.BirthDate.HasValue
+                        ? Model.BirthDate.Value.ToString("MMM dd, yyyy")
+                        : "Not provided")
+                </strong>
+            </div>
+
+            <div class="information-item">
+                <span>Contact Number</span>
+                <strong>
+                    @(string.IsNullOrWhiteSpace(Model.ContactNumber)
+                        ? "Not provided"
+                        : Model.ContactNumber)
+                </strong>
+            </div>
+
+            <div class="information-item">
+                <span>Barangay</span>
+                <strong>
+                    @(string.IsNullOrWhiteSpace(Model.Barangay)
+                        ? "Not provided"
+                        : Model.Barangay)
+                </strong>
+            </div>
+
+            <div class="information-item">
+                <span>Participant Status</span>
+                @if (Model.IsActive)
+                {
+                    <strong class="active-text">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Active
+                    </strong>
+                }
+                else
+                {
+                    <strong class="inactive-text">
+                        <i class="bi bi-x-circle-fill"></i>
+                        Inactive
+                    </strong>
+                }
+            </div>
+
+        </div>
+
+
+        <div class="address-section">
+            <span>Address</span>
+            <div class="address-box">
+                <i class="bi bi-house-fill"></i>
+                <span>
+                    @(string.IsNullOrWhiteSpace(Model.Address)
+                        ? "No address provided."
+                        : Model.Address)
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         ACCOUNT INFORMATION
+         ========================================================== -->
+
+    <div class="section-card">
+
+        <div class="section-header">
+
+            <div class="section-heading">
+
+                <div class="section-icon purple">
+                    <i class="bi bi-person-lock"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Account Connection
+                    </h2>
+
+                    <p>
+                        Shows whether this youth participant is connected
+                        to an application account.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="account-card">
+
+            <div class="account-icon">
+                @if (hasAccount)
+                {
+                    <i class="bi bi-person-check-fill"></i>
+                }
+                else
+                {
+                    <i class="bi bi-person-x-fill"></i>
+                }
+            </div>
+
+            <div class="account-info">
+
+                @if (hasAccount)
+                {
+                    <span>CONNECTED ACCOUNT</span>
+                    <strong>Account linked to this participant</strong>
+                    <small>User ID: @Model.UserId</small>
+                }
+                else
+                {
+                    <span>ACCOUNT STATUS</span>
+                    <strong>No linked login account</strong>
+                    <small>This participant can still exist as a youth record without a login account.</small>
+                }
+
+            </div>
+
+
+            @if (hasAccount)
+            {
+                <span class="account-status connected">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Connected
+                </span>
+            }
+            else
+            {
+                <span class="account-status not-connected">
+                    <i class="bi bi-dash-circle-fill"></i>
+                    Not Connected
+                </span>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         BARANGAY ASSIGNMENT
+         ========================================================== -->
+
+    <div class="assignment-card">
+
+        <div class="assignment-icon">
+            <i class="bi bi-arrow-left-right"></i>
+        </div>
+
+        <div class="assignment-content">
+
+            <strong>
+                Barangay-Based Program Assignment
+            </strong>
+
+            <p>
+                This participant can be automatically connected to
+                programs whose Barangay matches the participant's
+                Barangay.
+            </p>
+
+        </div>
+
+        <div class="assignment-value">
+
+            <span>
+                Participant Barangay
+            </span>
+
+            <strong>
+                @(string.IsNullOrWhiteSpace(Model.Barangay)
+                    ? "Not set"
+                    : Model.Barangay)
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         REGISTRATION CONNECTION
+         ========================================================== -->
+
+    <div class="section-card">
+
+        <div class="section-header">
+
+            <div class="section-heading">
+
+                <div class="section-icon green">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Program Registrations
+                    </h2>
+
+                    <p>
+                        View the programs assigned or registered under
+                        this youth participant.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="registration-connection">
+
+            <div class="connection-visual">
+
+                <div class="connection-node youth-node">
+                    <i class="bi bi-person-fill"></i>
+                    <span>Youth</span>
+                </div>
+
+                <div class="connection-line"></div>
+
+                <div class="connection-node registration-node">
+                    <i class="bi bi-journal-check"></i>
+                    <span>Registration</span>
+                </div>
+
+                <div class="connection-line"></div>
+
+                <div class="connection-node program-node">
+                    <i class="bi bi-calendar-event-fill"></i>
+                    <span>Program</span>
+                </div>
+
+            </div>
+
+
+            <div class="registration-text">
+
+                <strong>
+                    Open Assigned Programs
+                </strong>
+
+                <p>
+                    View this participant's assigned programs,
+                    registration status, connected account, and
+                    attendance access.
+                </p>
+
+                <a asp-controller="Registration"
+                   asp-action="Participant"
+                   asp-route-id="@Model.Id"
+                   class="registration-button">
+
+                    <i class="bi bi-arrow-right-circle-fill"></i>
+                    View Registration Details
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         ACTIONS
+         ========================================================== -->
+
+    @if (canEdit)
+    {
+
+        <div class="actions-card">
+
+            <div class="actions-content">
+
+                <div class="actions-icon">
+                    <i class="bi bi-gear-fill"></i>
+                </div>
+
+                <div>
+
+                    <strong>
+                        Participant Management
+                    </strong>
+
+                    <p>
+                        Update the participant's information or return
+                        to the participant registry.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="action-buttons">
+
+                <a asp-controller="YouthParticipants"
+                   asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="edit-button">
+
+                    <i class="bi bi-pencil-fill"></i>
+                    Edit Participant
+
+                </a>
+
+
+                @if (isAdmin)
+                {
+
+                    <form asp-controller="YouthParticipants"
+                          asp-action="Deactivate"
+                          asp-route-id="@Model.Id"
+                          method="post"
+                          class="inline-form">
+
+                        @Html.AntiForgeryToken()
+
+                        @if (Model.IsActive)
+                        {
+
+                            <button type="submit"
+                                    class="deactivate-button">
+
+                                <i class="bi bi-person-dash-fill"></i>
+                                Deactivate
+
+                            </button>
+
+                        }
+                        else
+                        {
+
+                            <button type="submit"
+                                    class="activate-button">
+
+                                <i class="bi bi-person-check-fill"></i>
+                                Activate
+
+                            </button>
+
+                        }
+
+                    </form>
+
+                }
+
+            </div>
+
+        </div>
+
+    }
+
+
+    <!-- ==========================================================
+         FOOTER
+         ========================================================== -->
+
+    <div class="footer-actions">
+
+        <a asp-controller="YouthParticipants"
+           asp-action="Index"
+           class="footer-back">
+
+            <i class="bi bi-arrow-left"></i>
+            Back to Youth Participants
+
+        </a>
+
+
+        <a asp-controller="Registration"
+           asp-action="Participant"
+           asp-route-id="@Model.Id"
+           class="footer-registration">
+
+            <i class="bi bi-person-check-fill"></i>
+            View Registrations
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<style>
+
+/* ==========================================================
+   COMPACT DETAILS PAGE - Matches Admin Dashboard density
+   ========================================================== */
+
+.participant-details-page {
+    width: 100%;
+    padding: 12px 18px 18px;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.form-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: 13px;
+    background:
+        linear-gradient(
+            110deg,
+            rgba(12,144,150,.25),
+            rgba(5,45,46,.82)
+        );
+    border: 1px solid rgba(183,215,229,.16);
+    box-shadow: 0 8px 20px rgba(0,0,0,.14);
+    color: #FFFFFF;
+}
+
+.form-header-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.13);
+    color: #69DDF2;
+    font-size: 16px;
+}
+
+.form-header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-header-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: #A9D5DE;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.form-header h1 {
+    margin: 0;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.form-header p {
+    margin: 3px 0 0;
+    color: #C5DDE2;
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+.form-back-button {
+    min-height: 30px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 7px;
+    border: 1px solid rgba(183,215,229,.16);
+    background: rgba(255,255,255,.06);
+    color: #C5DDE2;
+    text-decoration: none;
+    font-size: 7px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: .16s ease;
+}
+
+.form-back-button:hover {
+    color: #FFFFFF;
+    background: rgba(255,255,255,.10);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   PROFILE SUMMARY
+   ========================================================== */
+
+.profile-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+    border: 1px solid rgba(183,215,229,.14);
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+.profile-avatar {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: rgba(105,199,232,.15);
+    color: #69DDF2;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.profile-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-main > span {
+    display: block;
+    margin-bottom: 2px;
+    color: #69DDF2;
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: .8px;
+}
+
+.profile-main h2 {
+    margin: 0 0 4px;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #72969E;
+    font-size: 6px;
+}
+
+.profile-meta i { color: #69DDF2; }
+
+.profile-status { align-self: flex-start; }
+
+
+/* ==========================================================
+   STATUS BADGES
+   ========================================================== */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-badge.active {
+    color: #69F0AE;
+    background: rgba(43,166,126,.12);
+    border: 1px solid rgba(105,240,174,.17);
+}
+
+.status-badge.inactive {
+    color: #FF7B8A;
+    background: rgba(255,123,138,.10);
+    border: 1px solid rgba(255,123,138,.15);
+}
+
+
+/* ==========================================================
+   SECTION CARD
+   ========================================================== */
+
+.section-card {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+    border: 1px solid rgba(183,215,229,.14);
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+.section-header {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(183,215,229,.12);
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+.section-icon.blue {
+    color: #69DDF2;
+    background: rgba(105,199,232,.10);
+    border: 1px solid rgba(105,199,232,.12);
+}
+
+.section-icon.purple {
+    color: #B9BFFF;
+    background: rgba(104,125,184,.10);
+    border: 1px solid rgba(104,125,184,.12);
+}
+
+.section-icon.green {
+    color: #69F0AE;
+    background: rgba(43,166,126,.10);
+    border: 1px solid rgba(43,166,126,.12);
+}
+
+.section-heading h2 {
+    margin: 0 0 1px;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.section-heading p {
+    margin: 0;
+    color: #769BA3;
+    font-size: 7px;
+}
+
+
+/* ==========================================================
+   INFORMATION GRID
+   ========================================================== */
+
+.information-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px 12px;
+}
+
+.information-item {
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid rgba(183,215,229,.10);
+    border-radius: 8px;
+    background: rgba(255,255,255,.035);
+}
+
+.information-item > span {
+    display: block;
+    margin-bottom: 4px;
+    color: #9FC6CC;
+    font-size: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.information-item strong {
+    display: block;
+    overflow: hidden;
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.information-item strong i { margin-right: 3px; }
+
+.active-text { color: #69F0AE !important; }
+.inactive-text { color: #FF7B8A !important; }
+
+.address-section {
+    padding: 0 12px 10px;
+}
+
+.address-section > span {
+    display: block;
+    margin-bottom: 4px;
+    color: #9FC6CC;
+    font-size: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.address-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 9px;
+    border: 1px solid rgba(183,215,229,.10);
+    border-radius: 7px;
+    background: rgba(255,255,255,.035);
+    color: #C1D8DD;
+    font-size: 7px;
+    line-height: 1.4;
+}
+
+.address-box i {
+    color: #69DDF2;
+    margin-top: 1px;
+    font-size: 8px;
+}
+
+
+/* ==========================================================
+   ACCOUNT CARD
+   ========================================================== */
+
+.account-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 12px;
+    padding: 10px;
+    border: 1px solid rgba(183,215,229,.12);
+    border-radius: 9px;
+    background: rgba(255,255,255,.035);
+}
+
+.account-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: rgba(104,125,184,.10);
+    color: #B9BFFF;
+    font-size: 13px;
+}
+
+.account-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.account-info > span {
+    display: block;
+    margin-bottom: 2px.
+    color: #69DDF2;
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: .6px;
+}
+
+.account-info strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.account-info small {
+    display: block;
+    overflow: hidden;
+    color: #72969E;
+    font-size: 6px;
+    text-overflow: ellipsis;
+}
+
+.account-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 7px.
+    border-radius: 999px;
+    font-size: 6px;
+    font-weight: 700.
+    white-space: nowrap;
+}
+
+.account-status.connected {
+    color: #69F0AE;
+    background: rgba(43,166,126,.12);
+    border: 1px solid rgba(105,240,174,.17);
+}
+
+.account-status.not-connected {
+    color: #8DDCF2;
+    background: rgba(105,199,232,.10);
+    border: 1px solid rgba(105,199,232,.14);
+}
+
+
+/* ==========================================================
+   ASSIGNMENT CARD
+   ========================================================== */
+
+.assignment-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px.
+    border: 1px solid rgba(105,199,232,.14).
+    border-radius: 9px.
+    background: rgba(105,199,232,.08).
+}
+
+.assignment-icon {
+    width: 32px;
+    height: 32px.
+    flex-shrink: 0.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 6px.
+    background: rgba(105,199,232,.10).
+    color: #69DDF2.
+    font-size: 12px.
+}
+
+.assignment-content {
+    flex: 1.
+    min-width: 0.
+}
+
+.assignment-content strong {
+    display: block.
+    margin-bottom: 2px.
+    color: #FFFFFF.
+    font-size: 8px.
+}
+
+.assignment-content p {
+    margin: 0.
+    color: #769BA3.
+    font-size: 6px.
+    line-height: 1.4.
+}
+
+.assignment-value {
+    min-width: 120px.
+    padding-left: 10px.
+    border-left: 1px solid rgba(105,199,232,.14).
+}
+
+.assignment-value span {
+    display: block.
+    margin-bottom: 2px.
+    color: #72969E.
+    font-size: 6px.
+}
+
+.assignment-value strong {
+    display: block.
+    color: #FFFFFF.
+    font-size: 9px.
+    font-weight: 700.
+}
+
+
+/* ==========================================================
+   REGISTRATION CONNECTION
+   ========================================================== */
+
+.registration-connection {
+    display: flex.
+    align-items: center.
+    gap: 15px.
+    padding: 10px 12px.
+}
+
+.connection-visual {
+    display: flex.
+    align-items: center.
+    flex-shrink: 0.
+}
+
+.connection-node {
+    width: 48px.
+    height: 48px.
+    display: flex.
+    flex-direction: column.
+    align-items: center.
+    justify-content: center.
+    gap: 3px.
+    border-radius: 11px.
+    font-size: 13px.
+}
+
+.connection-node span {
+    font-size: 6px.
+    font-weight: 700.
+}
+
+.youth-node { color: #69DDF2; background: rgba(105,199,232,.15); }
+.registration-node { color: #B9BFFF; background: rgba(104,125,184,.12); }
+.program-node { color: #69F0AE; background: rgba(43,166,126,.15); }
+
+.connection-line {
+    width: 28px.
+    height: 2px.
+    background: rgba(183,215,229,.15).
+}
+
+.registration-text { flex: 1; min-width: 0; }
+
+.registration-text strong {
+    display: block.
+    margin-bottom: 3px.
+    color: #FFFFFF.
+    font-size: 9px.
+}
+
+.registration-text p {
+    margin: 0 0 8px.
+    color: #769BA3.
+    font-size: 6px.
+    line-height: 1.4.
+}
+
+.registration-button {
+    min-height: 28px.
+    padding: 0 9px.
+    display: inline-flex.
+    align-items: center.
+    justify-content: center.
+    gap: 4px.
+    border-radius: 6px.
+    background: #0C9096.
+    color: #FFFFFF.
+    text-decoration: none.
+    font-size: 6px.
+    font-weight: 700.
+    transition: .13s ease.
+}
+
+.registration-button:hover {
+    background: #0A7D82.
+    color: #FFFFFF.
+    text-decoration: none.
+}
+
+
+/* ==========================================================
+   ACTIONS CARD
+   ========================================================== */
+
+.actions-card {
+    display: flex.
+    align-items: center.
+    justify-content: space-between.
+    gap: 12px.
+    padding: 10px 12px.
+    margin-bottom: 8px.
+    border: 1px solid rgba(183,215,229,.12).
+    border-radius: 9px.
+    background: rgba(255,255,255,.035).
+}
+
+.actions-content {
+    display: flex.
+    align-items: center.
+    gap: 8px.
+    min-width: 0.
+}
+
+.actions-icon {
+    width: 30px.
+    height: 30px.
+    flex-shrink: 0.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 6px.
+    background: rgba(105,199,232,.10).
+    color: #69DDF2.
+    font-size: 12px.
+}
+
+.actions-content strong {
+    display: block.
+    margin-bottom: 2px.
+    color: #FFFFFF.
+    font-size: 8px.
+}
+
+.actions-content p {
+    margin: 0.
+    color: #769BA3.
+    font-size: 6px.
+}
+
+.action-buttons {
+    display: flex.
+    align-items: center.
+    gap: 6px.
+    flex-shrink: 0.
+}
+
+.edit-button,
+.deactivate-button,
+.activate-button {
+    min-height: 28px.
+    padding: 0 8px.
+    display: inline-flex.
+    align-items: center.
+    justify-content: center.
+    gap: 4px.
+    border-radius: 6px.
+    font-size: 6px.
+    font-weight: 700.
+    text-decoration: none.
+    white-space: nowrap.
+}
+
+.edit-button {
+    border: 1px solid rgba(183,215,229,.15).
+    background: rgba(255,255,255,.04).
+    color: #8DDCF2.
+}
+
+.edit-button:hover {
+    border-color: #69DDF2.
+    color: #FFFFFF.
+    text-decoration: none.
+    background: rgba(105,199,232,.08).
+}
+
+.deactivate-button {
+    border: 1px solid rgba(255,123,138,.20).
+    background: rgba(255,123,138,.07).
+    color: #FF7B8A.
+    cursor: pointer.
+}
+
+.deactivate-button:hover { background: rgba(255,123,138,.12); }
+
+.activate-button {
+    border: 1px solid rgba(105,240,174,.17).
+    background: rgba(43,166,126,.08).
+    color: #69F0AE.
+    cursor: pointer.
+}
+
+.activate-button:hover { background: rgba(43,166,126,.14); }
+
+.inline-form { margin: 0; }
+
+
+/* ==========================================================
+   FOOTER ACTIONS
+   ========================================================== */
+
+.footer-actions {
+    display: flex.
+    align-items: center.
+    justify-content: space-between.
+    gap: 8px.
+    margin-top: 8px.
+}
+
+.footer-back,
+.footer-registration {
+    min-height: 28px.
+    padding: 0 9px.
+    display: inline-flex.
+    align-items: center.
+    justify-content: center.
+    gap: 4px.
+    border-radius: 6px.
+    font-size: 6px.
+    font-weight: 700.
+    text-decoration: none.
+    transition: .13s ease.
+}
+
+.footer-back {
+    border: 1px solid rgba(183,215,229,.16).
+    background: rgba(255,255,255,.04).
+    color: #8DDCF2.
+}
+
+.footer-back:hover {
+    border-color: #69DDF2.
+    color: #FFFFFF.
+    background: rgba(105,199,232,.08).
+    text-decoration: none.
+}
+
+.footer-registration {
+    border: 1px solid #0C9096.
+    background: #0C9096.
+    color: #FFFFFF.
+}
+
+.footer-registration:hover {
+    background: #0A7D82.
+    color: #FFFFFF.
+    text-decoration: none.
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@@media (max-width: 1000px) {
+    .information-grid { grid-template-columns: repeat(2, 1fr); }
+    .registration-connection {
+        align-items: flex-start.
+        flex-direction: column.
+    }
+    .connection-visual { width: 100%; justify-content: center; }
+}
+
+@@media (max-width: 750px) {
+    .participant-details-page { padding: 8px; }
+    .form-header { padding: 12px 15px; }
+    .form-header h1 { font-size: 18px; }
+    .form-header p { font-size: 7px; }
+    .form-back-button { display: none; }
+    .profile-summary { align-items: flex-start; flex-wrap: wrap; }
+    .profile-status { width: 100%; margin-left: 54px; }
+    .assignment-card { align-items: flex-start; flex-wrap: wrap; }
+    .assignment-value { width: 100%; padding-top: 6px; padding-left: 0; border-top: 1px solid rgba(105,199,232,.14); border-left: 0; }
+    .actions-card { align-items: flex-start; flex-direction: column; }
+    .action-buttons { width: 100%; }
+    .edit-button, .deactivate-button, .activate-button { flex: 1; }
+}
+
+@@media (max-width: 550px) {
+    .information-grid { grid-template-columns: 1fr; }
+    .section-header { padding: 9px 10px; }
+    .information-grid { padding: 9px 10px; }
+    .address-section { padding: 0 10px 9px; }
+    .account-card { margin: 9px 10px; }
+    .profile-main h2 { font-size: 12px; }
+    .connection-visual { transform: scale(.9); transform-origin: left center; }
+    .registration-button { width: 100%; }
+    .footer-actions { align-items: stretch; flex-direction: column; }
+    .footer-back, .footer-registration { width: 100%; }
+}
+
+</style>

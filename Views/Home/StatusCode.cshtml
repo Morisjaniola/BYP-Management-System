@@ -1,0 +1,757 @@
+﻿@{
+    ViewData["Title"] = "Request Error";
+
+    int statusCode = ViewBag.StatusCode is int code
+        ? code
+        : 500;
+
+    string message = ViewBag.Message?.ToString()
+        ?? "An unexpected request error occurred.";
+
+    string icon = statusCode switch
+    {
+        400 => "bi bi-exclamation-circle-fill",
+        401 => "bi bi-person-lock",
+        403 => "bi bi-shield-lock-fill",
+        404 => "bi bi-search",
+        500 => "bi bi-exclamation-triangle-fill",
+        _ => "bi bi-exclamation-circle-fill"
+    };
+
+    string label = statusCode switch
+    {
+        400 => "BAD REQUEST",
+        401 => "AUTHENTICATION REQUIRED",
+        403 => "ACCESS FORBIDDEN",
+        404 => "PAGE NOT FOUND",
+        500 => "SERVER ERROR",
+        _ => "REQUEST ERROR"
+    };
+}
+
+
+<div class="status-page">
+
+    <div class="status-card">
+
+        <!-- =====================================================
+             STATUS ICON
+        ====================================================== -->
+
+        <div class="status-icon">
+
+            <i class="@icon"></i>
+
+        </div>
+
+
+        <!-- =====================================================
+             STATUS CODE
+        ====================================================== -->
+
+        <span class="status-label">
+            @label
+        </span>
+
+
+        <div class="status-code">
+            @statusCode
+        </div>
+
+
+        <!-- =====================================================
+             MESSAGE
+        ====================================================== -->
+
+        <h1>
+
+            @if (statusCode == 400)
+            {
+                <span>Request could not be processed.</span>
+            }
+            else if (statusCode == 401)
+            {
+                <span>Sign in to continue.</span>
+            }
+            else if (statusCode == 403)
+            {
+                <span>You do not have permission.</span>
+            }
+            else if (statusCode == 404)
+            {
+                <span>Page not found.</span>
+            }
+            else if (statusCode == 500)
+            {
+                <span>Something went wrong.</span>
+            }
+            else
+            {
+                <span>Request error.</span>
+            }
+
+        </h1>
+
+
+        <p class="status-message">
+            @message
+        </p>
+
+
+        <!-- =====================================================
+             REQUEST INFORMATION
+        ====================================================== -->
+
+        <div class="status-info">
+
+            <div class="info-icon">
+
+                <i class="bi bi-info-circle"></i>
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    What happened?
+                </strong>
+
+
+                <span>
+
+                    @if (statusCode == 400)
+                    {
+                        <text>
+                            The submitted request was not accepted by the system.
+                        </text>
+                    }
+                    else if (statusCode == 401)
+                    {
+                        <text>
+                            This page requires an authenticated account.
+                        </text>
+                    }
+                    else if (statusCode == 403)
+                    {
+                        <text>
+                            Your account does not have the required role or permission.
+                        </text>
+                    }
+                    else if (statusCode == 404)
+                    {
+                        <text>
+                            The requested page or resource could not be found.
+                        </text>
+                    }
+                    else if (statusCode == 500)
+                    {
+                        <text>
+                            The system encountered an unexpected application error.
+                        </text>
+                    }
+                    else
+                    {
+                        <text>
+                            The request could not be completed as expected.
+                        </text>
+                    }
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             ACTIONS
+        ====================================================== -->
+
+        <div class="status-actions">
+
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="status-button primary">
+
+                <i class="bi bi-house"></i>
+
+                Return to Home
+
+            </a>
+
+
+            @if (statusCode == 401)
+            {
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="status-button secondary">
+
+                    <i class="bi bi-box-arrow-in-right"></i>
+
+                    Sign In
+
+                </a>
+            }
+            else if (statusCode == 403)
+            {
+                <a asp-controller="Profile"
+                   asp-action="Index"
+                   class="status-button secondary">
+
+                    <i class="bi bi-person"></i>
+
+                    My Profile
+
+                </a>
+            }
+            else
+            {
+                <button type="button"
+                        class="status-button secondary"
+                        onclick="history.back();">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Go Back
+
+                </button>
+            }
+
+        </div>
+
+
+        <!-- =====================================================
+             SUPPORT NOTE
+        ====================================================== -->
+
+        <div class="support-note">
+
+            <i class="bi bi-shield-check"></i>
+
+            <span>
+                The system does not display sensitive technical details
+                on this page.
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .status-page {
+
+        min-height:
+            calc(100vh - 30px);
+
+        padding:
+            35px 18px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        background:
+            #f7f9fc;
+
+    }
+
+
+    /* =========================================================
+       CARD
+    ========================================================== */
+
+    .status-card {
+
+        width:
+            100%;
+
+        max-width:
+            480px;
+
+        padding:
+            32px;
+
+        border:
+            1px solid #e3e8ef;
+
+        border-radius:
+            16px;
+
+        background:
+            #ffffff;
+
+        text-align:
+            center;
+
+        box-shadow:
+            0 18px 45px
+            rgba(15, 23, 42, .08);
+
+    }
+
+
+    /* =========================================================
+       ICON
+    ========================================================== */
+
+    .status-icon {
+
+        width:
+            70px;
+
+        height:
+            70px;
+
+        margin:
+            0 auto 14px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        border-radius:
+            18px;
+
+        background:
+            #fff7ed;
+
+        color:
+            #ea580c;
+
+        font-size:
+            1.35rem;
+
+    }
+
+
+    /* =========================================================
+       LABEL
+    ========================================================== */
+
+    .status-label {
+
+        display:
+            block;
+
+        color:
+            #ea580c;
+
+        font-size:
+            .51rem;
+
+        font-weight:
+            850;
+
+        letter-spacing:
+            .1em;
+
+    }
+
+
+    /* =========================================================
+       CODE
+    ========================================================== */
+
+    .status-code {
+
+        margin-top:
+            3px;
+
+        color:
+            #1f2937;
+
+        font-size:
+            2.15rem;
+
+        line-height:
+            1;
+
+        font-weight:
+            900;
+
+        letter-spacing:
+            -1px;
+
+    }
+
+
+    /* =========================================================
+       TITLE
+    ========================================================== */
+
+    .status-card h1 {
+
+        margin:
+            9px 0 6px;
+
+        color:
+            #334155;
+
+        font-size:
+            1rem;
+
+        font-weight:
+            800;
+
+    }
+
+
+    .status-message {
+
+        max-width:
+            370px;
+
+        margin:
+            0 auto;
+
+        color:
+            #64748b;
+
+        font-size:
+            .59rem;
+
+        line-height:
+            1.6;
+
+    }
+
+
+    /* =========================================================
+       INFO
+    ========================================================== */
+
+    .status-info {
+
+        margin-top:
+            20px;
+
+        padding:
+            11px;
+
+        display:
+            flex;
+
+        align-items:
+            flex-start;
+
+        gap:
+            9px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius:
+            9px;
+
+        background:
+            #f8fafc;
+
+        text-align:
+            left;
+
+    }
+
+
+    .info-icon {
+
+        width:
+            33px;
+
+        height:
+            33px;
+
+        flex-shrink:
+            0;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        border-radius:
+            8px;
+
+        background:
+            #eff6ff;
+
+        color:
+            #2563eb;
+
+        font-size:
+            .64rem;
+
+    }
+
+
+    .status-info strong {
+
+        display:
+            block;
+
+        color:
+            #475569;
+
+        font-size:
+            .53rem;
+
+        font-weight:
+            800;
+
+    }
+
+
+    .status-info span {
+
+        display:
+            block;
+
+        margin-top:
+            3px;
+
+        color:
+            #94a3b8;
+
+        font-size:
+            .47rem;
+
+        line-height:
+            1.5;
+
+    }
+
+
+    /* =========================================================
+       ACTIONS
+    ========================================================== */
+
+    .status-actions {
+
+        margin-top:
+            20px;
+
+        display:
+            flex;
+
+        gap:
+            7px;
+
+    }
+
+
+    .status-button {
+
+        flex:
+            1;
+
+        min-height:
+            40px;
+
+        padding:
+            0 10px;
+
+        display:
+            inline-flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        gap:
+            5px;
+
+        border-radius:
+            8px;
+
+        font-family:
+            inherit;
+
+        font-size:
+            .54rem;
+
+        font-weight:
+            800;
+
+        text-decoration:
+            none;
+
+        cursor:
+            pointer;
+
+    }
+
+
+    .status-button.primary {
+
+        border:
+            1px solid #0d6efd;
+
+        background:
+            #0d6efd;
+
+        color:
+            #ffffff;
+
+    }
+
+
+    .status-button.primary:hover {
+
+        background:
+            #0b5ed7;
+
+        color:
+            #ffffff;
+
+    }
+
+
+    .status-button.secondary {
+
+        border:
+            1px solid #dfe6ee;
+
+        background:
+            #ffffff;
+
+        color:
+            #64748b;
+
+    }
+
+
+    .status-button.secondary:hover {
+
+        background:
+            #f8fafc;
+
+        color:
+            #0d6efd;
+
+    }
+
+
+    /* =========================================================
+       SUPPORT
+    ========================================================== */
+
+    .support-note {
+
+        margin-top:
+            18px;
+
+        padding:
+            9px 10px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        gap:
+            6px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius:
+            8px;
+
+        background:
+            #f8fafc;
+
+        color:
+            #94a3b8;
+
+        font-size:
+            .46rem;
+
+        line-height:
+            1.4;
+
+    }
+
+
+    .support-note i {
+
+        color:
+            #16a34a;
+
+        font-size:
+            .6rem;
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 500px) {
+
+        .status-page {
+
+            padding:
+                20px 12px;
+
+        }
+
+
+        .status-card {
+
+            padding:
+                25px 18px;
+
+            border-radius:
+                13px;
+
+        }
+
+
+        .status-actions {
+
+            flex-direction:
+                column;
+
+        }
+
+
+        .status-button {
+
+            width:
+                100%;
+
+        }
+
+    }
+
+</style>

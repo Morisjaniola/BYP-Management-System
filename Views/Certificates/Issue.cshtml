@@ -1,0 +1,369 @@
+@model BYPManagementSystem.Controllers.IssueCertificateViewModel
+
+@{
+    ViewData["Title"] = "Issue Certificate";
+}
+
+
+<div class="issue-certificate-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <a asp-action="Index"
+               asp-route-programId="@Model.ProgramId"
+               class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to Certificates
+            </a>
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-award"></i>
+                </div>
+
+                <div class="certificate-title">
+
+                    <span class="page-eyebrow">
+                        ISSUE CERTIFICATE
+                    </span>
+
+                    <h1>
+                        Issue Certificate
+                    </h1>
+
+                    <p>
+                        Review participant details and confirm completion before issuing.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         CERTIFICATE DETAILS FORM
+    ========================================================== -->
+
+    <div class="form-container">
+
+        <form asp-action="Issue"
+              method="post">
+
+            <input asp-for="RegistrationId"
+                   type="hidden" />
+
+            <input asp-for="ProgramId"
+                   type="hidden" />
+
+
+            <!-- =========================================================
+                 PARTICIPANT INFO CARD
+            ========================================================== -->
+
+            <div class="info-card">
+
+                <h2>
+                    <i class="bi bi-person"></i>
+                    Participant
+                </h2>
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <label>Full Name</label>
+                        <strong>@Model.ParticipantName</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Email</label>
+                        <span>@(Model.ParticipantEmail ?? "—")</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================================
+                 PROGRAM INFO CARD
+            ========================================================== -->
+
+            <div class="info-card">
+
+                <h2>
+                    <i class="bi bi-book"></i>
+                    Program
+                </h2>
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <label>Program Name</label>
+                        <strong>@Model.ProgramName</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Scheduled End Date</label>
+                        <span>
+                            @(Model.ProgramScheduleEnd?.ToString("MMMM dd, yyyy") ?? "Not set")
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================================
+                 COMPLETION DETAILS
+            ========================================================== -->
+
+            <div class="info-card warning">
+
+                <h2>
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Completion Review
+                </h2>
+
+                <div class="warning-message">
+
+                    <p>
+                        <strong>No automatic completion rule exists in this system.</strong>
+                    </p>
+
+                    <p>
+                        The BYProgram system does not enforce a specific attendance threshold or
+                        completion requirement. You must use your judgment to verify that this
+                        participant has met the program's completion criteria before issuing
+                        a certificate.
+                    </p>
+
+                    <p>
+                        Review the participant's attendance records and program participation
+                        to confirm they have successfully completed the program.
+                    </p>
+
+                </div>
+
+
+                <!-- =========================================================
+                     COMPLETION DATE FIELD
+                ========================================================== -->
+
+                <div class="form-group">
+
+                    <label asp-for="CompletionDate">
+                        Completion Date
+                        <span>*</span>
+                    </label>
+
+                    <input asp-for="CompletionDate"
+                           type="date"
+                           class="form-control" />
+
+                    <span class="field-help">
+                        <i class="bi bi-calendar"></i>
+                        @if (Model.ProgramScheduleEnd.HasValue)
+                        {
+                            <text>
+                                Pre-filled from program schedule. Adjust if the actual completion date differs.
+                            </text>
+                        }
+                        else
+                        {
+                            <text>
+                                Enter the date this participant completed the program.
+                            </text>
+                        }
+                    </span>
+
+                    <span asp-validation-for="CompletionDate"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- =========================================================
+                     ATTESTATION CHECKBOX
+                ========================================================== -->
+
+                <div class="form-group checkbox-group">
+
+                    <label class="checkbox-label">
+
+                        <input asp-for="ConfirmCompletion"
+                               type="checkbox" />
+
+                        <span class="checkmark"></span>
+
+                        <span class="label-text">
+                            I confirm that this participant has completed all program
+                            requirements and is eligible to receive a certificate.
+                        </span>
+
+                    </label>
+
+                    <span asp-validation-for="ConfirmCompletion"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================================
+                 SUBMIT BUTTONS
+            ========================================================== -->
+
+            <div class="form-actions">
+
+                <a asp-action="Index"
+                   asp-route-programId="@Model.ProgramId"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    <i class="bi bi-award"></i>
+                    Issue Certificate
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+    /* Page root (standardized container — previously unstyled, so
+       content sat flush against the viewport edges). */
+    .issue-certificate-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+        box-sizing: border-box;
+    }
+
+    .issue-certificate-page .page-eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: #B7D7E5;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .issue-certificate-page .form-container {
+        width: 100%;
+    }
+
+    .issue-certificate-page .info-card {
+        background: var(--byp-surface);
+        border: 1px solid var(--byp-border);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .issue-certificate-page .info-card.warning {
+        border-left: 4px solid #ffc107;
+        background: rgba(255, 193, 7, 0.05);
+    }
+
+    .issue-certificate-page .info-card h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--byp-text);
+    }
+
+    .issue-certificate-page .info-card.warning h2 {
+        color: #ffc107;
+    }
+
+    .issue-certificate-page .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .issue-certificate-page .info-item label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--byp-text-muted);
+        margin-bottom: 4px;
+    }
+
+    .issue-certificate-page .info-item strong,
+    .issue-certificate-page .info-item span {
+        display: block;
+        color: var(--byp-text);
+    }
+
+    .issue-certificate-page .warning-message {
+        background: rgba(255, 193, 7, 0.1);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .issue-certificate-page .warning-message p {
+        margin-bottom: 12px;
+        line-height: 1.6;
+        color: var(--byp-text);
+    }
+
+    .issue-certificate-page .warning-message p:last-child {
+        margin-bottom: 0;
+    }
+
+    .issue-certificate-page .checkbox-group {
+        margin-top: 24px;
+    }
+
+    .issue-certificate-page .checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        cursor: pointer;
+    }
+
+    .issue-certificate-page .checkbox-label input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-top: 2px;
+        accent-color: var(--byp-accent);
+    }
+
+    .issue-certificate-page .checkbox-label .label-text {
+        flex: 1;
+        line-height: 1.6;
+        color: var(--byp-text);
+    }
+
+    .issue-certificate-page .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 32px;
+    }
+</style>

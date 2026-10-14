@@ -1,0 +1,1780 @@
+@model IEnumerable<BYPManagementSystem.Models.AttendanceRecord>
+
+@{
+    ViewData["Title"] = "My Attendance";
+
+    var records =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.AttendanceRecord>();
+
+    var eligibleRegistrations =
+        ViewBag.EligibleRegistrations
+            as List<BYPManagementSystem.Models.ProgramRegistration>
+        ?? new List<BYPManagementSystem.Models.ProgramRegistration>();
+
+    var photoSubmissions =
+        ViewBag.Submissions
+            as List<BYPManagementSystem.Models.AttendancePhotoSubmission>
+        ?? new List<BYPManagementSystem.Models.AttendancePhotoSubmission>();
+
+    var maxPhotoSizeMb =
+        ViewBag.MaxPhotoSizeMb as double? ?? 5;
+}
+
+
+<div class="my-attendance-page container py-4">
+
+    <section class="attendance-header">
+
+        <div class="attendance-header-content">
+
+            <div class="attendance-header-row">
+
+                <div class="attendance-icon">
+
+                    <i class="bi bi-clipboard-check-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <span class="attendance-eyebrow">
+                        YOUTH PORTAL
+                    </span>
+
+                    <h1 class="attendance-header-title">
+                        My Attendance
+                    </h1>
+
+                    <p class="attendance-header-subtitle">
+                        View your attendance records for approved program
+                        registrations.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="attendance-header-action">
+
+            <a asp-controller="Youth"
+               asp-action="Dashboard"
+               class="attendance-dashboard-button">
+
+                <i class="bi bi-grid"></i>
+
+                Dashboard
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         FEEDBACK
+    ========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+
+        <div class="photo-alert success">
+
+            <i class="bi bi-check-circle-fill"></i>
+
+            <p>
+                @TempData["Success"]
+            </p>
+
+        </div>
+
+    }
+
+    @if (TempData["Error"] != null)
+    {
+
+        <div class="photo-alert error">
+
+            <i class="bi bi-exclamation-triangle-fill"></i>
+
+            <p>
+                @TempData["Error"]
+            </p>
+
+        </div>
+
+    }
+
+
+    <!-- =========================================================
+         SUBMIT ATTENDANCE PHOTO
+         Only approved registrations owned by the signed-in youth
+         are offered. The server re-checks ownership on submit.
+    ========================================================== -->
+
+    <section class="attendance-card">
+
+        <div class="attendance-list-header">
+
+            <div class="attendance-list-title">
+
+                <div class="attendance-list-icon">
+
+                    <i class="bi bi-camera-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <span class="attendance-name-eyebrow">
+                        PROOF OF ATTENDANCE
+                    </span>
+
+                    <h2>
+                        Submit Attendance Photo
+                    </h2>
+
+                    <p>
+                        Send a picture as proof of attendance. A staff member
+                        will review it before your attendance is recorded.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        @if (eligibleRegistrations.Any())
+        {
+
+            <form asp-controller="Attendance"
+                  asp-action="SubmitPhoto"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="photo-upload-form">
+
+                @Html.AntiForgeryToken()
+
+                <div class="upload-field">
+
+                    <label class="upload-label" for="registrationId">
+                        Program
+                    </label>
+
+                    <select name="registrationId"
+                            class="photo-select"
+                            required>
+                        <option value="">
+                            Select an approved program
+                        </option>
+
+                        @foreach (var registration in eligibleRegistrations)
+                        {
+                            <option value="@registration.Id">
+                                @(registration.Program?.Name ?? "Program")
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="upload-field">
+
+                    <label class="upload-label" for="photo">
+                        Attendance Photo
+                    </label>
+
+                    <input type="file"
+                           name="photo"
+                           class="photo-file"
+                           accept="image/jpeg,image/png,image/webp"
+                           required />
+
+                    <small class="upload-help">
+                        JPG, PNG, or WebP. Maximum @maxPhotoSizeMb MB.
+                        Attendance is only marked after staff approval.
+                    </small>
+
+                </div>
+
+                <button type="submit" class="photo-submit-button">
+
+                    <i class="bi bi-cloud-arrow-up-fill"></i>
+
+                    Submit for Review
+
+                </button>
+
+            </form>
+
+        }
+        else
+        {
+
+            <div class="upload-empty">
+
+                <i class="bi bi-hourglass-split"></i>
+
+                <p>
+                    You do not have any approved program registrations yet.
+                    Attendance photos can be submitted once a registration
+                    is approved.
+                </p>
+
+            </div>
+
+        }
+
+    </section>
+
+
+    <section class="attendance-card">
+
+        <div class="attendance-list-header">
+
+            <div class="attendance-list-title">
+
+                <div class="attendance-list-icon">
+
+                    <i class="bi bi-table"></i>
+
+                </div>
+
+                <div>
+
+                    <span class="attendance-name-eyebrow">
+                        ATTENDANCE TRACKER
+                    </span>
+
+                    <h2>
+                        Attendance Records
+                    </h2>
+
+                    <p>
+                        Attendance recorded by staff for your approved
+                        program registrations.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="attendance-record-chip">
+
+                <i class="bi bi-clipboard2-data"></i>
+
+                @records.Count
+
+                @(records.Count == 1 ? "Record" : "Records")
+
+            </div>
+
+        </div>
+
+
+        @if (records.Any())
+        {
+
+            <div class="attendance-table-wrapper">
+
+                <table class="attendance-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                PROGRAM
+                            </th>
+
+                            <th>
+                                DATE
+                            </th>
+
+                            <th>
+                                STATUS
+                            </th>
+
+                            <th>
+                                NOTES
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var record in records)
+                        {
+
+                            var isPresent =
+                                record.Status == "Present";
+
+                            var isAbsent =
+                                record.Status == "Absent";
+
+                            var isLate =
+                                record.Status == "Late";
+
+                            var isExcused =
+                                record.Status == "Excused";
+
+
+                            <tr>
+
+                                <!-- PROGRAM -->
+
+                                <td>
+
+                                    <div class="attendance-program-cell">
+
+                                        <div class="attendance-program-icon">
+
+                                            <i class="bi bi-calendar-event"></i>
+
+                                        </div>
+
+                                        <div>
+
+                                            <div class="attendance-program-name">
+
+                                                @(record.Registration?.Program?.Name
+                                                    ?? "Program")
+
+                                            </div>
+
+                                            <div class="attendance-program-label">
+
+                                                Approved Registration
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- DATE -->
+
+                                <td>
+
+                                    <div class="attendance-date">
+
+                                        <i class="bi bi-calendar3"></i>
+
+                                        @(record.AttendanceDate.ToString(
+                                            "MMM dd, yyyy"))
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    @if (isPresent)
+                                    {
+
+                                        <span class="attendance-status status-present">
+
+                                            <span class="status-dot"></span>
+
+                                            Present
+
+                                        </span>
+
+                                    }
+                                    else if (isAbsent)
+                                    {
+
+                                        <span class="attendance-status status-absent">
+
+                                            <span class="status-dot"></span>
+
+                                            Absent
+
+                                        </span>
+
+                                    }
+                                    else if (isLate)
+                                    {
+
+                                        <span class="attendance-status status-late">
+
+                                            <span class="status-dot"></span>
+
+                                            Late
+
+                                        </span>
+
+                                    }
+                                    else if (isExcused)
+                                    {
+
+                                        <span class="attendance-status status-excused">
+
+                                            <span class="status-dot"></span>
+
+                                            Excused
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="attendance-status status-other">
+
+                                            <span class="status-dot"></span>
+
+                                            @record.Status
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- NOTES -->
+
+                                <td>
+
+                                    @(string.IsNullOrWhiteSpace(
+                                        record.Notes)
+                                        ? Html.Raw("<span class=\"attendance-no-notes\">—</span>")
+                                        : Html.Raw("<span class=\"attendance-notes\">"
+                                            + record.Notes + "</span>"))
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+        else
+        {
+
+            <div class="attendance-empty">
+
+                <div class="attendance-empty-icon">
+
+                    <i class="bi bi-clipboard-x"></i>
+
+                </div>
+
+                <h3>
+                    No Attendance Records Yet
+                </h3>
+
+                <p>
+                    Your attendance records will appear here after attendance
+                    is recorded for one of your approved programs.
+                </p>
+
+                <a asp-controller="Programs"
+                   asp-action="Index"
+                   class="attendance-empty-button">
+
+                    <i class="bi bi-calendar-event-fill"></i>
+
+                    Browse Available Programs
+
+                </a>
+
+            </div>
+
+        }
+
+    </section>
+
+
+    <!-- =========================================================
+         PHOTO SUBMISSION STATUS
+         Review outcome of every photo this youth has submitted.
+    ========================================================== -->
+
+    <section class="attendance-card">
+
+        <div class="attendance-list-header">
+
+            <div class="attendance-list-title">
+
+                <div class="attendance-list-icon">
+
+                    <i class="bi bi-images"></i>
+
+                </div>
+
+                <div>
+
+                    <span class="attendance-name-eyebrow">
+                        PHOTO SUBMISSIONS
+                    </span>
+
+                    <h2>
+                        Submitted Attendance Photos
+                    </h2>
+
+                    <p>
+                        Review status of the attendance photos you submitted.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="attendance-record-chip">
+
+                <i class="bi bi-camera"></i>
+
+                @photoSubmissions.Count
+
+                @(photoSubmissions.Count == 1 ? "Submission" : "Submissions")
+
+            </div>
+
+        </div>
+
+        @if (photoSubmissions.Any())
+        {
+
+            <div class="attendance-table-wrapper">
+
+                <table class="attendance-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                PROGRAM
+                            </th>
+
+                            <th>
+                                ATTENDANCE DATE
+                            </th>
+
+                            <th>
+                                SUBMITTED
+                            </th>
+
+                            <th>
+                                REVIEW STATUS
+                            </th>
+
+                            <th>
+                                REVIEW NOTES
+                            </th>
+
+                            <th>
+                                PHOTO
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var submission in photoSubmissions)
+                        {
+
+                            <tr>
+
+                                <!-- PROGRAM -->
+
+                                <td>
+
+                                    <div class="attendance-program-cell">
+
+                                        <div class="attendance-program-icon">
+
+                                            <i class="bi bi-calendar-event"></i>
+
+                                        </div>
+
+                                        <div>
+
+                                            <div class="attendance-program-name">
+
+                                                @(submission.Registration?.Program?.Name
+                                                    ?? "Program")
+
+                                            </div>
+
+                                            <div class="attendance-program-label">
+
+                                                Attendance Photo
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ATTENDANCE DATE -->
+
+                                <td>
+
+                                    <div class="attendance-date">
+
+                                        <i class="bi bi-calendar3"></i>
+
+                                        @(submission.AttendanceDate.ToString(
+                                            "MMM dd, yyyy"))
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- SUBMITTED -->
+
+                                <td>
+
+                                    <div class="attendance-date">
+
+                                        <i class="bi bi-clock"></i>
+
+                                        @(submission.SubmittedAt.ToLocalTime().ToString(
+                                            "MMM dd, yyyy HH:mm"))
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- REVIEW STATUS -->
+
+                                <td>
+
+                                    @if (submission.Status == "Approved")
+                                    {
+
+                                        <span class="attendance-status status-present">
+
+                                            <span class="status-dot"></span>
+
+                                            Approved
+
+                                        </span>
+
+                                    }
+                                    else if (submission.Status == "Rejected")
+                                    {
+
+                                        <span class="attendance-status status-absent">
+
+                                            <span class="status-dot"></span>
+
+                                            Rejected
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="attendance-status status-other">
+
+                                            <span class="status-dot"></span>
+
+                                            Pending Review
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- REVIEW NOTES -->
+
+                                <td>
+
+                                    @if (submission.Status == "Rejected" &&
+                                         !string.IsNullOrWhiteSpace(
+                                             submission.RejectionReason))
+                                    {
+
+                                        <span class="attendance-notes">
+
+                                            @submission.RejectionReason
+
+                                        </span>
+
+                                    }
+                                    else if (submission.Status == "Approved")
+                                    {
+
+                                        <span class="attendance-notes">
+
+                                            Attendance recorded as Present.
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="attendance-no-notes">
+
+                                            Awaiting staff review
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- PHOTO -->
+
+                                <td>
+
+                                    <a asp-action="SubmissionPhoto"
+                                       asp-route-id="@submission.Id"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="photo-view-link">
+
+                                        <i class="bi bi-eye-fill"></i>
+
+                                        View
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+        else
+        {
+
+            <div class="attendance-empty">
+
+                <div class="attendance-empty-icon">
+
+                    <i class="bi bi-camera"></i>
+
+                </div>
+
+                <h3>
+                    No Photos Submitted Yet
+                </h3>
+
+                <p>
+                    Attendance photos you submit will appear here with their
+                    review status.
+                </p>
+
+            </div>
+
+        }
+
+    </section>
+
+</div>
+
+
+<style>
+
+    /* ==========================================================
+       PAGE SHELL
+       ========================================================== */
+
+    .my-attendance-page {
+        width: 100%;
+        min-height: calc(100vh - 76px);
+        padding: 12px 18px 18px;
+        font-family: Arial, Helvetica, sans-serif;
+        background:
+            radial-gradient(
+                circle at 85% 5%,
+                rgba(12,144,150,.14),
+                transparent 26%
+            ),
+            #031716;
+        color: #FFFFFF;
+    }
+
+
+    /* ==========================================================
+       TOP HEADER
+       Same compact card as the Programs page: 84px minimum
+       height, 14px 18px padding, 13px radius.
+       ========================================================== */
+
+    .attendance-header {
+        position: relative;
+        overflow: hidden;
+        min-height: 84px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        border-radius: 13px;
+        background:
+            linear-gradient(
+                110deg,
+                rgba(12,144,150,.25),
+                rgba(5,45,46,.82)
+            );
+        border: 1px solid rgba(183,215,229,.16);
+        box-shadow: 0 8px 20px rgba(0,0,0,.14);
+    }
+
+    .attendance-header::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: -70px;
+        top: -100px;
+        border-radius: 50%;
+        background: rgba(105,199,232,.08);
+    }
+
+    .attendance-header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .attendance-header-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .attendance-icon {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        color: #8DDCF2;
+        background: rgba(105,199,232,.10);
+        border: 1px solid rgba(141,220,242,.18);
+        font-size: 16px;
+    }
+
+    .attendance-eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: #69DDF2;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .attendance-header-title {
+        margin: 0;
+        color: #FFFFFF;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .attendance-header-subtitle {
+        margin: 3px 0 0;
+        color: #C4DDE2;
+        font-size: 8px;
+    }
+
+    .attendance-header-action {
+        position: relative;
+        z-index: 3;
+    }
+
+    .attendance-dashboard-button {
+        min-height: 30px;
+        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 7px;
+        color: #052D2E;
+        background: #69C7E8;
+        font-size: 7px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(105,199,232,.15);
+    }
+
+    .attendance-dashboard-button:hover {
+        color: #052D2E;
+        background: #8DDCF2;
+        text-decoration: none;
+    }
+
+
+    /* ==========================================================
+       CONTENT CARD
+       Same wrapper as the Programs card.
+       ========================================================== */
+
+    .attendance-card {
+        margin-top: 8px;
+        padding: 10px;
+        border-radius: 11px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(5,45,46,.82),
+                rgba(3,23,22,.95)
+            );
+        border: 1px solid rgba(183,215,229,.14);
+    }
+
+    .attendance-list-header {
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .attendance-list-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .attendance-list-icon {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        background: rgba(105,199,232,.10);
+        color: #8DDCF2;
+        font-size: 12px;
+    }
+
+    .attendance-name-eyebrow {
+        display: block;
+        color: #69DDF2;
+        font-size: 6px;
+        font-weight: 700;
+        letter-spacing: .8px;
+    }
+
+    .attendance-list-title h2 {
+        margin: 2px 0 0;
+        color: #FFFFFF;
+        font-size: 12px;
+    }
+
+    .attendance-list-title p {
+        margin: 2px 0 0;
+        color: #769BA3;
+        font-size: 7px;
+    }
+
+    .attendance-record-chip {
+        padding: 4px 7px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 5px;
+        color: #8DDCF2;
+        background: rgba(105,199,232,.08);
+        border: 1px solid rgba(105,199,232,.14);
+        font-size: 7px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    /* ==========================================================
+       TABLE
+       ========================================================== */
+
+    .attendance-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 10px;
+        border: 1px solid rgba(105,199,232,.20);
+    }
+
+    .attendance-table {
+        width: 100%;
+        min-width: 720px;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+    .attendance-table thead {
+        background:
+            linear-gradient(
+                90deg,
+                #69C7E8,
+                #8DDCF2
+            );
+    }
+
+    .attendance-table th {
+        height: 32px;
+        padding: 0 8px;
+        vertical-align: middle;
+        text-align: left;
+        color: #06363B;
+        font-size: 7px;
+        font-weight: 800;
+        letter-spacing: .6px;
+        border-right: 1px solid rgba(5,45,46,.10);
+    }
+
+    .attendance-table th:last-child {
+        border-right: 0;
+    }
+
+    .attendance-table tbody tr {
+        height: 52px;
+        background: rgba(255,255,255,.035);
+        border-top: 1px solid rgba(183,215,229,.10);
+        transition: background .15s ease;
+    }
+
+    .attendance-table tbody tr:nth-child(even) {
+        background: rgba(105,199,232,.035);
+    }
+
+    .attendance-table tbody tr:hover {
+        background: rgba(105,199,232,.09);
+    }
+
+    .attendance-table td {
+        padding: 7px 8px;
+        vertical-align: middle;
+        color: #C8DDE1;
+        font-size: 7px;
+        border-right: 1px solid rgba(183,215,229,.07);
+    }
+
+    .attendance-table td:last-child {
+        border-right: 0;
+    }
+
+    .attendance-program-cell {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        overflow: hidden;
+    }
+
+    .attendance-program-icon {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        color: #69DDF2;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(105,199,232,.17),
+                rgba(12,144,150,.10)
+            );
+        border: 1px solid rgba(105,221,242,.16);
+        font-size: 11px;
+    }
+
+    .attendance-program-name {
+        color: #FFFFFF;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .attendance-program-label {
+        margin-top: 1px;
+        color: #668B94;
+        font-size: 6px;
+    }
+
+    .attendance-date {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #C3DADF;
+        white-space: nowrap;
+    }
+
+    .attendance-notes {
+        color: #AFC8CD;
+        font-size: 7px;
+        line-height: 1.4;
+    }
+
+    .attendance-no-notes {
+        color: #668B94;
+        font-style: italic;
+    }
+
+
+    /* ==========================================================
+       STATUS BADGES
+       Same pill + dot pattern as the Programs page.
+       ========================================================== */
+
+    .attendance-status {
+        min-height: 18px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 999px;
+        color: #8DDCF2;
+        background: rgba(104,157,184,.10);
+        border: 1px solid rgba(141,220,242,.15);
+        font-size: 6px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .attendance-status .status-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .status-present {
+        color: #69F0AE;
+        background: rgba(43,166,126,.12);
+        border-color: rgba(105,240,174,.17);
+    }
+
+    .status-absent {
+        color: #F56D78;
+        background: rgba(241,91,103,.10);
+        border-color: rgba(241,91,103,.17);
+    }
+
+    .status-late {
+        color: #F1A33C;
+        background: rgba(241,147,22,.10);
+        border-color: rgba(241,147,22,.17);
+    }
+
+    .status-excused {
+        color: #8DDCF2;
+        background: rgba(105,199,232,.10);
+        border-color: rgba(141,220,242,.15);
+    }
+
+    .status-other {
+        color: #B9BFFF;
+        background: rgba(104,125,184,.14);
+        border-color: rgba(185,191,255,.18);
+    }
+
+
+    /* ==========================================================
+       EMPTY STATE
+       Proportionate to the Programs empty state.
+       ========================================================== */
+
+    .attendance-empty {
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 10px;
+        text-align: center;
+    }
+
+    .attendance-empty-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: #8DDCF2;
+        background: rgba(105,199,232,.08);
+        border: 1px solid rgba(105,199,232,.13);
+        font-size: 14px;
+    }
+
+    .attendance-empty h3 {
+        margin: 6px 0 3px;
+        color: #FFFFFF;
+        font-size: 10px;
+    }
+
+    .attendance-empty p {
+        max-width: 320px;
+        margin: 0 0 10px;
+        color: #769BA3;
+        font-size: 7px;
+    }
+
+    .attendance-empty-button {
+        min-height: 30px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 7px;
+        color: #052D2E;
+        background: #69C7E8;
+        font-size: 7px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(105,199,232,.15);
+    }
+
+    .attendance-empty-button:hover {
+        color: #052D2E;
+        background: #8DDCF2;
+        text-decoration: none;
+    }
+
+
+    /* ==========================================================
+       LIGHT MODE
+       theme.css refreshes html[data-theme="light"] with its own
+       white page background, so the youth page paints over it.
+       ========================================================== */
+
+    html[data-theme="light"] .my-attendance-page {
+        background: linear-gradient(
+            135deg,
+            #f5fbff 0%,
+            #f9f5ff 52%,
+            #f1fff8 100%
+        );
+        color: #21344a;
+    }
+
+    html[data-theme="light"] .attendance-header,
+    html[data-theme="light"] .attendance-card {
+        background: rgba(255,255,255,.88);
+        border-color: rgba(68,105,140,.14);
+        box-shadow: 0 8px 24px rgba(36,78,113,.08);
+    }
+
+    html[data-theme="light"] .attendance-header::after {
+        background: rgba(12,144,150,.05);
+    }
+
+    html[data-theme="light"] .attendance-header-title {
+        color: #1f3650;
+    }
+
+    html[data-theme="light"] .attendance-header-subtitle {
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .attendance-eyebrow {
+        color: #0c9096;
+    }
+
+    html[data-theme="light"] .attendance-icon,
+    html[data-theme="light"] .attendance-list-icon {
+        background: rgba(12,144,150,.10);
+        color: #0c9096;
+        border-color: rgba(12,144,150,.18);
+    }
+
+    html[data-theme="light"] .attendance-dashboard-button {
+        color: #fff;
+        background: #0c9096;
+    }
+
+    html[data-theme="light"] .attendance-dashboard-button:hover {
+        color: #fff;
+        background: #0a7c81;
+    }
+
+    html[data-theme="light"] .attendance-list-title h2 {
+        color: #1f3650;
+    }
+
+    html[data-theme="light"] .attendance-list-title p {
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .attendance-name-eyebrow {
+        color: #0c9096;
+    }
+
+    html[data-theme="light"] .attendance-record-chip {
+        color: #0c9096;
+        background: rgba(12,144,150,.08);
+        border-color: rgba(12,144,150,.18);
+    }
+
+    html[data-theme="light"] .attendance-table th {
+        background: #eef7fb;
+        color: #48647c;
+    }
+
+    html[data-theme="light"] .attendance-table tbody tr {
+        background: rgba(22,132,141,.03);
+        border-top-color: rgba(68,105,140,.10);
+    }
+
+    html[data-theme="light"] .attendance-table tbody tr:nth-child(even) {
+        background: rgba(12,144,150,.05);
+    }
+
+    html[data-theme="light"] .attendance-table tbody tr:hover {
+        background: rgba(12,144,150,.09);
+    }
+
+    html[data-theme="light"] .attendance-table td {
+        color: #1f3650;
+        border-right-color: rgba(68,105,140,.08);
+    }
+
+    html[data-theme="light"] .attendance-program-name {
+        color: #1f3650;
+    }
+
+    html[data-theme="light"] .attendance-program-label {
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .attendance-program-icon {
+        background: rgba(12,144,150,.10);
+        color: #0c9096;
+        border-color: rgba(12,144,150,.18);
+    }
+
+    html[data-theme="light"] .attendance-date {
+        color: #3c5067;
+    }
+
+    html[data-theme="light"] .attendance-notes {
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .attendance-no-notes {
+        color: #8fa3b5;
+    }
+
+    html[data-theme="light"] .attendance-status {
+        color: #0a7c81;
+        background: rgba(12,144,150,.08);
+        border-color: rgba(12,144,150,.18);
+    }
+
+    html[data-theme="light"] .status-present {
+        color: #14804a;
+        background: rgba(43,166,126,.10);
+        border-color: rgba(43,166,126,.22);
+    }
+
+    html[data-theme="light"] .status-absent {
+        color: #c12b3c;
+        background: rgba(220,53,69,.10);
+        border-color: rgba(220,53,69,.22);
+    }
+
+    html[data-theme="light"] .status-late {
+        color: #976600;
+        background: rgba(241,147,22,.10);
+        border-color: rgba(241,147,22,.24);
+    }
+
+    html[data-theme="light"] .status-excused {
+        color: #115bc9;
+        background: rgba(21,91,201,.08);
+        border-color: rgba(21,91,201,.20);
+    }
+
+    html[data-theme="light"] .status-other {
+        color: #5157ac;
+        background: rgba(104,125,184,.10);
+        border-color: rgba(104,125,184,.18);
+    }
+
+    html[data-theme="light"] .attendance-empty h3 {
+        color: #1f3650;
+    }
+
+    html[data-theme="light"] .attendance-empty p {
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .attendance-empty-icon {
+        background: rgba(12,144,150,.08);
+        color: #0c9096;
+        border-color: rgba(12,144,150,.18);
+    }
+
+    html[data-theme="light"] .attendance-empty-button {
+        color: #fff;
+        background: #0c9096;
+    }
+
+    html[data-theme="light"] .attendance-empty-button:hover {
+        color: #fff;
+        background: #0a7c81;
+    }
+
+
+    /* ==========================================================
+       DARK THEME GUARDS
+       theme.css only touches shared surface classes; these keep
+       the page's own classes consistent on dark.
+       ========================================================== */
+
+    html[data-theme="dark"] .my-attendance-page {
+        background:
+            radial-gradient(
+                circle at 85% 5%,
+                rgba(12,144,150,.14),
+                transparent 26%
+            ),
+            #031716;
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .attendance-header,
+    html[data-theme="dark"] .attendance-card {
+        background:
+            linear-gradient(
+                135deg,
+                rgba(5,45,46,.82),
+                rgba(3,23,22,.95)
+            );
+        border-color: rgba(183,215,229,.16);
+        box-shadow: 0 8px 20px rgba(0,0,0,.14);
+    }
+
+    html[data-theme="dark"] .attendance-table tbody tr {
+        background: rgba(255,255,255,.035);
+        border-top-color: rgba(183,215,229,.10);
+    }
+
+    html[data-theme="dark"] .attendance-table tbody tr:nth-child(even) {
+        background: rgba(105,199,232,.035);
+    }
+
+    html[data-theme="dark"] .attendance-table tbody tr:hover {
+        background: rgba(105,199,232,.09);
+    }
+
+
+    /* ==========================================================
+       PHOTO UPLOAD FORM
+       ========================================================== */
+
+    .photo-upload-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+        align-items: end;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 9px;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(183,215,229,.12);
+    }
+
+    .upload-field {
+        min-width: 0;
+    }
+
+    .upload-label {
+        display: block;
+        margin-bottom: 4px;
+        color: #8DDCF2;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: .5px;
+    }
+
+    .photo-select,
+    .photo-file {
+        width: 100%;
+        min-height: 30px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(105,199,232,.22);
+        background: rgba(3,23,22,.65);
+        color: #FFFFFF;
+        font-family: inherit;
+        font-size: 7px;
+        outline: none;
+    }
+
+    .photo-select:focus,
+    .photo-file:focus {
+        border-color: #69C7E8;
+        box-shadow: 0 0 0 3px rgba(105,199,232,.12);
+    }
+
+    .photo-file::file-selector-button {
+        margin-right: 6px;
+        padding: 3px 7px;
+        border: 0;
+        border-radius: 5px;
+        background: #69C7E8;
+        color: #052D2E;
+        font-size: 7px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .upload-help {
+        display: block;
+        margin-top: 4px;
+        color: #668B94;
+        font-size: 6px;
+        line-height: 1.4;
+    }
+
+    .photo-submit-button {
+        min-height: 30px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border: 0;
+        border-radius: 6px;
+        background: #69C7E8;
+        color: #052D2E;
+        font-family: inherit;
+        font-size: 7px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(105,199,232,.15);
+        white-space: nowrap;
+    }
+
+    .photo-submit-button:hover {
+        background: #8DDCF2;
+    }
+
+    .upload-empty {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(105,199,232,.07);
+        border: 1px solid rgba(105,199,232,.14);
+        color: #AFC8CD;
+        font-size: 7px;
+    }
+
+    .upload-empty i {
+        color: #8DDCF2;
+        font-size: 12px;
+    }
+
+    .upload-empty p {
+        margin: 0;
+    }
+
+    .photo-view-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 18px;
+        padding: 0 6px;
+        border-radius: 5px;
+        background: rgba(105,199,232,.10);
+        border: 1px solid rgba(105,199,232,.20);
+        color: #69DDF2;
+        font-size: 6px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .photo-view-link:hover {
+        background: rgba(105,199,232,.18);
+        color: #8DDCF2;
+        text-decoration: none;
+    }
+
+
+    /* ==========================================================
+       FEEDBACK ALERTS
+       ========================================================== */
+
+    .photo-alert {
+        margin-top: 8px;
+        padding: 9px 11px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 8px;
+        font-size: 7px;
+        font-weight: 700;
+    }
+
+    .photo-alert p {
+        margin: 0;
+    }
+
+    .photo-alert.success {
+        background: rgba(43,166,126,.12);
+        border: 1px solid rgba(105,240,174,.20);
+        color: #69F0AE;
+    }
+
+    .photo-alert.error {
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.20);
+        color: #F56D78;
+    }
+
+
+    /* LIGHT MODE */
+
+    html[data-theme="light"] .photo-upload-form {
+        background: rgba(12,144,150,.04);
+        border-color: rgba(12,144,150,.16);
+    }
+
+    html[data-theme="light"] .upload-label {
+        color: #0c9096;
+    }
+
+    html[data-theme="light"] .photo-select,
+    html[data-theme="light"] .photo-file {
+        background: #FFFFFF;
+        color: #1f3650;
+        border-color: rgba(12,144,150,.28);
+    }
+
+    html[data-theme="light"] .photo-select:focus,
+    html[data-theme="light"] .photo-file:focus {
+        border-color: #0c9096;
+        box-shadow: 0 0 0 3px rgba(12,144,150,.10);
+    }
+
+    html[data-theme="light"] .photo-file::file-selector-button {
+        background: #0c9096;
+        color: #FFFFFF;
+    }
+
+    html[data-theme="light"] .upload-help {
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .photo-submit-button {
+        background: #0c9096;
+        color: #FFFFFF;
+    }
+
+    html[data-theme="light"] .photo-submit-button:hover {
+        background: #0a7c81;
+    }
+
+    html[data-theme="light"] .upload-empty {
+        background: rgba(12,144,150,.06);
+        border-color: rgba(12,144,150,.16);
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .upload-empty i {
+        color: #0c9096;
+    }
+
+    html[data-theme="light"] .photo-view-link {
+        background: rgba(12,144,150,.08);
+        border-color: rgba(12,144,150,.20);
+        color: #0c9096;
+    }
+
+    html[data-theme="light"] .photo-view-link:hover {
+        background: rgba(12,144,150,.14);
+        color: #0a7c81;
+    }
+
+    html[data-theme="light"] .photo-alert.success {
+        background: rgba(43,166,126,.10);
+        border-color: rgba(43,166,126,.25);
+        color: #14804a;
+    }
+
+    html[data-theme="light"] .photo-alert.error {
+        background: rgba(220,53,69,.08);
+        border-color: rgba(220,53,69,.25);
+        color: #c12b3c;
+    }
+
+
+    /* ==========================================================
+       RESPONSIVE
+       ========================================================== */
+
+    @@media (max-width: 700px) {
+
+        .my-attendance-page {
+            padding: 15px;
+        }
+
+        .attendance-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .attendance-header-action {
+            width: 100%;
+        }
+
+        .attendance-dashboard-button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .attendance-list-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .photo-upload-form {
+            grid-template-columns: 1fr;
+        }
+
+        .attendance-empty {
+            min-height: 110px;
+        }
+
+    }
+
+</style>

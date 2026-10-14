@@ -1,0 +1,2312 @@
+@model BYPManagementSystem.Controllers.ProfileController.ProfileInputModel
+
+@{
+    ViewData["Title"] = "My Profile";
+
+    var role =
+        ViewBag.Role as string
+        ?? "User";
+
+    var hasYouthProfile =
+        ViewBag.HasYouthProfile is bool value
+        && value;
+
+    var participant =
+        ViewBag.Participant
+        as BYPManagementSystem.Models.YouthParticipant;
+
+    var createdAt =
+        ViewBag.CreatedAt as DateTime?;
+
+    var profileImagePath = Model.ProfileImagePath;
+}
+
+
+<div class="profile-page">
+
+    <!-- ==========================================================
+         HEADER
+    =========================================================== -->
+
+    <div class="profile-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+                <div class="header-icon">
+
+                    <i class="bi bi-person-circle"></i>
+
+                </div>
+                <div>
+
+                    <span class="profile-eyebrow">
+                        ACCOUNT & PROFILE
+                    </span>
+
+                    <h1>
+                        My Profile
+                    </h1>
+
+                    <p>
+                        View and update your account and permitted
+                        personal information.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="profile-header-actions">
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin"
+                   asp-action="Dashboard"
+                   class="profile-button secondary">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Admin Dashboard
+
+                </a>
+            }
+            else if (User.IsInRole("Staff"))
+            {
+                <a asp-controller="Staff"
+                   asp-action="Dashboard"
+                   class="profile-button secondary">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Staff Dashboard
+
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Youth"
+                   asp-action="Dashboard"
+                   class="profile-button secondary">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Youth Dashboard
+
+                </a>
+            }
+
+        </div>
+
+    </div>
+
+    <section class="profile-picture-card">
+        @if (!string.IsNullOrWhiteSpace(profileImagePath))
+        {
+            <img src="@profileImagePath" alt="Profile picture" class="profile-picture-preview" />
+        }
+        else
+        {
+            <div class="profile-picture-placeholder"><i class="bi bi-person-fill"></i></div>
+        }
+        <div>
+            <strong>Profile Picture</strong>
+            <p>Upload or replace your profile picture below.</p>
+        </div>
+    </section>
+
+
+    <!-- ==========================================================
+         SUCCESS MESSAGE
+    =========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="profile-alert success">
+
+            <i class="bi bi-check-circle-fill"></i>
+
+            <span>
+                @TempData["Success"]
+            </span>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         ERROR MESSAGE
+    =========================================================== -->
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="profile-alert error">
+
+            <i class="bi bi-exclamation-circle-fill"></i>
+
+            <div>
+
+                <strong>
+                    Please check the information below.
+                </strong>
+
+                <div class="profile-validation-list">
+
+                    @foreach (
+                        var error in
+                        ViewData.ModelState.Values
+                            .SelectMany(v => v.Errors)
+                    )
+                    {
+                        <div>
+                            @error.ErrorMessage
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         PROFILE SUMMARY
+    =========================================================== -->
+
+    <div class="profile-summary-card">
+
+        <div class="profile-avatar">
+
+            <i class="bi bi-person-fill"></i>
+
+        </div>
+
+
+        <div class="profile-summary-content">
+
+            <span class="summary-label">
+                CURRENT ACCOUNT
+            </span>
+
+            <h2>
+
+                @(
+                    string.IsNullOrWhiteSpace(
+                        Model.FirstName
+                    )
+                    ? User.Identity?.Name ?? "User"
+                    : $"{Model.FirstName} {Model.LastName}"
+                )
+
+            </h2>
+
+            <p>
+                @Model.Email
+            </p>
+
+        </div>
+
+
+        <div class="profile-summary-right">
+
+            <span class="role-label">
+                ROLE
+            </span>
+
+            <span class="role-badge">
+                @role
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         MAIN CONTENT
+    =========================================================== -->
+
+    <div class="profile-columns">
+
+
+        <!-- ======================================================
+             EDIT PROFILE
+        ======================================================= -->
+
+        <section class="profile-card">
+
+            <div class="card-header">
+
+                <div class="card-header-icon">
+
+                    <i class="bi bi-person-gear"></i>
+
+                </div>
+
+                <div>
+
+                    <span class="card-eyebrow">
+                        ACCOUNT INFORMATION
+                    </span>
+
+                    <h3>
+                        Profile Details
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <form asp-controller="Profile"
+                  asp-action="Index"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="profile-form">
+
+                @Html.AntiForgeryToken()
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-image"></i>
+                        <span>Profile Picture</span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ProfileImage">Upload a new picture</label>
+                        <input asp-for="ProfileImage" type="file" class="form-control"
+                               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+                        <span asp-validation-for="ProfileImage" class="field-error"></span>
+                        <small>JPG, JPEG, PNG, or WEBP; maximum 5 MB.</small>
+                    </div>
+                </div>
+
+
+                <!-- ==================================================
+                     EMAIL
+                =================================================== -->
+
+                <div class="form-section">
+
+                    <div class="form-section-title">
+
+                        <i class="bi bi-envelope"></i>
+
+                        <span>
+                            Account
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label asp-for="Email">
+                            Email Address
+                        </label>
+
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="Enter your email address"
+                               autocomplete="email" />
+
+                        <span asp-validation-for="Email"
+                              class="field-error">
+                        </span>
+
+                        <small>
+                            This email is used for your account login.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     PERSONAL INFORMATION
+                =================================================== -->
+
+                @if (User.IsInRole("User"))
+                {
+
+                    <div class="form-section">
+
+                        <div class="form-section-title">
+
+                            <i class="bi bi-person"></i>
+
+                            <span>
+                                Personal Information
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+
+                            <!-- FIRST NAME -->
+
+                            <div class="form-group">
+
+                                <label asp-for="FirstName">
+                                    First Name
+                                </label>
+
+                                <input asp-for="FirstName"
+                                       class="form-control"
+                                       placeholder="Enter first name"
+                                       autocomplete="given-name" />
+
+                                <span asp-validation-for="FirstName"
+                                      class="field-error">
+                                </span>
+
+                            </div>
+
+
+                            <!-- LAST NAME -->
+
+                            <div class="form-group">
+
+                                <label asp-for="LastName">
+                                    Last Name
+                                </label>
+
+                                <input asp-for="LastName"
+                                       class="form-control"
+                                       placeholder="Enter last name"
+                                       autocomplete="family-name" />
+
+                                <span asp-validation-for="LastName"
+                                      class="field-error">
+                                </span>
+
+                            </div>
+
+
+                            <!-- BIRTH DATE -->
+
+                            <div class="form-group">
+
+                                <label asp-for="BirthDate">
+                                    Birth Date
+                                </label>
+
+                                <input asp-for="BirthDate"
+                                       type="date"
+                                       class="form-control" />
+
+                                <span asp-validation-for="BirthDate"
+                                      class="field-error">
+                                </span>
+
+                            </div>
+
+
+                            <!-- CONTACT -->
+
+                            <div class="form-group">
+
+                                <label asp-for="ContactNumber">
+                                    Contact Number
+                                </label>
+
+                                <input asp-for="ContactNumber"
+                                       class="form-control"
+                                       placeholder="Enter contact number"
+                                       autocomplete="tel" />
+
+                                <span asp-validation-for="ContactNumber"
+                                      class="field-error">
+                                </span>
+
+                            </div>
+
+
+                            <!-- BARANGAY -->
+
+                            <div class="form-group full">
+
+                                <label asp-for="Barangay">
+                                    Barangay
+                                </label>
+
+                                <input asp-for="Barangay"
+                                       class="form-control"
+                                       placeholder="Enter barangay" />
+
+                                <span asp-validation-for="Barangay"
+                                      class="field-error">
+                                </span>
+
+                            </div>
+
+
+                            <!-- ADDRESS -->
+
+                            <div class="form-group full">
+
+                                <label asp-for="Address">
+                                    Address
+                                </label>
+
+                                <textarea asp-for="Address"
+                                          class="form-control"
+                                          rows="3"
+                                          placeholder="Enter complete address"></textarea>
+
+                                <span asp-validation-for="Address"
+                                      class="field-error">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                }
+
+
+                <!-- ==================================================
+                     SAVE
+                =================================================== -->
+
+                <div class="form-actions">
+
+                    <a asp-controller="Home"
+                       asp-action="Index"
+                       class="cancel-button">
+
+                        Cancel
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="save-button">
+
+                        <i class="bi bi-check2-circle"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- ======================================================
+             ACCOUNT STATUS
+        ======================================================= -->
+
+        <aside class="profile-side">
+
+
+            <!-- ACCOUNT STATUS -->
+
+            <div class="side-card">
+
+                <div class="side-card-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-shield-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            ACCOUNT STATUS
+                        </span>
+
+                        <h3>
+                            Active
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        Role
+                    </span>
+
+                    <strong>
+                        @role
+                    </strong>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        Account Email
+                    </span>
+
+                    <strong class="break-text">
+                        @Model.Email
+                    </strong>
+
+                </div>
+
+
+                @if (createdAt.HasValue)
+                {
+
+                    <div class="status-row">
+
+                        <span>
+                            Youth Profile Created
+                        </span>
+
+                        <strong>
+                            @(createdAt.Value.ToLocalTime().ToString("MMM dd, yyyy"))
+                        </strong>
+
+                    </div>
+
+                }
+
+            </div>
+
+
+            <!-- SECURITY / CHANGE PASSWORD -->
+
+            <div class="side-card">
+
+                <div class="side-card-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-key"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            SECURITY
+                        </span>
+
+                        <h3>
+                            Password
+                        </h3>
+
+                    </div>
+
+                </div>
+
+                <p class="side-card-text">
+                    Update the password used to sign in to your account.
+                </p>
+
+                <a asp-controller="Profile"
+                   asp-action="ChangePassword"
+                   class="btn btn-outline-primary w-100">
+
+                    <i class="bi bi-key me-1"></i>
+
+                    Change Password
+
+                </a>
+
+            </div>
+
+
+            <!-- YOUTH PROFILE STATUS -->
+
+            @if (User.IsInRole("User"))
+            {
+
+                <div class="side-card">
+
+                    <div class="side-card-header">
+
+                        <div class="side-icon">
+
+                            <i class="bi bi-person-vcard"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                YOUTH PROFILE
+                            </span>
+
+                            <h3>
+
+                                @(hasYouthProfile
+                                    ? "Complete"
+                                    : "Not Complete")
+
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    @if (hasYouthProfile)
+                    {
+
+                        <div class="profile-complete-box">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            <p>
+                                Your Youth Participant profile
+                                is connected to your account.
+                            </p>
+
+                        </div>
+
+                    }
+                    else
+                    {
+
+                        <div class="profile-incomplete-box">
+
+                            <i class="bi bi-exclamation-circle-fill"></i>
+
+                            <p>
+                                Complete your personal information
+                                so your account can be connected to
+                                your Youth Participant profile.
+                            </p>
+
+                        </div>
+
+                    }
+
+                </div>
+
+            }
+
+        </aside>
+
+    </div>
+
+
+    <!-- ==========================================================
+         USER QUICK LINKS
+    =========================================================== -->
+
+    @if (User.IsInRole("User"))
+    {
+
+        <section class="profile-links-card">
+
+            <div class="profile-links-header">
+
+                <div>
+
+                    <span>
+                        QUICK ACCESS
+                    </span>
+
+                    <h2>
+                        Youth Portal
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-links-grid">
+
+                <a asp-controller="Youth"
+                   asp-action="Dashboard"
+                   class="quick-link">
+
+                    <div class="quick-link-icon">
+
+                        <i class="bi bi-speedometer2"></i>
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Dashboard
+                        </strong>
+
+                        <span>
+                            View your activity summary.
+                        </span>
+
+                    </div>
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </a>
+
+
+                <a asp-controller="Programs"
+                   asp-action="Index"
+                   class="quick-link">
+
+                    <div class="quick-link-icon">
+
+                        <i class="bi bi-calendar-event"></i>
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Programs
+                        </strong>
+
+                        <span>
+                            Browse available youth programs.
+                        </span>
+
+                    </div>
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </a>
+
+
+                <a asp-controller="Registration"
+                   asp-action="MyRegistrations"
+                   class="quick-link">
+
+                    <div class="quick-link-icon">
+
+                        <i class="bi bi-person-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            My Registrations
+                        </strong>
+
+                        <span>
+                            Check your registration status.
+                        </span>
+
+                    </div>
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </a>
+
+
+                <a asp-controller="Attendance"
+                   asp-action="MyAttendance"
+                   class="quick-link">
+
+                    <div class="quick-link-icon">
+
+                        <i class="bi bi-clipboard-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            My Attendance
+                        </strong>
+
+                        <span>
+                            View your participation history.
+                        </span>
+
+                    </div>
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </a>
+
+            </div>
+
+        </section>
+
+    }
+
+</div>
+
+
+<style>
+
+    /* ============================================================
+       PAGE
+    ============================================================ */
+
+    .profile-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+    }
+
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+
+    .profile-header {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 14px;
+
+        margin-bottom: 12px;
+
+    }
+
+
+    .profile-eyebrow {
+
+        color: #7c8797;
+
+        font-size: 9px;
+
+        font-weight: 700;
+
+        letter-spacing: 1.5px;
+
+    }
+
+
+    .profile-header h1 {
+
+        margin: 5px 0 3px;
+
+        color: #202b3c;
+
+        font-size: 20px;
+
+        font-weight: 700;
+
+    }
+
+
+    .profile-header p {
+
+        margin: 0;
+
+        color: #7d8797;
+
+        font-size: 10px;
+
+    }
+
+
+    .profile-header-actions {
+
+        display: flex;
+
+        gap: 10px;
+
+    }
+
+
+    .profile-button {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 6px;
+
+        min-height: 32px;
+
+        padding: 0 11px;
+
+        border-radius: 8px;
+
+        text-decoration: none;
+
+        font-size: .74rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .profile-button.secondary {
+
+        background: white;
+
+        border: 1px solid #dfe4ec;
+
+        color: #344054;
+
+    }
+
+
+    .profile-button:hover {
+
+        text-decoration: none;
+
+    }
+
+
+    /* ============================================================
+       ALERT
+    ============================================================ */
+
+    .profile-alert {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 10px;
+
+        padding: 10px 12px;
+
+        margin-bottom: 10px;
+
+        border-radius: 11px;
+
+        font-size: .74rem;
+
+    }
+
+
+    .profile-alert.success {
+
+        background: #edf5ef;
+
+        border: 1px solid #dcebdd;
+
+        color: #4c7057;
+
+    }
+
+
+    .profile-alert.error {
+
+        background: #f8eeee;
+
+        border: 1px solid #efdede;
+
+        color: #945b5b;
+
+    }
+
+
+    .profile-validation-list {
+
+        margin-top: 5px;
+
+        color: #955d5d;
+
+    }
+
+
+    /* ============================================================
+       SUMMARY
+    ============================================================ */
+
+    .profile-summary-card {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 10px 12px;
+
+        margin-bottom: 10px;
+
+        background: white;
+
+        border: 1px solid #e5e9ef;
+
+        border-radius: 11px;
+
+        box-shadow: 0 7px 25px rgba(31, 43, 70, .04);
+
+    }
+
+
+    .profile-avatar {
+
+        width: 44px;
+
+        height: 44px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 14px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        font-size: 1.05rem;
+
+    }
+
+
+    .profile-summary-content {
+
+        flex: 1;
+
+        min-width: 0;
+
+    }
+
+
+    .summary-label {
+
+        display: block;
+
+        color: #8b95a4;
+
+        font-size: .62rem;
+
+        font-weight: 700;
+
+        letter-spacing: .12em;
+
+    }
+
+
+    .profile-summary-content h2 {
+
+        margin: 3px 0 1px;
+
+        color: #273244;
+
+        font-size: 1.05rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .profile-summary-content p {
+
+        margin: 0;
+
+        color: #828c9b;
+
+        font-size: .72rem;
+
+        word-break: break-word;
+
+    }
+
+
+    .profile-summary-right {
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: flex-end;
+
+        gap: 5px;
+
+    }
+
+
+    .role-label {
+
+        color: #98a0ad;
+
+        font-size: .59rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .role-badge {
+
+        display: inline-flex;
+
+        padding: 6px 10px;
+
+        border-radius: 999px;
+
+        background: #eef2f7;
+
+        color: #596579;
+
+        font-size: .65rem;
+
+        font-weight: 700;
+
+    }
+
+
+    /* ============================================================
+       COLUMNS
+    ============================================================ */
+
+    .profile-columns {
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1.65fr)
+            minmax(260px, .75fr);
+
+        gap: 12px;
+
+        margin-bottom: 12px;
+
+    }
+
+
+    .profile-card,
+
+    .side-card,
+
+    .profile-links-card {
+
+        background: white;
+
+        border: 1px solid #e5e9ef;
+
+        border-radius: 11px;
+
+        box-shadow: 0 6px 24px rgba(31, 43, 70, .04);
+
+    }
+
+
+    .profile-card {
+
+        overflow: hidden;
+
+    }
+
+
+    /* ============================================================
+       CARD HEADER
+    ============================================================ */
+
+    .card-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        padding: 10px 12px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .card-header-icon {
+
+        width: 32px;
+
+        height: 32px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 10px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .card-eyebrow {
+
+        display: block;
+
+        margin-bottom: 2px;
+
+        color: #8a94a4;
+
+        font-size: .61rem;
+
+        font-weight: 700;
+
+        letter-spacing: .11em;
+
+    }
+
+
+    .card-header h3 {
+
+        margin: 0;
+
+        color: #263143;
+
+        font-size: .98rem;
+
+        font-weight: 800;
+
+    }
+
+
+    /* ============================================================
+       FORM
+    ============================================================ */
+
+    .profile-form {
+
+        padding: 12px 14px;
+
+    }
+
+
+    .form-section {
+
+        padding-bottom: 9px;
+
+        margin-bottom: 9px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .form-section-title {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        margin-bottom: 9px;
+
+        color: #394457;
+
+        font-size: .74rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .form-section-title i {
+
+        color: #7d8899;
+
+    }
+
+
+    .form-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 10px;
+
+    }
+
+
+    .form-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .form-group.full {
+
+        grid-column: 1 / -1;
+
+    }
+
+
+    .form-group label {
+
+        margin-bottom: 5px;
+
+        color: #485365;
+
+        font-size: .69rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .form-control {
+
+        min-height: 36px;
+
+        padding: 7px 10px;
+
+        border: 1px solid #dfe4ec;
+
+        border-radius: 10px;
+
+        color: #263143;
+
+        background: #fff;
+
+        font-size: .77rem;
+
+        box-shadow: none;
+
+    }
+
+
+    textarea.form-control {
+
+        min-height: 64px;
+
+        resize: vertical;
+
+    }
+
+
+    .form-control:focus {
+
+        border-color: #b9c1cd;
+
+        box-shadow: 0 0 0 3px rgba(31, 43, 70, .06);
+
+    }
+
+
+    .form-group small {
+
+        margin-top: 4px;
+
+        color: #9aa2ae;
+
+        font-size: .61rem;
+
+        line-height: 1.4;
+
+    }
+
+
+    .field-error {
+
+        margin-top: 4px;
+
+        color: #a05f5f;
+
+        font-size: .62rem;
+
+    }
+
+
+    /* ============================================================
+       FORM ACTIONS
+    ============================================================ */
+
+    .form-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 9px;
+
+    }
+
+
+    .cancel-button,
+
+    .save-button {
+
+        min-height: 34px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 7px;
+
+        padding: 0 14px;
+
+        border-radius: 10px;
+
+        font-size: .72rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .cancel-button {
+
+        color: #667085;
+
+        background: #f2f4f7;
+
+    }
+
+
+    .save-button {
+
+        border: 0;
+
+        background: #1f2b46;
+
+        color: white;
+
+    }
+
+
+    .cancel-button:hover {
+
+        color: #344054;
+
+        text-decoration: none;
+
+    }
+
+
+    /* ============================================================
+       SIDE CARDS
+    ============================================================ */
+
+    .profile-side {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 10px;
+
+    }
+
+
+    .side-card {
+
+        padding: 10px 12px;
+
+    }
+
+
+    .side-card-text {
+
+        font-size: .78rem;
+
+        line-height: 1.45;
+
+        color: #64748b;
+
+        margin: 0 0 10px;
+
+    }
+
+
+    html[data-theme="dark"] .side-card-text {
+
+        color: #94a3b8;
+
+    }
+
+
+    .side-card-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        margin-bottom: 9px;
+
+    }
+
+
+    .side-icon {
+
+        width: 32px;
+
+        height: 32px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 10px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .side-card-header span {
+
+        display: block;
+
+        color: #9098a5;
+
+        font-size: .59rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .side-card-header h3 {
+
+        margin: 3px 0 0;
+
+        color: #2b3648;
+
+        font-size: .82rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .status-row {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        justify-content: space-between;
+
+        gap: 15px;
+
+        padding: 8px 0;
+
+        border-top: 1px solid #f0f2f5;
+
+    }
+
+
+    .status-row span {
+
+        color: #808a99;
+
+        font-size: .65rem;
+
+    }
+
+
+    .status-row strong {
+
+        color: #354153;
+
+        font-size: .65rem;
+
+        text-align: right;
+
+        word-break: break-word;
+
+    }
+
+
+    .break-text {
+
+        max-width: 150px;
+
+    }
+
+
+    .profile-complete-box,
+
+    .profile-incomplete-box {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+        padding: 11px;
+
+        border-radius: 10px;
+
+        font-size: .66rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    .profile-complete-box {
+
+        background: #edf5ef;
+
+        color: #52725b;
+
+    }
+
+
+    .profile-incomplete-box {
+
+        background: #f4f1ea;
+
+        color: #7e6d4d;
+
+    }
+
+
+    .profile-complete-box p,
+
+    .profile-incomplete-box p {
+
+        margin: 0;
+
+    }
+
+
+  
+
+ 
+
+
+    /* ============================================================
+       QUICK LINKS
+    ============================================================ */
+
+    .profile-links-card {
+
+        padding: 12px 14px;
+
+    }
+
+
+    .profile-links-header span {
+
+        display: block;
+
+        color: #8b95a4;
+
+        font-size: .62rem;
+
+        font-weight: 700;
+
+        letter-spacing: .12em;
+
+    }
+
+
+    .profile-links-header h2 {
+
+        margin: 3px 0 10px;
+
+        color: #273244;
+
+        font-size: 1rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .profile-links-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 8px;
+
+    }
+
+
+    .quick-link {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        padding: 8px 10px;
+
+        border: 1px solid #edf0f4;
+
+        border-radius: 12px;
+
+        color: inherit;
+
+        text-decoration: none;
+
+        transition: .2s ease;
+
+    }
+
+
+    .quick-link:hover {
+
+        background: #fafbfc;
+
+        border-color: #dfe4ec;
+
+        text-decoration: none;
+
+        transform: translateY(-1px);
+
+    }
+
+
+    .quick-link-icon {
+
+        width: 30px;
+
+        height: 30px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 10px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .quick-link > div:nth-child(2) {
+
+        display: flex;
+
+        flex-direction: column;
+
+        flex: 1;
+
+        min-width: 0;
+
+    }
+
+
+    .quick-link strong {
+
+        color: #303b4c;
+
+        font-size: .71rem;
+
+    }
+
+
+    .quick-link span {
+
+        margin-top: 2px;
+
+        color: #8a94a4;
+
+        font-size: .61rem;
+
+    }
+
+
+    .quick-link > i:last-child {
+
+        color: #a0a7b1;
+
+        font-size: .72rem;
+
+    }
+
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+
+    @@media (max-width: 900px) {
+
+        .profile-columns {
+
+            grid-template-columns: 1fr;
+
+        }
+
+    }
+
+
+    @@media (max-width: 700px) {
+
+        .profile-header {
+
+            align-items: flex-start;
+
+            flex-direction: column;
+
+        }
+
+        .profile-header-actions {
+
+            width: 100%;
+
+        }
+
+        .profile-button {
+
+            width: 100%;
+
+        }
+
+        .profile-summary-card {
+
+            align-items: flex-start;
+
+            flex-wrap: wrap;
+
+        }
+
+        .profile-summary-right {
+
+            width: 100%;
+
+            align-items: flex-start;
+
+            margin-left: 68px;
+
+        }
+
+        .form-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+        .form-group.full {
+
+            grid-column: auto;
+
+        }
+
+        .profile-links-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+    }
+
+
+    @@media (max-width: 500px) {
+
+        .profile-page {
+
+            padding-left: 0;
+
+            padding-right: 0;
+
+        }
+
+        .profile-summary-card {
+
+            padding: 15px;
+
+        }
+
+        .profile-form {
+
+            padding: 15px;
+
+        }
+
+        .profile-card,
+
+        .side-card,
+
+        .profile-links-card {
+
+            border-radius: 13px;
+
+        }
+
+    }
+
+
+    /* ============================================================
+       DARK MODE OVERRIDES (Youth/User Portal)
+    ============================================================ */
+
+    html[data-theme="dark"] .profile-page {
+        background: transparent;
+    }
+
+    html[data-theme="dark"] .profile-eyebrow {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .profile-header h1 {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .profile-header p {
+        color: #82B6B8;
+    }
+
+    html[data-theme="dark"] .profile-button.secondary {
+        background: rgba(255,255,255,.06);
+        border-color: rgba(80,220,220,.18);
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .profile-button:hover {
+        text-decoration: none;
+    }
+
+    html[data-theme="dark"] .profile-alert.success {
+        background: rgba(45,199,165,.10);
+        border-color: rgba(45,199,165,.18);
+        color: #2DC7A5;
+    }
+
+    html[data-theme="dark"] .profile-alert.error {
+        background: rgba(241,91,103,.10);
+        border-color: rgba(241,91,103,.18);
+        color: #F56D78;
+    }
+
+    html[data-theme="dark"] .profile-validation-list {
+        color: #F56D78;
+    }
+
+    html[data-theme="dark"] .profile-summary-card {
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+        box-shadow: 0 7px 25px rgba(0,0,0,.16);
+    }
+
+    html[data-theme="dark"] .profile-avatar {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .summary-label {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .profile-summary-content h2 {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .profile-summary-content p {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .role-label {
+        color: #78A5A5;
+    }
+
+    html[data-theme="dark"] .role-badge {
+        background: #0A4848;
+        border-color: rgba(80,220,220,.18);
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .profile-columns {
+        gap: 12px;
+    }
+
+    html[data-theme="dark"] .profile-card,
+    html[data-theme="dark"] .side-card,
+    html[data-theme="dark"] .profile-links-card {
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+        box-shadow: 0 6px 24px rgba(0,0,0,.16);
+    }
+
+    html[data-theme="dark"] .profile-card {
+        overflow: hidden;
+    }
+
+    html[data-theme="dark"] .card-header {
+        border-bottom-color: rgba(80,220,220,.12);
+    }
+
+    html[data-theme="dark"] .card-header-icon {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .card-eyebrow {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .card-header h3 {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .profile-form {
+        padding: 12px 14px;
+    }
+
+    html[data-theme="dark"] .form-section {
+        padding-bottom: 9px;
+        margin-bottom: 9px;
+        border-bottom-color: rgba(80,220,220,.12);
+    }
+
+    html[data-theme="dark"] .form-section-title {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .form-section-title i {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .form-group label {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .form-control {
+        background: #0A4848;
+        border-color: rgba(80,220,220,.18);
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .form-control:focus {
+        border-color: #20D8D8;
+        box-shadow: 0 0 0 3px rgba(32,216,216,.15);
+    }
+
+    html[data-theme="dark"] .form-group small {
+        color: #78A5A5;
+    }
+
+    html[data-theme="dark"] .field-error {
+        color: #F56D78;
+    }
+
+    html[data-theme="dark"] .form-actions {
+        gap: 9px;
+    }
+
+    html[data-theme="dark"] .cancel-button {
+        color: #A7D2D2;
+        background: #0A4848;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .cancel-button:hover {
+        color: #FFFFFF;
+        background: #0D5050;
+    }
+
+    html[data-theme="dark"] .save-button {
+        background: #20D8D8;
+        color: #001F1F;
+    }
+
+    html[data-theme="dark"] .save-button:hover {
+        background: #6CECEC;
+    }
+
+    html[data-theme="dark"] .profile-side {
+        gap: 10px;
+    }
+
+    html[data-theme="dark"] .side-card {
+        padding: 10px 12px;
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .side-card-header {
+        margin-bottom: 9px;
+    }
+
+    html[data-theme="dark"] .side-icon {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .side-card-header span {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .side-card-header h3 {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .status-row {
+        padding: 8px 0;
+        border-top-color: rgba(80,220,220,.12);
+    }
+
+    html[data-theme="dark"] .status-row span {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .status-row strong {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .profile-complete-box {
+        background: rgba(45,199,165,.10);
+        color: #2DC7A5;
+        border: 1px solid rgba(45,199,165,.18);
+    }
+
+    html[data-theme="dark"] .profile-incomplete-box {
+        background: rgba(241,147,22,.10);
+        color: #F1A33C;
+        border: 1px solid rgba(241,147,22,.18);
+    }
+
+    html[data-theme="dark"] .profile-complete-box p,
+    html[data-theme="dark"] .profile-incomplete-box p {
+        margin: 0;
+    }
+
+    html[data-theme="dark"] .profile-links-card {
+        padding: 12px 14px;
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .profile-links-header span {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .profile-links-header h2 {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .profile-links-grid {
+        gap: 8px;
+    }
+
+    html[data-theme="dark"] .quick-link {
+        border-color: rgba(80,220,220,.18);
+        background: transparent;
+        color: inherit;
+    }
+
+    html[data-theme="dark"] .quick-link:hover {
+        background: #0A4848;
+        border-color: rgba(80,220,220,.30);
+        text-decoration: none;
+    }
+
+    html[data-theme="dark"] .quick-link-icon {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .quick-link strong {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .quick-link span {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .quick-link > i:last-child {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .profile-picture-card {
+        border-color: rgba(80,220,220,.18);
+        background: rgba(255,255,255,.06);
+    }
+
+    html[data-theme="dark"] .profile-picture-card strong {
+        color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .profile-picture-card p {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .profile-picture-placeholder {
+        background: rgba(105,199,232,.18);
+    }
+
+    /* ============================================================
+       END DARK MODE OVERRIDES
+    ============================================================ */
+
+</style>
+
+<style>
+    .profile-picture-card { display:flex; align-items:center; gap:10px; margin:0 0 12px; padding:10px 12px; border:1px solid #e5e9ef; border-radius:11px; background:white; box-shadow:0 6px 24px rgba(31,43,70,.04); }
+    .profile-picture-card strong { font-size:.8rem; color:#273244; }
+    .profile-picture-card p { margin:3px 0 0; font-size:.69rem; color:#828c9b; }
+    .profile-picture-preview, .profile-picture-placeholder { width:56px; height:56px; flex:0 0 56px; border-radius:50%; object-fit:cover; }
+    .profile-picture-placeholder { display:grid; place-items:center; background:rgba(105,199,232,.18); font-size:24px; }
+    /* Header compaction: theme.css forces 112px / 20px 24px / 17px radius on
+       .profile-header in both themes — restore Youth Dashboard density. */
+    /* Header geometry is owned by the shared .profile-header rules in theme.css. */
+    /* Compact header icon (theme.css global .header-icon is 47px / 21px). */
+    .profile-page .header-icon { width:34px; height:34px; border-radius:8px; font-size:16px; }
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial"
+        );
+    }
+
+}
+
+

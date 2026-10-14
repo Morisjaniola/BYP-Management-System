@@ -1,0 +1,292 @@
+@model IEnumerable<BYPManagementSystem.Models.Certificate>
+
+@{
+    ViewData["Title"] = "My Certificates";
+
+    var certificates =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.Certificate>();
+}
+
+
+<div class="my-certificates-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-award"></i>
+                </div>
+
+                <div class="certificates-title">
+
+                    <span class="page-eyebrow">
+                        ACHIEVEMENTS
+                    </span>
+
+                    <h1>
+                        My Certificates
+                    </h1>
+
+                    <p>
+                        View and print certificates you have received for completing programs.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         EMPTY STATE
+    ========================================================== -->
+
+    @if (!certificates.Any())
+    {
+
+        <div class="empty-state">
+
+            <i class="bi bi-award"></i>
+
+            <h2>No Certificates Yet</h2>
+
+            <p>
+                You have not received any completion certificates yet.
+            </p>
+
+            <p>
+                Certificates are issued by program administrators after you have
+                successfully completed a program.
+            </p>
+
+            <a asp-controller="Programs"
+               asp-action="Index"
+               class="btn btn-primary">
+                <i class="bi bi-book"></i>
+                Browse Programs
+            </a>
+
+        </div>
+
+    }
+    else
+    {
+
+        <!-- =========================================================
+             CERTIFICATES LIST
+        ========================================================== -->
+
+        <div class="certificates-grid">
+
+            @foreach (var cert in certificates)
+            {
+
+                <div class="certificate-card">
+
+                    <div class="card-header">
+
+                        <div class="award-icon">
+                            <i class="bi bi-award-fill"></i>
+                        </div>
+
+                        <div class="card-title">
+                            <h3>
+                                @cert.ProgramName
+                            </h3>
+
+                            <span class="cert-number">
+                                @cert.CertificateNumber
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="detail-row">
+                            <label>
+                                <i class="bi bi-calendar-check"></i>
+                                Completed
+                            </label>
+                            <span>
+                                @cert.CompletionDate.ToString("MMMM dd, yyyy")
+                            </span>
+                        </div>
+
+                        <div class="detail-row">
+                            <label>
+                                <i class="bi bi-calendar-plus"></i>
+                                Issued
+                            </label>
+                            <span>
+                                @cert.IssuedAt.ToString("MMMM dd, yyyy")
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="card-actions">
+
+                        <a asp-action="Details"
+                           asp-route-id="@cert.Id"
+                           class="btn btn-sm btn-secondary">
+                            <i class="bi bi-eye"></i>
+                            View
+                        </a>
+
+                        <a asp-action="Print"
+                           asp-route-id="@cert.Id"
+                           target="_blank"
+                           class="btn btn-sm btn-secondary">
+                            <i class="bi bi-printer"></i>
+                            Print
+                        </a>
+
+                        <a asp-action="Download"
+                           asp-route-id="@cert.Id"
+                           class="btn btn-sm btn-secondary">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </a>
+
+                    </div>
+
+                </div>
+
+            }
+
+        </div>
+
+    }
+
+</div>
+
+
+<style>
+    /* Page root (standardized container — previously unstyled, so
+       content sat flush against the viewport edges). */
+    .my-certificates-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+        box-sizing: border-box;
+    }
+
+    .my-certificates-page .page-eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: #B7D7E5;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .my-certificates-page .certificates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 24px;
+    }
+
+    .my-certificates-page .certificate-card {
+        background: var(--byp-surface);
+        border: 1px solid var(--byp-border);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.2s;
+    }
+
+        .my-certificates-page .certificate-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+    .my-certificates-page .card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(32, 216, 216, 0.1) 0%, rgba(0, 159, 163, 0.05) 100%);
+        border-bottom: 1px solid var(--byp-border);
+    }
+
+    .my-certificates-page .award-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--byp-accent);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .my-certificates-page .card-title {
+        flex: 1;
+    }
+
+        .my-certificates-page .card-title h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--byp-text);
+            margin-bottom: 4px;
+        }
+
+    .my-certificates-page .cert-number {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: var(--byp-accent);
+        font-weight: 500;
+    }
+
+    .my-certificates-page .card-body {
+        padding: 20px;
+    }
+
+    .my-certificates-page .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+        .my-certificates-page .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .my-certificates-page .detail-row label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: var(--byp-text-muted);
+        }
+
+        .my-certificates-page .detail-row span {
+            font-weight: 500;
+            color: var(--byp-text);
+        }
+
+    .my-certificates-page .card-actions {
+        display: flex;
+        gap: 8px;
+        padding: 16px 20px;
+        background: var(--byp-bg-secondary);
+        border-top: 1px solid var(--byp-border);
+    }
+
+        .my-certificates-page .card-actions .btn {
+            flex: 1;
+        }
+</style>

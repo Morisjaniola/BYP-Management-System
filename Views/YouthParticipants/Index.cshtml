@@ -1,0 +1,2356 @@
+﻿@model IEnumerable<BYPManagementSystem.Models.YouthParticipant>
+
+@{
+    ViewData["Title"] = "Youth Participants";
+
+    var participants =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.YouthParticipant>();
+
+    var search =
+        ViewBag.Search as string
+        ?? "";
+
+    var selectedStatus =
+        ViewBag.Status as string
+        ?? "";
+
+    var activeCount =
+        participants.Count(p => p.IsActive);
+
+    var inactiveCount =
+        participants.Count(p => !p.IsActive);
+}
+
+
+<div class="participants-page">
+
+    <!-- =========================================================
+         HEADER
+         ========================================================= -->
+
+    <section class="participants-header">
+
+        <div class="participants-header-content">
+
+            <span class="participants-eyebrow">
+                BARANGAY YOUTH PROGRAM
+            </span>
+
+            <div class="participants-title-row">
+
+                <div class="participants-title-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div>
+
+                    <h1>
+                        Youth Participants
+                    </h1>
+
+                    <p>
+                        Manage registered youth participants and their information.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="participants-header-actions">
+
+            <!-- ADD PARTICIPANT -->
+
+            <a asp-controller="YouthParticipants"
+               asp-action="Create"
+               class="header-action primary">
+
+                <i class="bi bi-person-plus-fill"></i>
+
+                Add Participant
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ALERTS (TempData success / error messages)
+         ========================================================= -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-box success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-box error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+
+    <!-- =========================================================
+         STATISTICS
+         ========================================================= -->
+
+    <section class="participant-stats">
+
+        <!-- TOTAL -->
+
+        <div class="stat-card stat-teal">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-people-fill"></i>
+
+            </div>
+
+            <div class="stat-content">
+
+                <span>
+                    Total Participants
+                </span>
+
+                <strong>
+                    @participants.Count
+                </strong>
+
+                <small>
+                    All participant records
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE -->
+
+        <div class="stat-card stat-green">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-person-check-fill"></i>
+
+            </div>
+
+            <div class="stat-content">
+
+                <span>
+                    Active Participants
+                </span>
+
+                <strong>
+                    @activeCount
+                </strong>
+
+                <small>
+                    Currently active
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVE -->
+
+        <div class="stat-card stat-blue">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-person-dash-fill"></i>
+
+            </div>
+
+            <div class="stat-content">
+
+                <span>
+                    Inactive Participants
+                </span>
+
+                <strong>
+                    @inactiveCount
+                </strong>
+
+                <small>
+                    Inactive records
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         SEARCH
+         ========================================================= -->
+
+    <section class="search-panel">
+
+        <div class="search-panel-title">
+
+            <div class="search-title-icon">
+
+                <i class="bi bi-search"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+                    PARTICIPANT SEARCH
+                </span>
+
+                <strong>
+                    Find Youth Participant
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <form asp-controller="YouthParticipants"
+              asp-action="Index"
+              method="get"
+              class="search-form">
+
+
+            <!-- SEARCH -->
+
+            <div class="search-field">
+
+                <label for="search">
+                    Search Participant
+                </label>
+
+                <div class="input-box">
+
+                    <i class="bi bi-search"></i>
+
+                    <input type="text"
+                           id="search"
+                           name="search"
+                           value="@search"
+                           placeholder="Search by name or contact number" />
+
+                </div>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="status-field">
+
+                <label for="status">
+                    Status
+                </label>
+
+                <select id="status"
+                        name="status">
+
+                    @if (string.IsNullOrWhiteSpace(selectedStatus))
+                    {
+                        <option value="" selected>
+                            All Status
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="">
+                            All Status
+                        </option>
+                    }
+
+
+                    @if (selectedStatus == "Active")
+                    {
+                        <option value="Active" selected>
+                            Active
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="Active">
+                            Active
+                        </option>
+                    }
+
+
+                    @if (selectedStatus == "Inactive")
+                    {
+                        <option value="Inactive" selected>
+                            Inactive
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="Inactive">
+                            Inactive
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+
+            <!-- SEARCH -->
+
+            <button type="submit"
+                    class="search-submit">
+
+                <i class="bi bi-search"></i>
+
+                Search
+
+            </button>
+
+
+            <!-- RESET -->
+
+            <a asp-controller="YouthParticipants"
+               asp-action="Index"
+               class="search-reset"
+               title="Reset">
+
+                <i class="bi bi-arrow-clockwise"></i>
+
+            </a>
+
+        </form>
+
+    </section>
+
+
+    <!-- =========================================================
+         PARTICIPANT DIRECTORY
+         ========================================================= -->
+
+    <section class="participants-panel">
+
+
+        <!-- PANEL HEADER -->
+
+        <div class="participants-panel-header">
+
+            <div class="panel-heading">
+
+                <div class="panel-heading-icon">
+
+                    <i class="bi bi-table"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        PARTICIPANT DIRECTORY
+                    </span>
+
+                    <h2>
+                        Participant List
+                    </h2>
+
+                    <p>
+                        Search, view, and manage youth participant records.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="participant-count">
+
+                <i class="bi bi-people-fill"></i>
+
+                @participants.Count
+
+                @(participants.Count == 1
+                    ? "Participant"
+                    : "Participants")
+
+            </div>
+
+        </div>
+
+
+        @if (participants.Any())
+        {
+
+            <!-- =================================================
+                 TABLE
+                 ================================================= -->
+
+            <div class="table-wrapper">
+
+                <table class="participant-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th class="name-column">
+                                NAME
+                            </th>
+
+                            <th>
+                                BIRTH DATE
+                            </th>
+
+                            <th>
+                                CONTACT NUMBER
+                            </th>
+
+                            <th class="address-column">
+                                ADDRESS
+                            </th>
+
+                            <th>
+                                STATUS
+                            </th>
+
+                            <th class="actions-column">
+                                ACTIONS
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var participant in participants)
+                        {
+
+                            <tr>
+
+                                <!-- NAME -->
+
+                                <td class="name-cell">
+
+                                    <div class="name-wrapper">
+
+                                        <div class="participant-avatar">
+
+                                            @{
+
+                                                var firstInitial =
+                                                    !string.IsNullOrWhiteSpace(
+                                                        participant.FirstName)
+                                                    ? participant.FirstName
+                                                        .Substring(0, 1)
+                                                        .ToUpper()
+                                                    : "U";
+
+                                                var lastInitial =
+                                                    !string.IsNullOrWhiteSpace(
+                                                        participant.LastName)
+                                                    ? participant.LastName
+                                                        .Substring(0, 1)
+                                                        .ToUpper()
+                                                    : "";
+
+                                            }
+
+                                            @firstInitial@lastInitial
+
+                                        </div>
+
+
+                                        <div class="name-content">
+
+                                            <strong>
+                                                @participant.FullName
+                                            </strong>
+
+                                            <span>
+                                                Youth Participant
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- BIRTH DATE -->
+
+                                <td>
+
+                                    <div class="table-info">
+
+                                        <i class="bi bi-calendar3"></i>
+
+                                        <span>
+                                            @(participant.BirthDate?.ToString("MMM dd, yyyy") ?? "—")
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- CONTACT -->
+
+                                <td>
+
+                                    <div class="table-info">
+
+                                        <i class="bi bi-telephone-fill"></i>
+
+                                        <span>
+
+                                            @(
+                                                string.IsNullOrWhiteSpace(
+                                                    participant.ContactNumber)
+                                                ? "No contact number"
+                                                : participant.ContactNumber
+                                            )
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ADDRESS -->
+
+                                <td class="address-cell">
+
+                                    <div class="table-info">
+
+                                        <i class="bi bi-geo-alt-fill"></i>
+
+                                        <span>
+
+                                            @(
+                                                string.IsNullOrWhiteSpace(
+                                                    participant.Address)
+                                                ? (
+                                                    string.IsNullOrWhiteSpace(
+                                                        participant.Barangay)
+                                                    ? "No address"
+                                                    : participant.Barangay
+                                                  )
+                                                : participant.Address
+                                            )
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    @if (participant.IsActive)
+                                    {
+
+                                        <span class="status-active">
+
+                                            <span class="status-dot"></span>
+
+                                            Active
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="status-inactive">
+
+                                            <span class="status-dot"></span>
+
+                                            Inactive
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td class="actions-cell">
+
+                                    <div class="table-actions">
+
+
+                                        <!-- VIEW -->
+
+                                        <a asp-controller="Registration"
+                                           asp-action="Participant"
+                                           asp-route-id="@participant.Id"
+                                           class="table-action view"
+                                           title="View Participant">
+
+                                            <i class="bi bi-eye-fill"></i>
+
+                                        </a>
+
+
+                                        <!-- EDIT -->
+
+                                        <a asp-controller="YouthParticipants"
+                                           asp-action="Edit"
+                                           asp-route-id="@participant.Id"
+                                           class="table-action edit"
+                                           title="Edit Participant">
+
+                                            <i class="bi bi-pencil-fill"></i>
+
+                                        </a>
+
+
+                                        <!-- MANAGE -->
+
+                                        <a asp-controller="YouthParticipants"
+                                           asp-action="Edit"
+                                           asp-route-id="@participant.Id"
+                                           class="table-action status"
+                                           title="Manage Participant">
+
+                                            <i class="bi bi-person-gear"></i>
+
+                                        </a>
+
+
+                                        <!-- DELETE -->
+
+                                        <form asp-controller="YouthParticipants"
+                                              asp-action="Delete"
+                                              asp-route-id="@participant.Id"
+                                              method="post"
+                                              style="display:inline;"
+                                              onsubmit="return confirm('Are you sure you want to delete this participant?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="table-action delete"
+                                                    title="Delete Participant"
+                                                    style="background:none;border:none;cursor:pointer;">
+
+                                                <i class="bi bi-trash-fill"></i>
+
+                                            </button>
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+        else
+        {
+
+            <!-- =================================================
+                 EMPTY STATE
+                 ================================================= -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="bi bi-person-x-fill"></i>
+
+                </div>
+
+                <h3>
+                    No Youth Participants Found
+                </h3>
+
+                <p>
+
+                    @if (!string.IsNullOrWhiteSpace(search) ||
+                         !string.IsNullOrWhiteSpace(selectedStatus))
+                    {
+                        <text>
+                            No participant matched your current search or status filter.
+                        </text>
+                    }
+                    else
+                    {
+                        <text>
+                            Youth participant records will appear here.
+                        </text>
+                    }
+
+                </p>
+
+
+                <a asp-controller="YouthParticipants"
+                   asp-action="Index"
+                   class="empty-button">
+
+                    <i class="bi bi-arrow-clockwise"></i>
+
+                    Clear Filters
+
+                </a>
+
+            </div>
+
+        }
+
+    </section>
+
+
+</div>
+
+
+<style>
+
+/* =========================================================
+   MAIN PAGE
+   ========================================================= */
+
+.participants-page {
+
+    width: 100%;
+
+    min-height:
+        calc(100vh - 76px);
+
+    padding:
+        12px 18px 18px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    color:
+        #FFFFFF;
+
+    background:
+        radial-gradient(
+            circle at 85% 8%,
+            rgba(12,144,150,.14),
+            transparent 25%
+        ),
+        #031716;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.participants-header {
+
+    min-height: 84px;
+
+    padding:
+        14px 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            110deg,
+            rgba(12,144,150,.25),
+            rgba(5,45,46,.82)
+        );
+
+    border:
+        1px solid
+        rgba(183,215,229,.16);
+
+    box-shadow:
+        0 8px 20px
+        rgba(0,0,0,.14);
+
+}
+
+
+.participants-eyebrow {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color:
+        #A9D5DE;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+}
+
+
+.participants-title-row {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+
+.participants-title-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,255,255,.09);
+
+    border:
+        1px solid
+        rgba(255,255,255,.13);
+
+    color:
+        #69DDF2;
+
+    font-size: 16px;
+
+}
+
+
+.participants-header h1 {
+
+    margin: 0;
+
+    color:
+        #FFFFFF;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+}
+
+
+.participants-header p {
+
+    margin:
+        3px 0 0;
+
+    color:
+        #C5DDE2;
+
+    font-size: 8px;
+
+}
+
+
+.participants-header-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    flex-shrink: 0;
+
+}
+
+
+.header-action {
+
+    min-height: 30px;
+
+    padding:
+        0 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    transition:
+        .16s ease;
+
+}
+
+
+.header-action.primary {
+
+    color:
+        #FFFFFF;
+
+    background:
+        #0C9096;
+
+    border:
+        1px solid
+        #0C9096;
+
+}
+
+
+.header-action.primary:hover {
+
+    color:
+        #FFFFFF;
+
+    background:
+        #0A7D82;
+
+    border-color:
+        #0A7D82;
+
+    text-decoration: none;
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+.header-action.secondary {
+
+    color:
+        #C5DDE2;
+
+    background:
+        rgba(255,255,255,.06);
+
+    border:
+        1px solid
+        rgba(183,215,229,.16);
+
+}
+
+
+.header-action.secondary:hover {
+
+    color:
+        #FFFFFF;
+
+    background:
+        rgba(255,255,255,.10);
+
+    text-decoration: none;
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.participant-stats {
+
+    margin-top: 8px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 8px;
+
+}
+
+
+.stat-card {
+
+    min-height: 64px;
+
+    padding:
+        10px 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        rgba(183,215,229,.13);
+
+}
+
+
+.stat-teal {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12,144,150,.25),
+            rgba(3,23,22,.88)
+        );
+
+}
+
+
+.stat-green {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(43,166,126,.23),
+            rgba(3,23,22,.88)
+        );
+
+}
+
+
+.stat-blue {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(104,157,184,.24),
+            rgba(3,23,22,.88)
+        );
+
+}
+
+
+.stat-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background:
+        rgba(255,255,255,.07);
+
+    font-size: 14px;
+
+}
+
+
+.stat-teal .stat-icon {
+    color: #5EF2E6;
+}
+
+
+.stat-green .stat-icon {
+    color: #69F0AE;
+}
+
+
+.stat-blue .stat-icon {
+    color: #8DDCF2;
+}
+
+
+.stat-content span {
+
+    display: block;
+
+    color:
+        #9FC6CC;
+
+    font-size: 6px;
+
+}
+
+
+.stat-content strong {
+
+    display: block;
+
+    margin-top: 1px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 16px;
+
+}
+
+
+.stat-content small {
+
+    color:
+        #72969E;
+
+    font-size: 6px;
+
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.search-panel {
+
+    margin-top: 8px;
+
+    padding:
+        10px 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(5,45,46,.75);
+
+    border:
+        1px solid
+        rgba(183,215,229,.13);
+
+}
+
+
+.search-panel-title {
+
+    min-width: 170px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.search-title-icon {
+
+    width: 28px;
+
+    height: 28px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background:
+        rgba(105,199,232,.10);
+
+    color:
+        #69DDF2;
+
+}
+
+
+.search-panel-title span {
+
+    display: block;
+
+    color:
+        #69DDF2;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    letter-spacing: .8px;
+
+}
+
+
+.search-panel-title strong {
+
+    color:
+        #FFFFFF;
+
+    font-size: 8px;
+
+}
+
+
+.search-form {
+
+    flex: 1;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(200px, 1fr)
+        120px
+        70px
+        30px;
+
+    gap: 5px;
+
+    align-items: end;
+
+}
+
+
+.search-field label,
+.status-field label {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color:
+        #8FBFC8;
+
+    font-size: 7px;
+
+}
+
+
+.input-box {
+
+    position: relative;
+
+}
+
+
+.input-box i {
+
+    position: absolute;
+
+    left: 10px;
+
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    color:
+        #69B8CB;
+
+}
+
+
+.input-box input,
+.status-field select {
+
+    width: 100%;
+
+    height: 30px;
+
+    padding:
+        0 8px;
+
+    border-radius: 6px;
+
+    outline: none;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 7px;
+
+    color:
+        #D8EEF2;
+
+    background:
+        rgba(255,255,255,.055);
+
+    border:
+        1px solid
+        rgba(183,215,229,.16);
+
+}
+
+
+.input-box input {
+
+    padding-left: 28px;
+
+}
+
+
+.input-box input::placeholder {
+
+    color:
+        #6F969E;
+
+}
+
+
+.status-field select option {
+
+    color:
+        #1E293B;
+
+    background:
+        #FFFFFF;
+
+}
+
+
+.search-submit {
+
+    height: 30px;
+
+    border: 0;
+
+    border-radius: 6px;
+
+    background:
+        #69C7E8;
+
+    color:
+        #052D2E;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+}
+
+
+.search-submit:hover {
+
+    background:
+        #8DDCF2;
+
+}
+
+
+.search-reset {
+
+    width: 30px;
+
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 6px;
+
+    color:
+        #9FC6CC;
+
+    background:
+        rgba(255,255,255,.05);
+
+    border:
+        1px solid
+        rgba(183,215,229,.15);
+
+    text-decoration: none;
+
+}
+
+
+.search-reset:hover {
+
+    color:
+        #69DDF2;
+
+}
+
+
+/* =========================================================
+   PARTICIPANT PANEL
+   ========================================================= */
+
+.participants-panel {
+
+    margin-top: 8px;
+
+    padding:
+        10px;
+
+    border-radius: 11px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+
+    border:
+        1px solid
+        rgba(183,215,229,.14);
+
+}
+
+
+.participants-panel-header {
+
+    margin-bottom: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+}
+
+
+.panel-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.panel-heading-icon {
+
+    width: 30px;
+
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background:
+        rgba(105,199,232,.10);
+
+    color:
+        #8DDCF2;
+
+}
+
+
+.panel-heading span {
+
+    color:
+        #69DDF2;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    letter-spacing: .8px;
+
+}
+
+
+.panel-heading h2 {
+
+    margin:
+        2px 0 1px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 12px;
+
+}
+
+
+.panel-heading p {
+
+    margin: 0;
+
+    color:
+        #769BA3;
+
+    font-size: 7px;
+
+}
+
+
+.participant-count {
+
+    padding:
+        4px 7px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    border-radius: 5px;
+
+    background:
+        rgba(105,199,232,.08);
+
+    border:
+        1px solid
+        rgba(105,199,232,.14);
+
+    color:
+        #8DDCF2;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-wrapper {
+
+    width: 100%;
+
+    max-height: 600px;
+
+    overflow: auto;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        rgba(105,199,232,.20);
+
+}
+
+
+.participant-table thead th {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 1;
+
+}
+
+
+.participant-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    table-layout: fixed;
+
+    background:
+        rgba(255,255,255,.025);
+
+}
+
+
+.participant-table thead {
+
+    background:
+        linear-gradient(
+            90deg,
+            #69C7E8,
+            #8DDCF2
+        );
+
+}
+
+
+.participant-table th {
+
+    height: 39px;
+
+    padding:
+        0 10px;
+
+    text-align: left;
+
+    vertical-align: middle;
+
+    color:
+        #06363B;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: .7px;
+
+    border-right:
+        1px solid
+        rgba(5,45,46,.10);
+
+}
+
+
+.participant-table th:last-child {
+    border-right: 0;
+}
+
+
+.participant-table .name-column {
+    width: 20%;
+}
+
+
+.participant-table th:nth-child(2) {
+    width: 14%;
+}
+
+
+.participant-table th:nth-child(3) {
+    width: 17%;
+}
+
+
+.participant-table .address-column {
+    width: 23%;
+}
+
+
+.participant-table th:nth-child(5) {
+    width: 10%;
+}
+
+
+.participant-table .actions-column {
+
+    width: 16%;
+
+    text-align: center;
+
+}
+
+
+.participant-table tbody tr {
+
+    height: 52px;
+
+    border-top:
+        1px solid
+        rgba(183,215,229,.10);
+
+    background:
+        rgba(255,255,255,.035);
+
+    transition:
+        background .13s ease;
+
+}
+
+
+.participant-table tbody tr:nth-child(even) {
+
+    background:
+        rgba(105,199,232,.035);
+
+}
+
+
+.participant-table tbody tr:hover {
+
+    background:
+        rgba(105,199,232,.10);
+
+}
+
+
+.participant-table td {
+
+    padding:
+        8px 10px;
+
+    vertical-align: middle;
+
+    color:
+        #D1E5E9;
+
+    font-size: 8px;
+
+    border-right:
+        1px solid
+        rgba(183,215,229,.07);
+
+}
+
+
+.participant-table td:last-child {
+    border-right: 0;
+}
+
+
+/* =========================================================
+   NAME
+   ========================================================= */
+
+.name-wrapper {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.participant-avatar {
+
+    width: 34px;
+
+    height: 34px;
+
+    min-width: 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(105,199,232,.28),
+            rgba(12,144,150,.18)
+        );
+
+    border:
+        1px solid
+        rgba(105,221,242,.22);
+
+    color:
+        #8DDCF2;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+}
+
+
+.name-content {
+
+    min-width: 0;
+
+}
+
+
+.name-content strong {
+
+    display: block;
+
+    overflow: hidden;
+
+    color:
+        #FFFFFF;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.name-content span {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color:
+        #6F969E;
+
+    font-size: 7px;
+
+}
+
+
+/* =========================================================
+   TABLE INFORMATION
+   ========================================================= */
+
+.table-info {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    min-width: 0;
+
+}
+
+
+.table-info i {
+
+    flex-shrink: 0;
+
+    color:
+        #69C7E8;
+
+    font-size: 9px;
+
+}
+
+
+.table-info span {
+
+    overflow: hidden;
+
+    color:
+        #C1D8DD;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.status-active,
+.status-inactive {
+
+    min-height: 21px;
+
+    padding:
+        0 8px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    border-radius: 999px;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+}
+
+
+.status-active {
+
+    color:
+        #69F0AE;
+
+    background:
+        rgba(43,166,126,.12);
+
+    border:
+        1px solid
+        rgba(105,240,174,.17);
+
+}
+
+
+.status-inactive {
+
+    color:
+        #A9BAC0;
+
+    background:
+        rgba(183,215,229,.07);
+
+    border:
+        1px solid
+        rgba(183,215,229,.12);
+
+}
+
+
+.status-dot {
+
+    width: 5px;
+
+    height: 5px;
+
+    border-radius: 50%;
+
+    background:
+        currentColor;
+
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.actions-cell {
+
+    text-align: center;
+
+}
+
+
+.table-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+}
+
+
+.table-action {
+
+    width: 28px;
+
+    height: 28px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background:
+        rgba(255,255,255,.04);
+
+    border:
+        1px solid
+        rgba(183,215,229,.15);
+
+    text-decoration: none;
+
+    font-size: 10px;
+
+    transition:
+        .15s ease;
+
+}
+
+
+.table-action.view {
+    color: #69C7E8;
+}
+
+
+.table-action.edit {
+    color: #FFD166;
+}
+
+
+.table-action.status {
+    color: #B9BFFF;
+}
+
+
+.table-action.delete {
+    color: #FF7B8A;
+}
+
+
+.table-action:hover {
+
+    transform:
+        translateY(-1px);
+
+    background:
+        rgba(255,255,255,.09);
+
+    text-decoration: none;
+
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+
+    min-height: 90px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+}
+
+
+.empty-icon {
+
+    width: 36px;
+
+    height: 36px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 8px;
+
+    background:
+        rgba(105,199,232,.09);
+
+    color:
+        #8DDCF2;
+
+    font-size: 14px;
+
+}
+
+
+.empty-state h3 {
+
+    margin:
+        6px 0 3px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 10px;
+
+}
+
+
+.empty-state p {
+
+    margin:
+        0 0 8px;
+
+    color:
+        #769BA3;
+
+    font-size: 7px;
+
+}
+
+
+.empty-button {
+
+    min-height: 26px;
+
+    padding:
+        0 9px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    border-radius: 6px;
+
+    color:
+        #052D2E;
+
+    background:
+        #69C7E8;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+}
+
+
+.empty-button:hover {
+
+    color:
+        #052D2E;
+
+    background:
+        #8DDCF2;
+
+}
+
+
+/* =========================================================
+   QUICK ACCESS
+   ========================================================= */
+
+.quick-access {
+
+    min-height: 56px;
+
+    margin-top: 8px;
+
+    padding:
+        8px 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(12,144,150,.14),
+            rgba(104,157,184,.07)
+        );
+
+    border:
+        1px solid
+        rgba(183,215,229,.12);
+
+}
+
+
+.quick-icon {
+
+    width: 32px;
+
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background:
+        rgba(12,144,150,.14);
+
+    color:
+        #5EF2E6;
+
+}
+
+
+.quick-content {
+
+    flex: 1;
+
+}
+
+
+.quick-content span {
+
+    display: block;
+
+    color:
+        #5EF2E6;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    letter-spacing: .8px;
+
+}
+
+
+.quick-content strong {
+
+    display: block;
+
+    margin-top: 1px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 8px;
+
+}
+
+
+.quick-content p {
+
+    margin:
+        2px 0 0;
+
+    color:
+        #72969E;
+
+    font-size: 6px;
+
+}
+
+
+.quick-button {
+
+    min-height: 26px;
+
+    padding:
+        0 9px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    border-radius: 6px;
+
+    color:
+        #052D2E;
+
+    background:
+        #69C7E8;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+}
+
+
+.quick-button:hover {
+
+    color:
+        #052D2E;
+
+    background:
+        #8DDCF2;
+
+}
+
+
+/* =========================================================
+   ALERTS (TempData messages)
+========================================================= */
+
+.alert-box {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 12px 14px;
+
+    margin-bottom: 15px;
+
+    border-radius: 7px;
+
+    font-size: .73rem;
+
+}
+
+
+.alert-box.success {
+
+    background: #edf5ef;
+
+    border: 1px solid #dcebdd;
+
+    color: #52735b;
+
+}
+
+
+.alert-box.error {
+
+    background: #f8eeee;
+
+    border: 1px solid #efdede;
+
+    color: #955c5c;
+
+}
+
+</style>

@@ -1,0 +1,861 @@
+/* ============================================================
+   BYPROGRAM
+   MODERN LIGHT BLUE GLASS UI
+   DESKTOP ONLY
+   ============================================================ */
+
+
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+    body.byprogram-body {
+        background: linear-gradient( 135deg, #dff4ff 0%, #c5eaff 28%, #eefaff 55%, #bfe6fa 100% );
+        color: #063b73;
+    }
+
+
+/* ============================================================
+   BACKGROUND
+   ============================================================ */
+
+.byprogram-body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: radial-gradient( circle at 15% 15%, rgba(255,255,255,.95), transparent 30% ), radial-gradient( circle at 80% 20%, rgba(91,190,245,.28), transparent 30% ), radial-gradient( circle at 20% 85%, rgba(39,145,220,.20), transparent 35% );
+}
+
+
+.byprogram-body::after {
+    content: "";
+    position: fixed;
+    width: 700px;
+    height: 700px;
+    left: 25%;
+    top: -350px;
+    z-index: -1;
+    border-radius: 50%;
+    background: rgba(255,255,255,.34);
+    filter: blur(40px);
+}
+
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+
+.byprogram-shell {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.byprogram-sidebar {
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    bottom: 10px;
+    width: 290px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.85);
+    border-radius: 22px;
+    background: linear-gradient( 160deg, rgba(255,255,255,.70), rgba(207,239,255,.55), rgba(132,205,242,.40) );
+    box-shadow: 0 20px 55px rgba(35,119,170,.18), inset 0 1px 0 rgba(255,255,255,.95);
+    backdrop-filter: blur(22px);
+}
+
+
+/* ============================================================
+   BRAND
+   ============================================================ */
+
+.sidebar-brand {
+    min-height: 135px;
+    padding: 22px 20px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    border-bottom: 1px solid rgba(255,255,255,.65);
+}
+
+
+.brand-logo {
+    width: 62px;
+    height: 62px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.9);
+    border-radius: 17px;
+    background: rgba(255,255,255,.55);
+    box-shadow: 0 8px 20px rgba(37,133,190,.12);
+}
+
+
+    .brand-logo img {
+        width: 54px;
+        height: 54px;
+        object-fit: contain;
+    }
+
+
+.brand-text {
+    min-width: 0;
+}
+
+
+.brand-name {
+    color: #073b78;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+
+.brand-subtitle {
+    margin-top: 4px;
+    color: #276696;
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+.sidebar-navigation {
+    flex: 1;
+    padding: 20px 13px;
+}
+
+
+.navigation-label {
+    margin: 0 10px 12px;
+    color: #1970b6;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .13em;
+}
+
+
+.sidebar-link {
+    position: relative;
+    min-height: 52px;
+    margin-bottom: 5px;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    border: 1px solid transparent;
+    border-radius: 13px;
+    color: #083f79;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .18s ease;
+}
+
+
+    .sidebar-link:hover {
+        color: #0569c7;
+        background: rgba(255,255,255,.52);
+        border-color: rgba(255,255,255,.70);
+        transform: translateX(2px);
+    }
+
+
+    .sidebar-link.active {
+        color: #0874db;
+        background: linear-gradient( 135deg, rgba(255,255,255,.85), rgba(218,241,255,.72) );
+        border: 1px solid rgba(255,255,255,.90);
+        box-shadow: 0 8px 22px rgba(27,130,210,.12);
+    }
+
+
+        .sidebar-link.active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 4px;
+            border-radius: 0 4px 4px 0;
+            background: #1689f5;
+        }
+
+
+.sidebar-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0878cf;
+    font-size: 18px;
+}
+
+
+.sidebar-link:nth-of-type(2) .sidebar-icon {
+    color: #1689f5;
+}
+
+
+.sidebar-link:nth-of-type(3) .sidebar-icon {
+    color: #6b4df5;
+}
+
+
+.sidebar-link:nth-of-type(4) .sidebar-icon {
+    color: #ff9418;
+}
+
+
+.sidebar-link:nth-of-type(5) .sidebar-icon {
+    color: #12b997;
+}
+
+
+.sidebar-link:nth-of-type(6) .sidebar-icon {
+    color: #437eea;
+}
+
+
+/* ============================================================
+   SIDEBAR BOTTOM
+   ============================================================ */
+
+.sidebar-bottom {
+    padding: 15px 17px 20px;
+    border-top: 1px solid rgba(255,255,255,.65);
+}
+
+
+.logout-button {
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 0 17px;
+    border: 1px solid rgba(255,255,255,.75);
+    border-radius: 13px;
+    background: rgba(255,255,255,.45);
+    color: #e92f3f;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+
+    .logout-button i {
+        font-size: 18px;
+    }
+
+
+    .logout-button:hover {
+        background: rgba(255,255,255,.75);
+        color: #d91f31;
+    }
+
+
+/* ============================================================
+   MAIN AREA
+   ============================================================ */
+
+.byprogram-main {
+    width: calc(100% - 310px);
+    margin-left: 310px;
+    min-height: 100vh;
+}
+
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+
+.byprogram-topbar {
+    height: 72px;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,.60);
+    background: rgba(255,255,255,.35);
+    backdrop-filter: blur(18px);
+}
+
+
+.topbar-spacer {
+    flex: 1;
+}
+
+
+.topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+.topbar-user-info {
+    text-align: right;
+}
+
+
+.topbar-user-name {
+    color: #0a315c;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+
+.topbar-user-role {
+    margin-top: 3px;
+    color: #5180a4;
+    font-size: 9px;
+}
+
+
+    .topbar-user-role i {
+        color: #087de2;
+    }
+
+
+.topbar-avatar {
+    width: 43px;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.85);
+    border-radius: 50%;
+    background: linear-gradient( 135deg, #d9f2ff, #a7ddfa );
+    color: #0879d7;
+    font-size: 20px;
+}
+
+
+.topbar-profile {
+    min-height: 35px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(71,161,222,.25);
+    border-radius: 9px;
+    background: rgba(255,255,255,.55);
+    color: #12609d;
+    font-size: 10px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+
+    .topbar-profile:hover {
+        background: #FFFFFF;
+        color: #0878d5;
+    }
+
+
+/* ============================================================
+   CONTENT
+   ============================================================ */
+
+.byprogram-content {
+    min-height: calc(100vh - 72px);
+    padding: 24px 28px 35px;
+}
+
+
+/* ============================================================
+   COMMON PAGE CONTAINERS
+   ============================================================ */
+
+.page-container,
+.dashboard-container,
+.registration-page,
+.participants-page,
+.programs-page,
+.attendance-page,
+.reports-page,
+.users-page,
+.profile-page {
+    color: #073d78;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* ============================================================
+   COMMON HEADINGS
+   ============================================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.page-eyebrow,
+.section-eyebrow {
+    color: #0878d7 !important;
+    font-weight: 800 !important;
+}
+
+
+/* ============================================================
+   GLASS CARD
+   ============================================================ */
+
+.glass-card,
+.summary-card,
+.stat-card,
+.dashboard-card,
+.filter-panel,
+.table-panel,
+.content-card,
+.module-panel {
+    border: 1px solid rgba(255,255,255,.85) !important;
+    border-radius: 16px !important;
+    background: linear-gradient( 135deg, rgba(255,255,255,.90), rgba(244,251,255,.78) ) !important;
+    box-shadow: 0 10px 28px rgba(56,137,190,.10), inset 0 1px 0 rgba(255,255,255,.95) !important;
+    backdrop-filter: blur(18px);
+}
+
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+
+.admin-dashboard,
+.byp-dashboard {
+    width: 100%;
+    color: #063d78;
+}
+
+
+    .admin-dashboard h1,
+    .byp-dashboard h1 {
+        color: #063d78 !important;
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+
+    .admin-dashboard p,
+    .byp-dashboard p {
+        color: #3973a3;
+    }
+
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+
+.stat-card,
+.summary-card {
+    color: #0b4380 !important;
+}
+
+
+    .stat-card strong,
+    .summary-card strong {
+        color: #063c78 !important;
+    }
+
+
+    .stat-card span,
+    .summary-card span {
+        color: #3973a3 !important;
+    }
+
+
+    .stat-card small,
+    .summary-card small {
+        color: #6691b4 !important;
+    }
+
+
+/* ============================================================
+   COLORFUL ICON BOXES
+   ============================================================ */
+
+.summary-icon,
+.stat-icon {
+    border-radius: 13px !important;
+}
+
+
+    .summary-icon.total,
+    .stat-icon.total {
+        background: #e0f0ff !important;
+        color: #1685e8 !important;
+    }
+
+
+    .summary-icon.pending,
+    .stat-icon.pending {
+        background: #fff0d9 !important;
+        color: #ff9918 !important;
+    }
+
+
+    .summary-icon.approved,
+    .stat-icon.approved {
+        background: #dcf9ef !important;
+        color: #0bb58d !important;
+    }
+
+
+    .summary-icon.rejected,
+    .stat-icon.rejected {
+        background: #ffe2e5 !important;
+        color: #f04452 !important;
+    }
+
+
+/* ============================================================
+   BLUE BUTTONS
+   ============================================================ */
+
+button,
+.btn-primary,
+.primary-button,
+.search-button {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.btn-primary,
+.primary-button,
+.search-button {
+    border: none !important;
+    background: linear-gradient( 135deg, #087ff0, #1468e8 ) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 7px 18px rgba(15,119,226,.20);
+}
+
+
+    .btn-primary:hover,
+    .primary-button:hover,
+    .search-button:hover {
+        background: linear-gradient( 135deg, #0874dc, #125fd8 ) !important;
+    }
+
+
+/* ============================================================
+   WHITE BUTTON
+   ============================================================ */
+
+.secondary-button,
+.reset-button {
+    border: 1px solid #b9dfff !important;
+    background: rgba(255,255,255,.72) !important;
+    color: #0874cf !important;
+}
+
+
+    .secondary-button:hover,
+    .reset-button:hover {
+        background: #FFFFFF !important;
+    }
+
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+input,
+select,
+textarea {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+input,
+select,
+textarea,
+.input-wrapper {
+    border-color: #c7e4f7 !important;
+    background: rgba(255,255,255,.78) !important;
+    color: #174e80 !important;
+}
+
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #55aef0 !important;
+        box-shadow: 0 0 0 3px rgba(48,151,230,.10) !important;
+        outline: none !important;
+    }
+
+
+    input::placeholder {
+        color: #8aafc9 !important;
+    }
+
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+table {
+    color: #164d7e;
+}
+
+
+    table thead th {
+        background: #e8f6ff !important;
+        color: #1465a5 !important;
+        border-bottom: 1px solid #c7e5f8 !important;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+
+    table tbody td {
+        color: #275d88 !important;
+        border-bottom: 1px solid #deedf7 !important;
+        background: rgba(255,255,255,.48);
+    }
+
+
+    table tbody tr:hover td {
+        background: #f2faff !important;
+    }
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.status-badge.approved {
+    background: #d9f8ed !important;
+    color: #07986f !important;
+    border-color: #a9ecd8 !important;
+}
+
+
+.status-badge.pending {
+    background: #fff0d5 !important;
+    color: #e88600 !important;
+    border-color: #ffdda2 !important;
+}
+
+
+.status-badge.rejected {
+    background: #ffe0e4 !important;
+    color: #df3545 !important;
+    border-color: #ffc1c8 !important;
+}
+
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
+
+.action-button {
+    border-radius: 8px !important;
+}
+
+
+    .action-button.approve {
+        background: #d9f8ed !important;
+        color: #08a37b !important;
+        border: 1px solid #a9ead8 !important;
+    }
+
+
+    .action-button.reject {
+        background: #ffe3e6 !important;
+        color: #e53d4d !important;
+        border: 1px solid #ffc3c9 !important;
+    }
+
+
+    .action-button.attendance {
+        background: #e1f0ff !important;
+        color: #087ce0 !important;
+        border: 1px solid #c2e1fb !important;
+    }
+
+
+/* ============================================================
+   MODULE CARDS
+   ============================================================ */
+
+.module-card,
+.quick-module,
+.admin-module {
+    border: 1px solid #cce7f9 !important;
+    border-radius: 13px !important;
+    background: linear-gradient( 135deg, rgba(255,255,255,.90), rgba(237,248,255,.82) ) !important;
+    color: #093f78 !important;
+}
+
+
+    .module-card:hover,
+    .quick-module:hover,
+    .admin-module:hover {
+        border-color: #8bcaf3 !important;
+        background: #FFFFFF !important;
+        box-shadow: 0 8px 20px rgba(34,133,205,.12);
+    }
+
+
+.module-icon {
+    background: #e0f1ff !important;
+    color: #087de0 !important;
+}
+
+
+/* ============================================================
+   PROGRAM COLOR
+   ============================================================ */
+
+.module-program,
+.program-icon {
+    color: #7256e8 !important;
+    background: #eee9ff !important;
+}
+
+
+/* ============================================================
+   REGISTRATION COLOR
+   ============================================================ */
+
+.module-registration {
+    color: #ff8c13 !important;
+}
+
+
+/* ============================================================
+   ATTENDANCE COLOR
+   ============================================================ */
+
+.module-attendance {
+    color: #08ae87 !important;
+}
+
+
+/* ============================================================
+   REPORTS COLOR
+   ============================================================ */
+
+.module-reports {
+    color: #477ce8 !important;
+}
+
+
+/* ============================================================
+   USER MANAGEMENT
+   ============================================================ */
+
+.module-users {
+    color: #1587d8 !important;
+}
+
+
+/* ============================================================
+   TOP ACTIONS
+   ============================================================ */
+
+.header-button {
+    border-radius: 10px !important;
+}
+
+
+    .header-button.primary {
+        background: linear-gradient( 135deg, #087ff0, #236de9 ) !important;
+        color: #FFFFFF !important;
+    }
+
+
+    .header-button.secondary {
+        background: rgba(255,255,255,.78) !important;
+        color: #0875cf !important;
+        border: 1px solid #c6e4f7 !important;
+    }
+
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.empty-table {
+    color: #4c7ea4 !important;
+}
+
+
+.empty-icon {
+    background: #e4f3ff !important;
+    color: #2089df !important;
+}
+
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+
+::-webkit-scrollbar-track {
+    background: rgba(210,238,252,.55);
+}
+
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #91c9eb;
+}
+
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #5aafe1;
+    }
+
+
+/* ============================================================
+   DESKTOP ONLY
+   ============================================================ */
+
+@media (min-width: 1200px) {
+
+    .byprogram-content {
+        padding: 25px 28px 35px;
+    }
+}
+/**/

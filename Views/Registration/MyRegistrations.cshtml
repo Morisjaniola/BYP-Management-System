@@ -1,0 +1,2271 @@
+@model IEnumerable<BYPManagementSystem.Models.ProgramRegistration>
+
+@{
+    ViewData["Title"] = "My Registrations";
+
+    var registrations = Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.ProgramRegistration>();
+
+    var totalRegistrations = registrations.Count;
+
+    var pendingCount = registrations.Count(x =>
+        x.Status == "Pending");
+
+    var approvedCount = registrations.Count(x =>
+        x.Status == "Approved");
+
+    var rejectedCount = registrations.Count(x =>
+        x.Status == "Rejected");
+
+    var participant = registrations
+        .Select(x => x.YouthParticipant)
+        .FirstOrDefault(x => x != null);
+
+    var participantName =
+        participant?.FullName ?? "Youth Participant";
+
+    var barangay =
+        participant?.Barangay ?? "Barangay not set";
+}
+
+<div class="my-registrations-page">
+
+    <!-- ==========================================================
+         HEADER
+         ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-icon">
+            <i class="bi bi-person-check-fill"></i>
+        </div>
+
+        <div class="header-content">
+
+            <span class="header-kicker">
+                YOUTH PORTAL
+            </span>
+
+            <h1>
+                My Registrations
+            </h1>
+
+            <p>
+                View your registered youth programs and registration
+                status.
+            </p>
+
+        </div>
+
+        <a asp-controller="Programs"
+           asp-action="Index"
+           class="browse-button">
+
+            <i class="bi bi-calendar-event-fill"></i>
+
+            Browse Programs
+
+        </a>
+
+    </div>
+
+
+    <!-- ==========================================================
+         PARTICIPANT PROFILE
+         ========================================================== -->
+
+    <div class="profile-card">
+
+        <div class="profile-avatar">
+
+            @(participant?.FirstName?.Length > 0
+                ? participant.FirstName
+                    .Substring(0, 1)
+                    .ToUpper()
+                : "Y")
+
+        </div>
+
+        <div class="profile-info">
+
+            <span>
+                REGISTERED YOUTH PARTICIPANT
+            </span>
+
+            <h2>
+                @participantName
+            </h2>
+
+            <div class="profile-meta">
+
+                <span>
+
+                    <i class="bi bi-geo-alt-fill"></i>
+
+                    @barangay
+
+                </span>
+
+                <span>
+
+                    <i class="bi bi-person-check-fill"></i>
+
+                    @totalRegistrations
+                    registered program(s)
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         SUMMARY
+         ========================================================== -->
+
+    <div class="summary-grid">
+
+        <!-- TOTAL -->
+
+        <div class="summary-card">
+
+            <div class="summary-info">
+
+                <span>
+                    Total Registrations
+                </span>
+
+                <strong>
+                    @totalRegistrations
+                </strong>
+
+            </div>
+
+            <div class="summary-icon blue">
+
+                <i class="bi bi-clipboard-data-fill"></i>
+
+            </div>
+
+        </div>
+
+
+        <!-- PENDING -->
+
+        <div class="summary-card">
+
+            <div class="summary-info">
+
+                <span>
+                    Pending
+                </span>
+
+                <strong>
+                    @pendingCount
+                </strong>
+
+            </div>
+
+            <div class="summary-icon orange">
+
+                <i class="bi bi-hourglass-split"></i>
+
+            </div>
+
+        </div>
+
+
+        <!-- APPROVED -->
+
+        <div class="summary-card">
+
+            <div class="summary-info">
+
+                <span>
+                    Approved
+                </span>
+
+                <strong>
+                    @approvedCount
+                </strong>
+
+            </div>
+
+            <div class="summary-icon green">
+
+                <i class="bi bi-check-circle-fill"></i>
+
+            </div>
+
+        </div>
+
+
+        <!-- REJECTED -->
+
+        <div class="summary-card">
+
+            <div class="summary-info">
+
+                <span>
+                    Rejected
+                </span>
+
+                <strong>
+                    @rejectedCount
+                </strong>
+
+            </div>
+
+            <div class="summary-icon red">
+
+                <i class="bi bi-x-circle-fill"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         SUCCESS / ERROR
+         ========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-message success">
+
+            <div class="alert-icon">
+
+                <i class="bi bi-check-circle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Success
+                </strong>
+
+                <p>
+                    @TempData["Success"]
+                </p>
+
+            </div>
+
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-message error">
+
+            <div class="alert-icon">
+
+                <i class="bi bi-exclamation-triangle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Notice
+                </strong>
+
+                <p>
+                    @TempData["Error"]
+                </p>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         REGISTRATIONS
+         ========================================================== -->
+
+    <div class="section-card">
+
+        <div class="section-header">
+
+            <div class="section-heading">
+
+                <div class="section-icon">
+
+                    <i class="bi bi-journal-check"></i>
+
+                </div>
+
+                <div>
+
+                    <h2>
+                        My Program Registrations
+                    </h2>
+
+                    <p>
+                        Your registration and approval status for each
+                        program.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <span class="record-count">
+
+                @totalRegistrations
+                program(s)
+
+            </span>
+
+        </div>
+
+
+        @if (registrations.Any())
+        {
+
+            <div class="registration-list">
+
+                @foreach (var registration in registrations
+                    .OrderByDescending(x => x.RegisteredAt))
+                {
+
+                    <div class="registration-card">
+
+                        <!-- ======================================
+                             PROGRAM ICON
+                             ====================================== -->
+
+                        <div class="program-icon">
+
+                            <i class="bi bi-calendar-event-fill"></i>
+
+                        </div>
+
+
+                        <!-- ======================================
+                             PROGRAM DETAILS
+                             ====================================== -->
+
+                        <div class="registration-info">
+
+                            <div class="program-title-row">
+
+                                <h3>
+
+                                    @(registration.Program?.Name
+                                        ?? "Unknown Program")
+
+                                </h3>
+
+
+                                @if (registration.Status == "Pending")
+                                {
+
+                                    <span class="status-badge pending">
+
+                                        <i class="bi bi-hourglass-split"></i>
+
+                                        Pending
+
+                                    </span>
+
+                                }
+                                else if (registration.Status == "Approved")
+                                {
+
+                                    <span class="status-badge approved">
+
+                                        <i class="bi bi-check-circle-fill"></i>
+
+                                        Approved
+
+                                    </span>
+
+                                }
+                                else if (registration.Status == "Rejected")
+                                {
+
+                                    <span class="status-badge rejected">
+
+                                        <i class="bi bi-x-circle-fill"></i>
+
+                                        Rejected
+
+                                    </span>
+
+                                }
+                                else
+                                {
+
+                                    <span class="status-badge neutral">
+
+                                        @registration.Status
+
+                                    </span>
+
+                                }
+
+                            </div>
+
+
+                            <!-- ==================================
+                                 PROGRAM META
+                                 ================================== -->
+
+                            <div class="program-meta">
+
+                                <span>
+
+                                    <i class="bi bi-clock-fill"></i>
+
+                                    @(registration.Program?.Schedule
+                                        ?? "Schedule not set")
+
+                                </span>
+
+
+                                <span>
+
+                                    <i class="bi bi-geo-alt-fill"></i>
+
+                                    @(registration.Program?.Barangay
+                                        ?? registration.YouthParticipant?.Barangay
+                                        ?? "Barangay not set")
+
+                                </span>
+
+
+                                <span>
+
+                                    <i class="bi bi-calendar-plus-fill"></i>
+
+                                    Registered
+                                    @(registration.RegisteredAt.ToLocalTime().ToString("MMM dd, yyyy"))
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- ==================================
+                                 REGISTRATION ID
+                                 ================================== -->
+
+                            <div class="registration-id">
+
+                                Registration ID:
+                                <strong>
+                                    #@registration.Id
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ======================================
+                             ACTION
+                             ====================================== -->
+
+                        <div class="registration-action">
+
+                            @if (registration.Status == "Approved" &&
+                                 registration.YouthParticipantId.HasValue)
+                            {
+
+                                <a asp-controller="Attendance"
+                                   asp-action="MyAttendance"
+                                   class="attendance-button">
+
+                                    <i class="bi bi-clipboard-check-fill"></i>
+
+                                    My Attendance
+
+                                </a>
+
+                            }
+                            else if (registration.Status == "Pending")
+                            {
+
+                                <span class="action-note pending-note">
+
+                                    <i class="bi bi-clock"></i>
+
+                                    Waiting for approval
+
+                                </span>
+
+                            }
+                            else if (registration.Status == "Rejected")
+                            {
+
+                                <span class="action-note rejected-note">
+
+                                    <i class="bi bi-x-circle"></i>
+
+                                    Registration rejected
+
+                                </span>
+
+                            }
+
+                        </div>
+
+                    </div>
+
+                }
+
+            </div>
+
+        }
+        else
+        {
+
+            <!-- ==================================================
+                 EMPTY STATE
+                 ================================================== -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="bi bi-journal-x"></i>
+
+                </div>
+
+                <h3>
+                    No Registrations Yet
+                </h3>
+
+                <p>
+                    You do not have any program registrations yet.
+                    Browse the available youth programs and register
+                    for a program.
+                </p>
+
+                <a asp-controller="Programs"
+                   asp-action="Index"
+                   class="empty-button">
+
+                    <i class="bi bi-calendar-event-fill"></i>
+
+                    Browse Available Programs
+
+                </a>
+
+            </div>
+
+        }
+
+    </div>
+
+
+    <!-- ==========================================================
+         STATUS GUIDE
+         ========================================================== -->
+
+    <div class="guide-card">
+
+        <div class="guide-title">
+
+            <div class="guide-icon">
+
+                <i class="bi bi-info-circle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Registration Status
+                </strong>
+
+                <span>
+                    What each status means
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="guide-items">
+
+            <div class="guide-item">
+
+                <span class="guide-status pending">
+                    <i class="bi bi-hourglass-split"></i>
+                    Pending
+                </span>
+
+                <p>
+                    Your registration is waiting for processing.
+                </p>
+
+            </div>
+
+
+            <div class="guide-item">
+
+                <span class="guide-status approved">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Approved
+                </span>
+
+                <p>
+                    You are approved for the program.
+                </p>
+
+            </div>
+
+
+            <div class="guide-item">
+
+                <span class="guide-status rejected">
+                    <i class="bi bi-x-circle-fill"></i>
+                    Rejected
+                </span>
+
+                <p>
+                    Your registration was not approved.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         ATTENDANCE INFORMATION
+         ========================================================== -->
+
+    <div class="attendance-info">
+
+        <div class="attendance-info-icon">
+
+            <i class="bi bi-clipboard-check-fill"></i>
+
+        </div>
+
+        <div>
+
+            <strong>
+                Attendance
+            </strong>
+
+            <p>
+                Once a registration is approved and attendance is
+                recorded, you can view the attendance history through
+                the My Attendance page.
+            </p>
+
+        </div>
+
+        <a asp-controller="Attendance"
+           asp-action="MyAttendance"
+           class="view-attendance-link">
+
+            View My Attendance
+
+            <i class="bi bi-arrow-right"></i>
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ==========================================================
+       PAGE
+       ========================================================== */
+
+    .my-registrations-page {
+        width: 100%;
+        
+
+        
+
+        padding: 12px 18px 18px;
+
+        
+    }
+
+
+    /* ==========================================================
+       HEADER
+       ========================================================== */
+
+    .page-header {
+        position: relative;
+
+        display: flex;
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 14px 18px;
+
+        margin-bottom: 12px;
+
+        border-radius: 8px;
+
+        color: white;
+
+        background:
+            linear-gradient(
+                135deg,
+                #1475f5,
+                #1555ae
+            );
+
+        overflow: hidden;
+    }
+
+    
+
+    .header-icon {
+        position: relative;
+
+        z-index: 2;
+
+        width: 32px;
+        height: 32px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 7px;
+
+        background:
+            rgba(255,255,255,.14);
+
+        border:
+            1px solid
+            rgba(255,255,255,.2);
+
+        font-size: 1rem;
+    }
+
+    /* ============================================================
+       DARK MODE OVERRIDES
+    ============================================================ */
+
+    html[data-theme="dark"] .profile-card {
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+        box-shadow: 0 6px 22px rgba(0,0,0,.16);
+    }
+
+    html[data-theme="dark"] .profile-avatar {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .profile-info > span {
+        color: #6CB6B8;
+    }
+
+    html[data-theme="dark"] .profile-info h2 {
+        color: white;
+    }
+
+    html[data-theme="dark"] .profile-meta span {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .profile-meta i {
+        color: #6CECEC;
+    }
+
+    html[data-theme="dark"] .summary-card {
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+        box-shadow: 0 5px 20px rgba(0,0,0,.16);
+    }
+
+    html[data-theme="dark"] .summary-info span {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .summary-info strong {
+        color: white;
+    }
+
+    html[data-theme="dark"] .summary-icon.blue {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .summary-icon.orange {
+        background: rgba(241,147,22,.10);
+        color: #F1A33C;
+        border: 1px solid rgba(241,147,22,.18);
+    }
+
+    html[data-theme="dark"] .summary-icon.green {
+        background: rgba(45,199,165,.10);
+        color: #2DC7A5;
+        border: 1px solid rgba(45,199,165,.18);
+    }
+
+    html[data-theme="dark"] .summary-icon.red {
+        background: rgba(241,91,103,.10);
+        color: #F56D78;
+        border: 1px solid rgba(241,91,103,.18);
+    }
+
+    html[data-theme="dark"] .section-card {
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+        box-shadow: 0 6px 22px rgba(0,0,0,.16);
+    }
+
+    html[data-theme="dark"] .section-header {
+        border-bottom-color: rgba(80,220,220,.12);
+    }
+
+    html[data-theme="dark"] .section-icon {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .section-header h2 {
+        color: white;
+    }
+
+    html[data-theme="dark"] .section-header p {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .record-count {
+        background: #0A4848;
+        border-color: rgba(80,220,220,.18);
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .registration-list {
+        padding: 10px 12px 12px;
+    }
+
+    html[data-theme="dark"] .registration-card {
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+        box-shadow: 0 5px 19px rgba(0,0,0,.16);
+    }
+
+    html[data-theme="dark"] .registration-card:hover {
+        border-color: rgba(80,220,220,.30);
+        box-shadow: 0 6px 19px rgba(0,0,0,.20);
+    }
+
+    html[data-theme="dark"] .program-icon {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .program-title-row h3 {
+        color: white;
+    }
+
+    html[data-theme="dark"] .program-meta span {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .program-meta i {
+        color: #6CECEC;
+    }
+
+    html[data-theme="dark"] .registration-id {
+        color: #78A5A5;
+    }
+
+    html[data-theme="dark"] .registration-id strong {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .status-badge.pending {
+        color: #F1A33C;
+        background: rgba(241,147,22,.10);
+        border: 1px solid rgba(241,147,22,.18);
+    }
+
+    html[data-theme="dark"] .status-badge.approved {
+        color: #2DC7A5;
+        background: rgba(45,199,165,.10);
+        border: 1px solid rgba(45,199,165,.18);
+    }
+
+    html[data-theme="dark"] .status-badge.rejected {
+        color: #F56D78;
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.18);
+    }
+
+    html[data-theme="dark"] .status-badge.neutral {
+        color: #A7D2D2;
+        background: #0A4848;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .attendance-button {
+        background: #20D8D8;
+        color: #001F1F;
+        border-color: #20D8D8;
+    }
+
+    html[data-theme="dark"] .attendance-button:hover {
+        background: #6CECEC;
+        border-color: #6CECEC;
+    }
+
+    html[data-theme="dark"] .pending-note {
+        color: #F1A33C;
+        background: rgba(241,147,22,.10);
+        border: 1px solid rgba(241,147,22,.18);
+    }
+
+    html[data-theme="dark"] .rejected-note {
+        color: #F56D78;
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.18);
+    }
+
+    html[data-theme="dark"] .empty-state {
+        background: #073F3F;
+        border: 1px solid rgba(80,220,220,.18);
+        padding: 40px 16px;
+        text-align: center;
+    }
+
+    html[data-theme="dark"] .empty-icon {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .empty-state h3 {
+        color: white;
+    }
+
+    html[data-theme="dark"] .empty-state p {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .empty-button {
+        background: #20D8D8;
+        color: #001F1F;
+    }
+
+    html[data-theme="dark"] .empty-button:hover {
+        background: #6CECEC;
+    }
+
+    html[data-theme="dark"] .guide-card {
+        background: #073F3F;
+        border-color: rgba(80,220,220,.18);
+        box-shadow: 0 5px 20px rgba(0,0,0,.16);
+    }
+
+    html[data-theme="dark"] .guide-icon {
+        background: rgba(32,216,216,.12);
+        color: #6CECEC;
+        border: 1px solid rgba(80,220,220,.18);
+    }
+
+    html[data-theme="dark"] .guide-title strong {
+        color: white;
+    }
+
+    html[data-theme="dark"] .guide-title span {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .guide-status.pending {
+        color: #F1A33C;
+        background: rgba(241,147,22,.10);
+        border: 1px solid rgba(241,147,22,.18);
+    }
+
+    html[data-theme="dark"] .guide-status.approved {
+        color: #2DC7A5;
+        background: rgba(45,199,165,.10);
+        border: 1px solid rgba(45,199,165,.18);
+    }
+
+    html[data-theme="dark"] .guide-status.rejected {
+        color: #F56D78;
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.18);
+    }
+
+    html[data-theme="dark"] .guide-item p {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .attendance-info {
+        border-color: rgba(80,220,220,.18);
+        background: #0A4848;
+    }
+
+    html[data-theme="dark"] .attendance-info strong {
+        color: #6CECEC;
+    }
+
+    html[data-theme="dark"] .attendance-info p {
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .view-attendance-link {
+        color: #6CECEC;
+    }
+
+    html[data-theme="dark"] .view-attendance-link:hover {
+        color: white;
+    }
+
+    html[data-theme="dark"] .alert-message.success {
+        background: #0A4848;
+        border-color: rgba(45,199,165,.18);
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .alert-message.error {
+        background: #0A4848;
+        border-color: rgba(241,91,103,.18);
+        color: #A7D2D2;
+    }
+
+    html[data-theme="dark"] .alert-message strong {
+        color: white;
+    }
+
+    html[data-theme="dark"] .alert-message p {
+        color: #A7D2D2;
+    }
+
+    /* ============================================================
+       HEADER COMPACTION (theme.css forces 112px / 20px 24px / 17px
+       radius on .page-header in both themes — restore dashboard
+       density: 84px header, 14px 18px padding, 12px spacing)
+    ============================================================ */
+
+    /* Header geometry (min-height/padding/gap/radius) is owned
+       by the shared .page-header rules in theme.css for both
+       themes - this page previously overrode them to 84px. */
+
+    /* Light mode: theme.css renders .page-header as a white card,
+       leaving the translucent white browse button invisible */
+
+    html[data-theme="light"] .my-registrations-page .browse-button {
+        background: #009FA3;
+        border-color: #009FA3;
+        color: #fff;
+    }
+
+    html[data-theme="light"] .my-registrations-page .browse-button:hover {
+        background: #0A7D82;
+        border-color: #0A7D82;
+        color: #fff;
+    }
+
+    /* Light mode: keep the kicker as a teal eyebrow like other pages */
+
+    html[data-theme="light"] .my-registrations-page .header-kicker {
+        color: #009FA3;
+        opacity: 1;
+    }
+
+    .header-content {
+        position: relative;
+
+        z-index: 2;
+    }
+
+    .header-kicker {
+        display: block;
+
+        margin-bottom: 1px;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        letter-spacing: .8px;
+
+        opacity: .88;
+    }
+
+    .page-header h1 {
+        margin: 3px 0 2px;
+
+        font-size: 20px;
+
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0;
+
+        font-size: .6rem;
+
+        
+    }
+
+
+    /* ==========================================================
+       BROWSE BUTTON
+       ========================================================== */
+
+    .browse-button {
+        position: relative;
+
+        z-index: 2;
+
+        margin-left: auto;
+
+        min-height: 26px;
+
+        padding: 0 8px;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.25);
+
+        border-radius: 7px;
+
+        color: white;
+
+        background:
+            rgba(255,255,255,.08);
+
+        text-decoration: none;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+    .browse-button:hover {
+        color: white;
+
+        background:
+            rgba(255,255,255,.17);
+    }
+
+
+    /* ==========================================================
+       PROFILE
+       ========================================================== */
+
+    .profile-card {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 12px 14px;
+
+        margin-bottom: 12px;
+
+        background: white;
+
+        border:
+            1px solid #e4ebf2;
+
+        border-radius: 7px;
+
+        box-shadow:
+            0 6px 22px
+            rgba(20,50,90,.04);
+    }
+
+    .profile-avatar {
+        width: 40px;
+        height: 40px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 7px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        font-size: 1.25rem;
+
+        font-weight: 700;
+    }
+
+    .profile-info {
+        min-width: 0;
+    }
+
+    .profile-info > span {
+        display: block;
+
+        margin-bottom: 1px;
+
+        color: #8a98a9;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+    }
+
+    .profile-info h2 {
+        margin: 0 0 2px;
+
+        color: #172a41;
+
+        font-size: .98rem;
+
+        font-weight: 700;
+    }
+
+    .profile-meta {
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+    }
+
+    .profile-meta span {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        color: #77879a;
+
+        font-size: .78rem;
+    }
+
+    .profile-meta i {
+        color: #1f2b46;
+    }
+
+
+    /* ==========================================================
+       SUMMARY
+       ========================================================== */
+
+    .summary-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 8px;
+
+        margin-bottom: 12px;
+    }
+
+    .summary-card {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 8px;
+
+        min-height: 76px;
+
+        padding: 11px;
+
+        background: white;
+
+        border:
+            1px solid #e5ebf2;
+
+        border-radius: 7px;
+
+        box-shadow:
+            0 5px 20px
+            rgba(20,50,90,.04);
+    }
+
+    .summary-info span {
+        display: block;
+
+        margin-bottom: 2px;
+
+        color: #7b899b;
+
+        font-size: .78rem;
+    }
+
+    .summary-info strong {
+        color: #162840;
+
+        font-size: 1rem;
+
+        line-height: 1.1;
+
+        font-weight: 700;
+    }
+
+    .summary-icon {
+        width: 34px;
+        height: 34px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 7px;
+
+        font-size: .98rem;
+    }
+
+    .summary-icon.blue {
+        color: #1f2b46;
+
+        background: #eef2f7;
+    }
+
+    .summary-icon.orange {
+        color: #b97700;
+
+        background: #fff4dc;
+    }
+
+    .summary-icon.green {
+        color: #108557;
+
+        background: #eafaf2;
+    }
+
+    .summary-icon.red {
+        color: #d63b50;
+
+        background: #fff0f2;
+    }
+
+
+    /* ==========================================================
+       ALERT
+       ========================================================== */
+
+    .alert-message {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 8px;
+
+        padding: 10px 12px;
+
+        margin-bottom: 10px;
+
+        border-radius: 7px;
+    }
+
+    .alert-message.success {
+        border:
+            1px solid #ccebdc;
+
+        background: #eefbf4;
+
+        color: #087747;
+    }
+
+    .alert-message.error {
+        border:
+            1px solid #f2ccd3;
+
+        background: #fff1f3;
+
+        color: #c93149;
+    }
+
+    .alert-icon {
+        font-size: 1rem;
+    }
+
+    .alert-message strong {
+        display: block;
+
+        margin-bottom: 1px;
+
+        font-size: .78rem;
+    }
+
+    .alert-message p {
+        margin: 0;
+
+        font-size: .78rem;
+
+        line-height: 1.3;
+    }
+
+
+    /* ==========================================================
+       SECTION
+       ========================================================== */
+
+    .section-card {
+        overflow: hidden;
+
+        margin-bottom: 12px;
+
+        background: white;
+
+        border:
+            1px solid #e4ebf2;
+
+        border-radius: 7px;
+
+        box-shadow:
+            0 6px 22px
+            rgba(20,50,90,.04);
+    }
+
+    .section-header {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 10px;
+
+        padding: 12px 14px;
+
+        border-bottom:
+            1px solid #edf1f5;
+    }
+
+    .section-heading {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+    }
+
+    .section-icon {
+        width: 34px;
+        height: 34px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 7px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        font-size: 1.05rem;
+    }
+
+    .section-header h2 {
+        margin: 0 0 2px;
+
+        color: #202b3c;
+
+        font-size: 1.05rem;
+
+        font-weight: 700;
+    }
+
+    .section-header p {
+        margin: 0;
+
+        color: #717b8c;
+
+        font-size: .6rem;
+    }
+
+    .record-count {
+        display: inline-flex;
+
+        align-items: center;
+
+        min-height: 26px;
+
+        padding: 0 8px;
+
+        border-radius: 7px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+
+    /* ==========================================================
+       REGISTRATION LIST
+       ========================================================== */
+
+    .registration-list {
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 8px;
+
+        padding: 10px 12px 12px;
+    }
+
+    .registration-card {
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 11px;
+
+        border:
+            1px solid #e5ebf2;
+
+        border-radius: 8px;
+
+        background: white;
+
+        transition:
+            border-color .15s ease,
+            box-shadow .15s ease,
+            transform .15s ease;
+    }
+
+    .registration-card:hover {
+        transform: translateY(-1px);
+
+        border-color: #c9dff8;
+
+        box-shadow:
+            0 6px 19px
+            rgba(20,75,135,.06);
+    }
+
+
+    /* ==========================================================
+       PROGRAM ICON
+       ========================================================== */
+
+    .program-icon {
+        width: 32px;
+        height: 32px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 7px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        font-size: .98rem;
+    }
+
+
+    /* ==========================================================
+       REGISTRATION INFO
+       ========================================================== */
+
+    .registration-info {
+        flex: 1;
+
+        min-width: 0;
+    }
+
+    .program-title-row {
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        margin-bottom: 4px;
+    }
+
+    .program-title-row h3 {
+        max-width: 500px;
+
+        margin: 0;
+
+        overflow: hidden;
+
+        color: #1a2d45;
+
+        font-size: .78rem;
+
+        font-weight: 700;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+
+    .program-meta {
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+
+        margin-bottom: 6px;
+    }
+
+    .program-meta span {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        color: #7d8c9e;
+
+        font-size: .6rem;
+    }
+
+    .program-meta i {
+        color: #1f2b46;
+    }
+
+    .registration-id {
+        color: #9bA5b1;
+
+        font-size: .6rem;
+    }
+
+    .registration-id strong {
+        color: #6d7d90;
+
+        font-weight: 700;
+    }
+
+
+    /* ==========================================================
+       STATUS BADGES
+       ========================================================== */
+
+    .status-badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        padding: 4px 7px;
+
+        border-radius: 7px;
+
+        flex-shrink: 0;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+    .status-badge.pending {
+        color: #976600;
+
+        background: #fff2d1;
+    }
+
+    .status-badge.approved {
+        color: #087747;
+
+        background: #dcf8e9;
+    }
+
+    .status-badge.rejected {
+        color: #c82e46;
+
+        background: #ffe2e7;
+    }
+
+    .status-badge.neutral {
+        color: #64758a;
+
+        background: #eef2f6;
+    }
+
+
+    /* ==========================================================
+       ACTION
+       ========================================================== */
+
+    .registration-action {
+        min-width: 150px;
+
+        display: flex;
+
+        justify-content: flex-end;
+    }
+
+    .attendance-button {
+        min-height: 32px;
+
+        padding: 0 9px;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 4px;
+
+        border:
+            1px solid #1475f5;
+
+        border-radius: 7px;
+
+        background: #1f2b46;
+
+        color: white;
+
+        text-decoration: none;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+    .attendance-button:hover {
+        color: white;
+
+        border-color: #0d66df;
+
+        background: #344054;
+    }
+
+    .action-note {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        padding: 6px 8px;
+
+        border-radius: 7px;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+    .pending-note {
+        color: #936400;
+
+        background: #fff7e5;
+    }
+
+    .rejected-note {
+        color: #c43148;
+
+        background: #fff0f3;
+    }
+
+
+    /* ==========================================================
+       EMPTY
+       ========================================================== */
+
+    .empty-state {
+        padding: 40px 16px;
+
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 32px;
+        height: 32px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        margin: 0 auto 8px;
+
+        border-radius: 8px;
+
+        background: #f0f4f8;
+
+        color: #98a6b5;
+
+        font-size: 1.15rem;
+    }
+
+    .empty-state h3 {
+        margin: 3px 0 2px;
+
+        color: #35485e;
+
+        font-size: 1.05rem;
+
+        font-weight: 700;
+    }
+
+    .empty-state p {
+        max-width: 310px;
+
+        margin: 5px auto 10px;
+
+        color: #7d8b9c;
+
+        font-size: .6rem;
+
+        line-height: 1.5;
+    }
+
+    .empty-button {
+        min-height: 36px;
+
+        padding: 0 12px;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        border-radius: 7px;
+
+        background: #1f2b46;
+
+        color: white;
+
+        text-decoration: none;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+    }
+
+    .empty-button:hover {
+        background: #344054;
+
+        color: white;
+    }
+
+
+    /* ==========================================================
+       GUIDE
+       ========================================================== */
+
+    .guide-card {
+        display: flex;
+
+        align-items: center;
+
+        gap: 16px;
+
+        padding: 12px 14px;
+
+        margin-bottom: 12px;
+
+        background: white;
+
+        border:
+            1px solid #e5ebf2;
+
+        border-radius: 8px;
+
+        box-shadow:
+            0 5px 20px
+            rgba(20,50,90,.03);
+    }
+
+    .guide-title {
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        flex-shrink: 0;
+    }
+
+    .guide-icon {
+        width: 32px;
+        height: 32px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 7px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        font-size: 1rem;
+    }
+
+    .guide-title strong {
+        display: block;
+
+        margin-bottom: 1px;
+
+        color: #35485f;
+
+        font-size: .78rem;
+    }
+
+    .guide-title span {
+        display: block;
+
+        color: #8a97a7;
+
+        font-size: .6rem;
+    }
+
+    .guide-items {
+        flex: 1;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+        gap: 8px;
+    }
+
+    .guide-item {
+        min-width: 0;
+    }
+
+    .guide-status {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        padding: 4px 7px;
+
+        margin-bottom: 4px;
+
+        border-radius: 7px;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+    }
+
+    .guide-status.pending {
+        color: #976600;
+
+        background: #fff2d1;
+    }
+
+    .guide-status.approved {
+        color: #087747;
+
+        background: #dcf8e9;
+    }
+
+    .guide-status.rejected {
+        color: #c82e46;
+
+        background: #ffe2e7;
+    }
+
+    .guide-item p {
+        margin: 0;
+
+        color: #7b899a;
+
+        font-size: .6rem;
+
+        line-height: 1.3;
+    }
+
+
+    /* ==========================================================
+       ATTENDANCE INFO
+       ========================================================== */
+
+    .attendance-info {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 10px 12px;
+
+        border:
+            1px solid #d4e7ff;
+
+        border-radius: 7px;
+
+        background: #eef2f7;
+    }
+
+    .attendance-info-icon {
+        color: #1f2b46;
+
+        font-size: .98rem;
+    }
+
+    .attendance-info > div:not(.attendance-info-icon) {
+        flex: 1;
+    }
+
+    .attendance-info strong {
+        display: block;
+
+        margin-bottom: 2px;
+
+        color: #245281;
+
+        font-size: .78rem;
+    }
+
+    .attendance-info p {
+        margin: 0;
+
+        color: #717b8c;
+
+        font-size: .6rem;
+
+        line-height: 1.5;
+    }
+
+    .view-attendance-link {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        flex-shrink: 0;
+
+        color: #1f2b46;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+        white-space: nowrap;
+    }
+
+    .view-attendance-link:hover {
+        color: #0d66df;
+    }
+
+
+    /* ==========================================================
+       RESPONSIVE
+       ========================================================== */
+
+    @@media (max-width: 1050px) {
+
+        .summary-grid {
+            grid-template-columns:
+                repeat(2, 1fr);
+        }
+
+        .guide-card {
+            align-items: flex-start;
+
+            flex-direction: column;
+        }
+
+        .guide-items {
+            width: 100%;
+        }
+
+    }
+
+
+    @@media (max-width: 850px) {
+
+        .registration-card {
+            align-items: flex-start;
+
+            flex-wrap: wrap;
+        }
+
+        .registration-info {
+            width: calc(100% - 61px);
+
+            flex: none;
+        }
+
+        .registration-action {
+            width: 100%;
+
+            justify-content: flex-start;
+
+            padding-left: 61px;
+        }
+
+    }
+
+
+    @@media (max-width: 700px) {
+
+        .my-registrations-page {
+            padding: 8px 8px 18px 8px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+
+            padding: 14px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .browse-button {
+            display: none;
+        }
+
+        .summary-grid {
+            grid-template-columns:
+                1fr;
+        }
+
+        .profile-card {
+            align-items: flex-start;
+        }
+
+        .section-header {
+            align-items: flex-start;
+
+            flex-direction: column;
+
+            padding: 11px;
+        }
+
+        .registration-list {
+            padding: 11px;
+        }
+
+        .guide-items {
+            grid-template-columns:
+                1fr;
+        }
+
+        .attendance-info {
+            align-items: flex-start;
+
+            flex-wrap: wrap;
+        }
+
+        .view-attendance-link {
+            width: 100%;
+
+            margin-left: 29px;
+        }
+
+    }
+
+
+    @@media (max-width: 480px) {
+
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+        }
+
+        .profile-info h2 {
+            font-size: 15px;
+        }
+
+        .registration-card {
+            gap: 8px;
+        }
+
+        .program-icon {
+            width: 34px;
+            height: 34px;
+        }
+
+        .registration-info {
+            width: calc(100% - 52px);
+        }
+
+        .registration-action {
+            padding-left: 52px;
+        }
+
+        .program-title-row {
+            align-items: flex-start;
+
+            flex-direction: column;
+
+            gap: 4px;
+        }
+
+    }
+
+</style>

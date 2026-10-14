@@ -1,0 +1,1069 @@
+﻿@{
+    ViewData["Title"] = "Privacy";
+}
+
+
+<div class="privacy-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <span class="page-eyebrow">
+                INFORMATION
+            </span>
+
+
+            <h1>
+                Privacy
+            </h1>
+
+
+            <p>
+                Information about account and system data protection.
+            </p>
+
+        </div>
+
+
+        <a asp-controller="Home"
+           asp-action="Index"
+           class="back-button">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Home
+
+        </a>
+
+    </div>
+
+
+    <!-- =========================================================
+         INTRO
+    ========================================================== -->
+
+    <section class="privacy-panel">
+
+        <div class="panel-icon">
+
+            <i class="bi bi-shield-check"></i>
+
+        </div>
+
+
+        <div class="panel-content">
+
+            <span class="panel-label">
+                PRIVACY INFORMATION
+            </span>
+
+
+            <h2>
+                Protecting your account information
+            </h2>
+
+
+            <p>
+                The Barangay Youth Program Management System uses
+                authenticated accounts and role-based access to help
+                control access to system information and functions.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         PRIVACY AREAS
+    ========================================================== -->
+
+    <section class="privacy-grid">
+
+
+        <!-- ACCOUNT -->
+
+        <div class="privacy-card">
+
+            <div class="card-icon account">
+
+                <i class="bi bi-person-lock"></i>
+
+            </div>
+
+
+            <h3>
+                Account Information
+            </h3>
+
+
+            <p>
+                Your account is handled through the application's
+                authentication system. Account access is associated
+                with your authenticated identity.
+            </p>
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="privacy-card">
+
+            <div class="card-icon password">
+
+                <i class="bi bi-key"></i>
+
+            </div>
+
+
+            <h3>
+                Password Security
+            </h3>
+
+
+            <p>
+                Passwords are handled through ASP.NET Core Identity
+                rather than being stored as readable plain-text passwords.
+            </p>
+
+        </div>
+
+
+        <!-- ROLE -->
+
+        <div class="privacy-card">
+
+            <div class="card-icon role">
+
+                <i class="bi bi-shield-lock"></i>
+
+            </div>
+
+
+            <h3>
+                Role-Based Access
+            </h3>
+
+
+            <p>
+                Access to protected pages and system functions depends
+                on the authenticated user's assigned role and permissions.
+            </p>
+
+        </div>
+
+
+        <!-- DATA -->
+
+        <div class="privacy-card">
+
+            <div class="card-icon data">
+
+                <i class="bi bi-database-check"></i>
+
+            </div>
+
+
+            <h3>
+                System Records
+            </h3>
+
+
+            <p>
+                Youth participant, program, registration, and attendance
+                information is managed within the system according to
+                the user's permitted access.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         SECURITY PRACTICES
+    ========================================================== -->
+
+    <section class="privacy-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span>
+                    SECURITY
+                </span>
+
+
+                <h2>
+                    Basic Security Practices
+                </h2>
+
+
+                <p>
+                    The application follows the security foundation
+                    used by the project.
+                </p>
+
+            </div>
+
+
+            <i class="bi bi-shield panel-header-icon"></i>
+
+        </div>
+
+
+        <div class="security-list">
+
+
+            <div class="security-item">
+
+                <div class="security-number">
+                    01
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Authentication
+                    </strong>
+
+
+                    <span>
+                        Users must sign in before accessing protected areas.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="security-item">
+
+                <div class="security-number">
+                    02
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Authorization
+                    </strong>
+
+
+                    <span>
+                        Role restrictions control access to protected modules.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="security-item">
+
+                <div class="security-number">
+                    03
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Secure Password Handling
+                    </strong>
+
+
+                    <span>
+                        Passwords are managed through ASP.NET Core Identity.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="security-item">
+
+                <div class="security-number">
+                    04
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Protected Data Changes
+                    </strong>
+
+
+                    <span>
+                        Data-changing operations use protected form requests.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ACCOUNT ACCESS
+    ========================================================== -->
+
+    <section class="privacy-panel account-panel">
+
+        <div>
+
+            <span class="panel-label">
+                ACCOUNT ACCESS
+            </span>
+
+
+            <h2>
+                Manage your account securely
+            </h2>
+
+
+            <p>
+                Use your profile page to review your account information.
+                Always log out after using a shared or public computer.
+            </p>
+
+        </div>
+
+
+        <div class="account-actions">
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Profile"
+                   asp-action="Index"
+                   class="privacy-button primary">
+
+                    <i class="bi bi-person"></i>
+
+                    My Profile
+
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="privacy-button primary">
+
+                    <i class="bi bi-box-arrow-in-right"></i>
+
+                    Sign In
+
+                </a>
+
+
+                <a asp-controller="Account"
+                   asp-action="Register"
+                   class="privacy-button secondary">
+
+                    <i class="bi bi-person-plus"></i>
+
+                    Register
+
+                </a>
+            }
+
+        </div>
+
+    </section>
+
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .privacy-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================== */
+
+    .page-header {
+
+        margin-bottom: 18px;
+
+        display: flex;
+
+        align-items: flex-end;
+
+        justify-content: space-between;
+
+        gap: 15px;
+
+    }
+
+
+    .page-eyebrow {
+
+        display: block;
+
+        color: #0d6efd;
+
+        font-size: .55rem;
+
+        font-weight: 850;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .page-header h1 {
+
+        margin:
+            5px 0 4px;
+
+        color: #111827;
+
+        font-size: 1.7rem;
+
+        font-weight: 850;
+
+        letter-spacing: -.4px;
+
+    }
+
+
+    .page-header p {
+
+        margin: 0;
+
+        color: #64748b;
+
+        font-size: .64rem;
+
+    }
+
+
+    .back-button {
+
+        min-height: 35px;
+
+        padding:
+            0 10px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 5px;
+
+        border:
+            1px solid #dfe6ee;
+
+        border-radius: 7px;
+
+        background: #ffffff;
+
+        color: #64748b;
+
+        font-size: .53rem;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+    }
+
+
+    .back-button:hover {
+
+        background: #f8fafc;
+
+        color: #0d6efd;
+
+    }
+
+
+    /* =========================================================
+       PANEL
+    ========================================================== */
+
+    .privacy-panel {
+
+        margin-bottom: 14px;
+
+        padding: 18px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius: 12px;
+
+        background: #ffffff;
+
+        box-shadow:
+            0 7px 20px
+            rgba(15, 23, 42, .025);
+
+    }
+
+
+    .panel-label {
+
+        display: block;
+
+        color: #0d6efd;
+
+        font-size: .49rem;
+
+        font-weight: 850;
+
+        letter-spacing: .08em;
+
+    }
+
+
+    .privacy-panel h2 {
+
+        margin:
+            4px 0 4px;
+
+        color: #334155;
+
+        font-size: .92rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .privacy-panel p {
+
+        margin: 0;
+
+        color: #64748b;
+
+        font-size: .54rem;
+
+        line-height: 1.65;
+
+    }
+
+
+    /* =========================================================
+       INTRO
+    ========================================================== */
+
+    .privacy-panel:first-of-type {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 12px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #ffffff,
+                #f8fbff
+            );
+
+    }
+
+
+    .panel-icon {
+
+        width: 43px;
+
+        height: 43px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 10px;
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+        font-size: .82rem;
+
+    }
+
+
+    .panel-content {
+
+        min-width: 0;
+
+    }
+
+
+    .panel-content h2 {
+
+        margin-bottom: 5px;
+
+    }
+
+
+    /* =========================================================
+       GRID
+    ========================================================== */
+
+    .privacy-grid {
+
+        margin-bottom: 14px;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 10px;
+
+    }
+
+
+    .privacy-card {
+
+        min-height: 150px;
+
+        padding: 15px;
+
+        border:
+            1px solid #e7ebf0;
+
+        border-radius: 10px;
+
+        background: #fbfcfe;
+
+    }
+
+
+    .card-icon {
+
+        width: 34px;
+
+        height: 34px;
+
+        margin-bottom: 10px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 8px;
+
+        font-size: .65rem;
+
+    }
+
+
+    .card-icon.account {
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+    }
+
+
+    .card-icon.password {
+
+        background: #fff7ed;
+
+        color: #ea580c;
+
+    }
+
+
+    .card-icon.role {
+
+        background: #f5f3ff;
+
+        color: #7c3aed;
+
+    }
+
+
+    .card-icon.data {
+
+        background: #ecfdf5;
+
+        color: #16a34a;
+
+    }
+
+
+    .privacy-card h3 {
+
+        margin:
+            0 0 5px;
+
+        color: #475569;
+
+        font-size: .6rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .privacy-card p {
+
+        color: #94a3b8;
+
+        font-size: .49rem;
+
+        line-height: 1.6;
+
+    }
+
+
+    /* =========================================================
+       PANEL HEADER
+    ========================================================== */
+
+    .panel-header {
+
+        margin-bottom: 14px;
+
+        display: flex;
+
+        align-items: flex-start;
+
+        justify-content: space-between;
+
+        gap: 12px;
+
+    }
+
+
+    .panel-header-icon {
+
+        color: #94a3b8;
+
+        font-size: .84rem;
+
+    }
+
+
+    /* =========================================================
+       SECURITY
+    ========================================================== */
+
+    .security-list {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 8px;
+
+    }
+
+
+    .security-item {
+
+        min-height: 68px;
+
+        padding: 10px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        border:
+            1px solid #e7ebf0;
+
+        border-radius: 9px;
+
+        background: #fbfcfe;
+
+    }
+
+
+    .security-number {
+
+        width: 30px;
+
+        height: 30px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 7px;
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+        font-size: .43rem;
+
+        font-weight: 850;
+
+    }
+
+
+    .security-item strong {
+
+        display: block;
+
+        color: #475569;
+
+        font-size: .53rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .security-item span {
+
+        display: block;
+
+        margin-top: 3px;
+
+        color: #94a3b8;
+
+        font-size: .45rem;
+
+        line-height: 1.45;
+
+    }
+
+
+    /* =========================================================
+       ACCOUNT
+    ========================================================== */
+
+    .account-panel {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 15px;
+
+        background: #f8fbff;
+
+    }
+
+
+    .account-panel h2 {
+
+        margin-bottom: 4px;
+
+    }
+
+
+    .account-actions {
+
+        display: flex;
+
+        gap: 7px;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .privacy-button {
+
+        min-height: 35px;
+
+        padding:
+            0 10px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 5px;
+
+        border-radius: 7px;
+
+        font-size: .51rem;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+        white-space: nowrap;
+
+    }
+
+
+    .privacy-button.primary {
+
+        border:
+            1px solid #0d6efd;
+
+        background: #0d6efd;
+
+        color: #ffffff;
+
+    }
+
+
+    .privacy-button.primary:hover {
+
+        background: #0b5ed7;
+
+        color: #ffffff;
+
+    }
+
+
+    .privacy-button.secondary {
+
+        border:
+            1px solid #dfe6ee;
+
+        background: #ffffff;
+
+        color: #64748b;
+
+    }
+
+
+    .privacy-button.secondary:hover {
+
+        color: #0d6efd;
+
+        background: #f8fafc;
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 750px) {
+
+        .privacy-page {
+
+            padding:
+                21px 17px 35px;
+
+        }
+
+
+        .page-header {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+        }
+
+
+        .back-button {
+
+            width: 100%;
+
+        }
+
+
+        .privacy-grid,
+        .security-list {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .account-panel {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+        }
+
+
+        .account-actions {
+
+            width: 100%;
+
+        }
+
+
+        .privacy-button {
+
+            flex: 1;
+
+        }
+
+    }
+
+
+    @@media (max-width: 500px) {
+
+        .privacy-panel:first-of-type {
+
+            flex-direction: column;
+
+        }
+
+
+        .account-actions {
+
+            flex-direction: column;
+
+        }
+
+
+        .privacy-button {
+
+            width: 100%;
+
+        }
+
+    }
+
+</style>

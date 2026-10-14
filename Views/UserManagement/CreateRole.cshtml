@@ -1,0 +1,175 @@
+﻿@model BYPManagementSystem.Models.CreateRoleViewModel
+
+@{
+    ViewData["Title"] = "Create Role";
+}
+
+<div class="create-role-form-page">
+
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-shield-plus-fill"></i>
+                </div>
+
+                <div class="create-role-title">
+
+                    <span class="page-eyebrow">
+                        ROLE MANAGEMENT
+                    </span>
+
+                    <h1>
+                        Create Role
+                    </h1>
+
+                    <p>
+                        Create a new system role.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         FORM
+    ========================================================== -->
+
+    <div class="create-role-card">
+
+        <form asp-action="CreateRole"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger">
+            </div>
+
+
+            <div class="create-role-grid">
+
+                <div class="form-field">
+
+                    <label asp-for="RoleName"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="RoleName"
+                           class="form-control"
+                           placeholder="Enter role name" />
+
+                    <span asp-validation-for="RoleName"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- BUTTONS (bottom-right) -->
+
+            <div class="form-actions">
+
+                <a asp-action="Roles"
+                   class="btn-cancel">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+
+                <button type="submit"
+                        class="btn-save">
+                    <i class="bi bi-save"></i> Create Role
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+
+    /* =========================================================
+       PAGE CONTAINER (standardized: full width, shared padding)
+       ========================================================= */
+
+    .create-role-form-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+        box-sizing: border-box;
+    }
+
+    .create-role-form-page .page-eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: #B7D7E5;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+
+    /* =========================================================
+       FORM CARD
+       ========================================================= */
+
+    .create-role-card {
+        background: var(--byp-surface);
+        border: 1px solid var(--byp-border);
+        border-radius: 13px;
+        padding: 18px 20px;
+        color: var(--byp-text);
+    }
+
+    .create-role-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 640px);
+        gap: 12px 16px;
+        margin-bottom: 6px;
+    }
+
+    .create-role-card .form-label {
+        margin-bottom: 5px;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--byp-text-secondary);
+    }
+
+    .create-role-card .form-control {
+        font-size: 12px;
+        min-height: 34px;
+    }
+
+    .create-role-card .text-danger {
+        display: block;
+        margin-top: 4px;
+        font-size: 10px;
+    }
+
+    @@media (max-width: 600px) {
+        .create-role-form-page { padding: 8px; }
+        .create-role-card { padding: 14px; }
+        .form-actions { flex-direction: column-reverse; }
+        .btn-cancel, .btn-save { width: 100%; }
+    }
+
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,1678 @@
+@model BYPManagementSystem.Models.YouthProgram
+
+@{
+    ViewData["Title"] = "Program Details";
+
+    bool isAdmin = User.IsInRole("Admin");
+
+    bool isAdminOrStaff =
+        User.IsInRole("Admin") ||
+        User.IsInRole("Staff");
+
+    bool isYouth =
+        User.IsInRole("User");
+
+    var participants =
+        ViewBag.Participants
+        as IEnumerable<BYPManagementSystem.Models.YouthParticipant>
+        ?? Enumerable.Empty<BYPManagementSystem.Models.YouthParticipant>();
+
+    var participantCount =
+        ViewBag.ParticipantCount
+        ?? participants.Count();
+
+    bool isActive =
+        string.Equals(
+            Model.Status,
+            "Active",
+            StringComparison.OrdinalIgnoreCase
+        );
+}
+
+
+<div class="program-details-page">
+
+    <!-- =========================================================
+         HEADER
+         ========================================================= -->
+
+    <section class="form-header">
+
+        <div class="form-header-icon">
+            <i class="bi bi-person-vcard-fill"></i>
+        </div>
+
+        <div class="form-header-content">
+
+            <span class="form-header-kicker">
+                YOUTH PROGRAMS
+            </span>
+
+            <h1>
+                @Model.Name
+            </h1>
+
+            <p>
+                View program details, capacity, and participants.
+            </p>
+
+        </div>
+
+        @if (isAdminOrStaff)
+        {
+            <div class="form-header-actions">
+
+                <a asp-controller="Programs"
+                   asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="header-button edit">
+
+                    <i class="bi bi-pencil"></i>
+                    Edit
+
+                </a>
+
+
+                <a asp-controller="Programs"
+                   asp-action="ManageParticipants"
+                   asp-route-id="@Model.Id"
+                   class="header-button manage">
+
+                    <i class="bi bi-people"></i>
+                    Manage Participants
+
+                </a>
+
+
+                @if (isAdmin)
+                {
+                    <a asp-controller="Programs"
+                       asp-action="Delete"
+                       asp-route-id="@Model.Id"
+                       class="header-button delete">
+
+                        <i class="bi bi-trash3"></i>
+                        Delete
+
+                    </a>
+                }
+
+            </div>
+        }
+
+    </section>
+
+
+    <!-- =========================================================
+         MAIN PROGRAM CARD
+         ========================================================= -->
+
+    <section class="dashboard-panel program-overview">
+
+        <div class="program-cover">
+
+            <div class="cover-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+
+
+            <div class="cover-text">
+
+                <span class="eyebrow">
+                    YOUTH PROGRAM
+                </span>
+
+                <h2>
+                    @Model.Name
+                </h2>
+
+                <div class="description-section">
+
+                    <span class="section-label">
+                        ABOUT THIS PROGRAM
+                    </span>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <p>
+                            @Model.Description
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="muted-text">
+                            No description has been provided for this program.
+                        </p>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="cover-status">
+
+                @if (isActive)
+                {
+                    <span class="status-badge active">
+                        <span class="status-dot"></span>
+                        Active
+                    </span>
+                }
+                else
+                {
+                    <span class="status-badge inactive">
+                        <span class="status-dot"></span>
+                        @Model.Status
+                    </span>
+                }
+
+        </div>
+
+    </section>
+
+
+    <section class="dashboard-panel program-information-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="panel-eyebrow">
+                    PROGRAM INFORMATION
+                </span>
+
+                <h2>
+                    Details
+                </h2>
+
+                <p>
+                    Schedule, Barangay, capacity, and participants.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="information-grid">
+
+            <div class="information-card">
+
+                <div class="information-icon schedule">
+                    <i class="bi bi-clock"></i>
+                </div>
+
+                <div class="information-text">
+
+                    <span>
+                        Schedule
+                    </span>
+
+                    <strong>
+                        @Model.Schedule
+                    </strong>
+
+                    @if (Model.ScheduleStart.HasValue && Model.ScheduleEnd.HasValue)
+                    {
+                        <small class="schedule-datetime-line">
+
+                            <i class="bi bi-calendar-event"></i>
+
+                            @(Model.ScheduleStart.Value.ToString("f")) – @(Model.ScheduleEnd.Value.ToString("f"))
+
+                        </small>
+                    }
+                    else if (Model.ScheduleStart.HasValue)
+                    {
+                        <small class="schedule-datetime-line">
+
+                            <i class="bi bi-calendar-event"></i>
+
+                            Starts: @(Model.ScheduleStart.Value.ToString("f"))
+
+                        </small>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon barangay">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+
+                <div class="information-text">
+
+                    <span>
+                        Barangay
+                    </span>
+
+                    <strong>
+                        @Model.Barangay
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon capacity">
+                    <i class="bi bi-people"></i>
+                </div>
+
+                <div class="information-text">
+
+                    <span>
+                        Capacity
+                    </span>
+
+                    <strong>
+                        @Model.Capacity participants
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon participants">
+                    <i class="bi bi-person-check"></i>
+                </div>
+
+                <div class="information-text">
+
+                    <span>
+                        Approved Participants
+                    </span>
+
+                    <strong>
+                        @participantCount
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon available-slots">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+
+                <div class="information-text">
+
+                    <span>
+                        Available Slots
+                    </span>
+
+                    <strong>
+                        @(participantCount >= Model.Capacity ? 0 : Model.Capacity - participantCount)
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CAPACITY STATUS
+         ================================================== -->
+
+        <div class="capacity-section">
+
+            <div class="capacity-header">
+
+                <div>
+
+                    <span class="section-label">
+                        PROGRAM CAPACITY
+                    </span>
+
+                    <strong>
+                        @participantCount / @Model.Capacity participants
+                    </strong>
+
+                </div>
+
+
+                @if (participantCount >= Model.Capacity)
+                {
+                    <span class="capacity-badge full">
+
+                        <i class="bi bi-exclamation-circle"></i>
+
+                        Full
+
+                    </span>
+                }
+                else
+                {
+                    <span class="capacity-badge available">
+
+                        <i class="bi bi-check-circle"></i>
+
+                        @(Model.Capacity - participantCount) slot@(Model.Capacity - participantCount == 1 ? "" : "s") available
+
+                    </span>
+                }
+
+            </div>
+
+
+            <div class="capacity-bar">
+
+                <div class="capacity-progress"
+                     style="width:@(Math.Min(100, (double)participantCount / Model.Capacity * 100).ToString("0.##"))%;">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             USER REGISTRATION AREA
+         ================================================== -->
+
+        @if (isYouth)
+        {
+            <div class="youth-registration-panel">
+
+                <div class="registration-panel-icon">
+
+                    @if (isActive && participantCount < Model.Capacity)
+                    {
+                        <i class="bi bi-person-plus"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-lock"></i>
+                    }
+
+                </div>
+
+
+                <div class="registration-panel-content">
+
+                    @if (!isActive)
+                    {
+                        <strong>
+                            Registration is currently unavailable
+                        </strong>
+
+                        <p>
+                            This program is not currently active.
+                        </p>
+                    }
+                    else if (participantCount >= Model.Capacity)
+                    {
+                        <strong>
+                            Program is currently full
+                        </strong>
+
+                        <p>
+                            The program has reached its current capacity.
+                        </p>
+                    }
+                    else
+                    {
+                        <strong>
+                            Interested in joining this program?
+                        </strong>
+
+                        <p>
+                            Submit your registration request to participate
+                            in this youth program.
+                        </p>
+                    }
+
+                </div>
+
+
+                @if (isActive && participantCount < Model.Capacity)
+                {
+                    <a asp-controller="Registration"
+                       asp-action="Register"
+                       asp-route-programId="@Model.Id"
+                       class="registration-panel-button">
+
+                        Register Now
+
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+                }
+
+            </div>
+        }
+
+    </section>
+
+
+    <!-- =========================================================
+         PARTICIPANTS SECTION
+         ========================================================= -->
+
+    @if (isAdminOrStaff)
+    {
+        <section class="dashboard-panel participants-panel">
+
+            <div class="section-header">
+
+                <div>
+
+                    <span class="eyebrow">
+                        PARTICIPANTS
+                    </span>
+
+                    <h2>
+                        Approved Youth Participants
+                    </h2>
+
+                    <p>
+                        Youth participants currently approved for this program.
+                    </p>
+
+                </div>
+
+
+                <div class="participant-count">
+
+                    <i class="bi bi-people"></i>
+
+                    @participantCount
+
+                </div>
+
+            </div>
+
+
+            @if (participants.Any())
+            {
+                <div class="participants-grid">
+
+                    @foreach (var participant in participants)
+                    {
+                        var firstInitial =
+                            !string.IsNullOrWhiteSpace(participant.FirstName)
+                                ? participant.FirstName.Substring(0, 1).ToUpper()
+                                : "U";
+
+                        var lastInitial =
+                            !string.IsNullOrWhiteSpace(participant.LastName)
+                                ? participant.LastName.Substring(0, 1).ToUpper()
+                                : "";
+
+                        <div class="participant-card">
+
+                            <div class="participant-avatar">
+
+                                @firstInitial@lastInitial
+
+                            </div>
+
+
+                            <div class="participant-information">
+
+                                <strong>
+                                    @participant.FullName
+                                </strong>
+
+                                <span>
+                                    @participant.Barangay
+                                </span>
+
+                                @if (!string.IsNullOrWhiteSpace(participant.ContactNumber))
+                                {
+                                    <small>
+
+                                        <i class="bi bi-telephone"></i>
+
+                                        @participant.ContactNumber
+
+                                    </small>
+                                }
+
+                            </div>
+
+
+                            <div class="participant-status">
+
+                                @if (participant.IsActive)
+                                {
+                                    <span class="active-label">
+
+                                        <span></span>
+
+                                        Active
+
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inactive-label">
+
+                                        <span></span>
+
+                                        Inactive
+
+                                    </span>
+                                }
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="empty-participants">
+
+                    <div class="empty-participant-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+
+                    <strong>
+                        No approved participants yet
+                    </strong>
+
+                    <span>
+                        Approved youth participants will appear here.
+                    </span>
+
+                </div>
+            }
+
+        </section>
+    }
+
+
+    <!-- =========================================================
+         YOUTH INFORMATION
+         ========================================================= -->
+
+    @if (isYouth)
+    {
+        <section class="youth-info-panel">
+
+            <div class="info-panel-icon">
+                <i class="bi bi-info-circle"></i>
+            </div>
+
+            <div>
+
+                <strong>
+                    Program Registration
+                </strong>
+
+                <p>
+                    Your registration request will be recorded in the system.
+                    You can check the current status through
+                    <strong>My Registrations</strong>.
+                </p>
+
+            </div>
+
+            <a asp-controller="Registration"
+               asp-action="MyRegistrations"
+               class="my-registration-link">
+
+                My Registrations
+
+                <i class="bi bi-arrow-right"></i>
+
+            </a>
+
+        </section>
+    }
+
+
+    <!-- =========================================================
+         BOTTOM ACTIONS
+         ========================================================= -->
+
+    <div class="bottom-actions">
+
+        <a asp-controller="Programs"
+           asp-action="Index"
+           class="bottom-button secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Programs
+
+        </a>
+
+
+        @if (isYouth && isActive && participantCount < Model.Capacity)
+        {
+            <a asp-controller="Registration"
+               asp-action="Register"
+               asp-route-programId="@Model.Id"
+               class="bottom-button primary">
+
+                <i class="bi bi-person-plus"></i>
+
+                Register for This Program
+
+            </a>
+        }
+        else if (isAdminOrStaff)
+        {
+            <a asp-controller="Programs"
+               asp-action="ManageParticipants"
+               asp-route-id="@Model.Id"
+               class="bottom-button primary">
+
+                <i class="bi bi-people"></i>
+
+                Manage Participants
+
+            </a>
+        }
+
+    </div>
+
+</div>
+
+
+<style>
+
+/* =========================================================
+   COMPACT DETAILS PAGE - Matches Admin Dashboard density
+   ========================================================= */
+
+.program-details-page {
+    width: 100%;
+    padding: 12px 18px 18px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.form-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: 13px;
+    background:
+        linear-gradient(
+            110deg,
+            rgba(12,144,150,.25),
+            rgba(5,45,46,.82)
+        );
+    border: 1px solid rgba(183,215,229,.16);
+    box-shadow: 0 8px 20px rgba(0,0,0,.14);
+    color: #FFFFFF;
+}
+
+.form-header-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.13);
+    color: #69DDF2;
+    font-size: 16px;
+}
+
+.form-header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-header-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: #A9D5DE;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.form-header h1 {
+    margin: 0;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.form-header p {
+    margin: 3px 0 0;
+    color: #C5DDE2;
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+.form-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.header-button {
+    min-height: 30px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 7px;
+    font-size: 7px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .16s ease;
+}
+
+.header-button.edit {
+    border: 1px solid rgba(183,215,229,.16);
+    background: rgba(255,255,255,.06);
+    color: #8DDCF2;
+}
+
+.header-button.manage {
+    border: 1px solid rgba(183,215,229,.16);
+    background: rgba(255,255,255,.06);
+    color: #B9BFFF;
+}
+
+.header-button.delete {
+    border: 1px solid rgba(255,123,138,.20);
+    background: rgba(255,123,138,.08);
+    color: #FF7B8A;
+}
+
+.header-button:hover {
+    filter: brightness(.98);
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   PROGRAM MAIN CARD
+   ========================================================= */
+
+.program-main-card {
+    padding: 10px;
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+    border: 1px solid rgba(183,215,229,.14);
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+
+/* =========================================================
+   COVER
+   ========================================================= */
+
+.program-cover {
+    min-height: 90px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(105,199,232,.15) 0%,
+            rgba(5,45,46,.82) 100%
+        );
+    border-bottom:
+        1px solid
+        rgba(183,215,229,.12);
+    margin: -10px -10px 10px -10px;
+    border-radius: 11px 11px 0 0;
+}
+
+.cover-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: rgba(255,255,255,.08);
+    color: #69DDF2;
+    font-size: 18px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.10);
+}
+
+.cover-text {
+    flex: 1;
+    min-width: 0;
+    margin-left: 12px;
+}
+
+.cover-status {
+    display: flex;
+    align-items: center;
+}
+
+.program-overview {
+    position: relative;
+}
+
+.program-overview .program-cover {
+    padding-right: 116px;
+}
+
+.program-overview .cover-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.eyebrow {
+    display: block;
+    color: #A9D5DE;
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.cover-text h2 {
+    margin: 0 0 6px;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.description-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(183,215,229,.10);
+}
+
+.section-label {
+    display: block;
+    color: #9FC6CC;
+    font-size: 6px;
+    font-weight: 600;
+    letter-spacing: .8px;
+}
+
+.description-section p {
+    margin: 4px 0 0;
+    color: #C5DDE2;
+    font-size: 7px;
+    line-height: 1.5;
+}
+
+.muted-text {
+    color: #72969E !important;
+}
+
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.status-badge {
+    min-height: 22px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    font-size: 6px;
+    font-weight: 700;
+}
+
+.status-badge.active {
+    background: rgba(43,166,126,.12);
+    color: #69F0AE;
+    border: 1px solid rgba(105,240,174,.17);
+}
+
+.status-badge.inactive {
+    background: rgba(183,215,229,.07);
+    color: #A9BAC0;
+    border: 1px solid rgba(183,215,229,.12);
+}
+
+.status-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+
+/* =========================================================
+   PANEL
+   ========================================================= */
+
+.dashboard-panel {
+    padding: 10px;
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+    border: 1px solid rgba(183,215,229,.14);
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+.dashboard-panel + .dashboard-panel {
+    margin-top: 8px;
+}
+
+.panel-header {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.panel-eyebrow {
+    display: block;
+    color: #69DDF2;
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: .8px;
+}
+
+.panel-header h2 {
+    margin: 2px 0 1px;
+    color: #FFFFFF;
+    font-size: 12px;
+    line-height: 1.1;
+}
+
+.panel-header p {
+    margin: 0;
+    color: #769BA3;
+    font-size: 7px;
+}
+
+.panel-icon-box {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    color: #69DDF2;
+    background: rgba(105,199,232,.09);
+    border: 1px solid rgba(105,199,232,.12);
+}
+
+.panel-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #8DDCF2;
+    font-size: 7px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.panel-link:hover { color: #FFFFFF; text-decoration: none; }
+
+
+/* =========================================================
+   INFORMATION GRID
+   ========================================================= */
+
+.information-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.information-card {
+    min-height: 64px;
+    min-width: 0;
+    padding: 9px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(183,215,229,.10);
+}
+
+.information-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: rgba(255,255,255,.06);
+    font-size: 11px;
+}
+
+.information-icon.schedule { color: #69DDF2; }
+.information-icon.barangay { color: #FFD166; }
+.information-icon.capacity { color: #8DDCF2; }
+.information-icon.participants { color: #69F0AE; }
+.information-icon.available-slots { color: #69F0AE; }
+
+.information-text span {
+    display: block;
+    color: #9FC6CC;
+    font-size: 6px;
+    font-weight: 600;
+}
+
+.information-text strong {
+    display: block;
+    margin-top: 1px;
+    color: #FFFFFF;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   SCHEDULE DATE/TIME LINE
+   ========================================================= */
+
+.schedule-datetime-line {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+    color: #69DDF2;
+    font-size: 7px;
+    font-weight: 600;
+}
+
+.schedule-datetime-line i {
+    color: #69DDF2;
+}
+
+
+/* =========================================================
+   CAPACITY
+   ========================================================= */
+
+.capacity-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(183,215,229,.12);
+}
+
+.capacity-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.capacity-header strong {
+    display: block;
+    margin-top: 3px;
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.capacity-badge {
+    min-height: 20px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    font-size: 6px;
+    font-weight: 700;
+}
+
+.capacity-badge.available {
+    background: rgba(43,166,126,.12);
+    color: #69F0AE;
+    border: 1px solid rgba(105,240,174,.17);
+}
+
+.capacity-badge.full {
+    background: rgba(255,123,138,.10);
+    color: #FF7B8A;
+    border: 1px solid rgba(255,123,138,.15);
+}
+
+.capacity-bar {
+    height: 6px;
+    margin-top: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(183,215,229,.10);
+}
+
+.capacity-progress {
+    height: 100%;
+    border-radius: inherit;
+    background: #0C9096;
+    transition: width .2s ease;
+}
+
+
+/* =========================================================
+   YOUTH REGISTRATION PANEL
+   ========================================================= */
+
+.youth-registration-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    margin-top: 8px;
+    border: 1px solid rgba(105,199,232,.14);
+    border-radius: 8px;
+    background: rgba(105,199,232,.08);
+}
+
+.registration-panel-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: rgba(105,199,232,.10);
+    color: #69DDF2;
+    font-size: 11px;
+}
+
+.registration-panel-content { flex: 1; min-width: 0; }
+
+.registration-panel-content strong {
+    display: block;
+    color: #FFFFFF;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.registration-panel-content p {
+    margin: 2px 0 0;
+    color: #769BA3;
+    font-size: 6px;
+    line-height: 1.4;
+}
+
+.registration-panel-button {
+    min-height: 28px;
+    padding: 0 9px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 6px;
+    background: #0C9096;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 6px;
+    font-weight: 700;
+    transition: .13s ease;
+}
+
+.registration-panel-button:hover {
+    background: #0A7D82;
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   PARTICIPANTS SECTION
+   ========================================================= */
+
+.participants-section {
+    padding: 10px;
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+    border: 1px solid rgba(183,215,229,.14);
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+    margin-top: 8px;
+}
+
+.section-header {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.eyebrow {
+    display: block;
+    color: #A9D5DE;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.section-header h2 {
+    margin: 2px 0 1px;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.section-header p {
+    margin: 0;
+    color: #769BA3;
+    font-size: 7px;
+}
+
+.participant-count {
+    padding: 4px 7px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 5px;
+    background: rgba(105,199,232,.08);
+    border: 1px solid rgba(105,199,232,.14);
+    color: #8DDCF2;
+    font-size: 7px;
+    font-weight: 700;
+}
+
+.participants-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.participant-card {
+    min-height: 56px;
+    padding: 7px 8px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(183,215,229,.10);
+}
+
+.participant-avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(105,199,232,.08);
+    color: #69DDF2;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.participant-information {
+    min-width: 0;
+    flex: 1;
+}
+
+.participant-information strong {
+    display: block;
+    overflow: hidden;
+    color: #FFFFFF;
+    font-size: 8px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.participant-information span {
+    display: block;
+    margin-top: 2px;
+    color: #72969E;
+    font-size: 6px;
+}
+
+.participant-information small {
+    display: block;
+    margin-top: 2px;
+    color: #607F87;
+    font-size: 5px;
+}
+
+.participant-information small i { color: #69DDF2; }
+
+.participant-status { flex-shrink: 0; }
+
+.active-label,
+.inactive-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 5px;
+    font-weight: 700;
+}
+
+.active-label { color: #69F0AE; }
+.inactive-label { color: #FF7B8A; }
+
+.active-label span,
+.inactive-label span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.empty-participants {
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #668A92;
+}
+
+.empty-participant-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(105,199,232,.09);
+    color: #8DDCF2;
+    font-size: 14px;
+}
+
+.empty-participants strong {
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.empty-participants span {
+    margin-top: 3px;
+    font-size: 7px;
+}
+
+
+/* =========================================================
+   YOUTH INFO PANEL
+   ========================================================= */
+
+.youth-info-panel {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    border-radius: 9px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+    border: 1px solid rgba(183,215,229,.14);
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+.info-panel-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: rgba(105,199,232,.10);
+    color: #69DDF2;
+    font-size: 12px;
+}
+
+.youth-info-panel > div:nth-child(2) { flex: 1; min-width: 0; }
+
+.youth-info-panel strong {
+    color: #FFFFFF;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.youth-info-panel p {
+    margin: 2px 0 0;
+    color: #769BA3;
+    font-size: 6px;
+    line-height: 1.4;
+}
+
+.my-registration-link {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #8DDCF2;
+    font-size: 7px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.my-registration-link:hover { color: #FFFFFF; text-decoration: none; }
+
+
+/* =========================================================
+   BOTTOM ACTIONS
+   ========================================================= */
+
+.bottom-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.bottom-button {
+    min-height: 30px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 7px;
+    font-size: 7px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .16s ease;
+}
+
+.bottom-button.secondary {
+    border: 1px solid rgba(183,215,229,.16);
+    background: rgba(255,255,255,.06);
+    color: #C5DDE2;
+}
+
+.bottom-button.secondary:hover {
+    color: #FFFFFF;
+    background: rgba(255,255,255,.10);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.bottom-button.primary {
+    border: 1px solid #0C9096;
+    background: #0C9096;
+    color: #FFFFFF;
+}
+
+.bottom-button.primary:hover {
+    background: #0A7D82;
+    border-color: #0A7D82;
+    color: #FFFFFF;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@@media (max-width: 1000px) {
+    .information-grid { grid-template-columns: repeat(2, 1fr); }
+    .participants-grid { grid-template-columns: 1fr; }
+}
+
+@@media (max-width: 800px) {
+    .program-details-page { padding: 12px 18px 18px; }
+    .form-header { flex-direction: column; align-items: stretch; }
+    .form-header-actions { width: 100%; }
+    .form-header-actions .header-button { flex: 1; }
+    .program-cover { min-height: 80px; padding: 14px; }
+    .program-overview .program-cover { padding-right: 14px; }
+    .program-overview .cover-status { position: static; margin-top: -2px; }
+    .information-grid { grid-template-columns: 1fr; }
+    .youth-registration-panel { align-items: flex-start; flex-wrap: wrap; }
+    .registration-panel-button { width: 100%; justify-content: center; }
+    .my-registration-link { margin-top: 5px; }
+    .youth-info-panel { align-items: flex-start; flex-wrap: wrap; }
+    .my-registration-link { width: 100%; }
+    .bottom-actions { flex-direction: column; }
+    .bottom-button { width: 100%; }
+}
+
+@@media (max-width: 420px) {
+    .form-header-actions { display: grid; grid-template-columns: 1fr; }
+    .header-button { width: 100%; }
+}
+
+
+/* =========================================================
+   LIGHT MODE
+   ========================================================= */
+
+html[data-theme="light"] .program-details-page {
+    color: #21344A;
+}
+
+html[data-theme="light"] .program-details-page .form-header {
+    background: linear-gradient(110deg, #E3F7FA, #EDF8F7);
+    border-color: rgba(68,105,140,.14);
+    box-shadow: 0 8px 24px rgba(36,78,113,.08);
+}
+
+html[data-theme="light"] .program-details-page .form-header-icon,
+html[data-theme="light"] .program-details-page .cover-icon,
+html[data-theme="light"] .program-details-page .information-icon,
+html[data-theme="light"] .program-details-page .participant-avatar,
+html[data-theme="light"] .program-details-page .empty-participant-icon,
+html[data-theme="light"] .program-details-page .info-panel-icon {
+    background: #EEF7FB;
+    border-color: #D7E4EE;
+}
+
+html[data-theme="light"] .program-details-page .form-header h1,
+html[data-theme="light"] .program-details-page .cover-text h2,
+html[data-theme="light"] .program-details-page .panel-header h2,
+html[data-theme="light"] .program-details-page .section-header h2,
+html[data-theme="light"] .program-details-page .information-text strong,
+html[data-theme="light"] .program-details-page .capacity-header strong,
+html[data-theme="light"] .program-details-page .participant-information strong,
+html[data-theme="light"] .program-details-page .empty-participants strong,
+html[data-theme="light"] .program-details-page .registration-panel-content strong,
+html[data-theme="light"] .program-details-page .youth-info-panel strong {
+    color: #1F3650;
+}
+
+html[data-theme="light"] .program-details-page .form-header-kicker,
+html[data-theme="light"] .program-details-page .eyebrow,
+html[data-theme="light"] .program-details-page .panel-eyebrow,
+html[data-theme="light"] .program-details-page .section-label,
+html[data-theme="light"] .program-details-page .information-text span {
+    color: #0C9096;
+}
+
+html[data-theme="light"] .program-details-page .schedule-datetime-line,
+html[data-theme="light"] .program-details-page .schedule-datetime-line i {
+    color: #0C9096;
+}
+
+html[data-theme="light"] .program-details-page .form-header p,
+html[data-theme="light"] .program-details-page .description-section p,
+html[data-theme="light"] .program-details-page .panel-header p,
+html[data-theme="light"] .program-details-page .section-header p,
+html[data-theme="light"] .program-details-page .participant-information span,
+html[data-theme="light"] .program-details-page .participant-information small,
+html[data-theme="light"] .program-details-page .registration-panel-content p,
+html[data-theme="light"] .program-details-page .youth-info-panel p,
+html[data-theme="light"] .program-details-page .empty-participants {
+    color: #61758C;
+}
+
+html[data-theme="light"] .program-details-page .dashboard-panel,
+html[data-theme="light"] .program-details-page .youth-info-panel {
+    background: rgba(255,255,255,.90);
+    border-color: rgba(68,105,140,.14);
+    box-shadow: 0 8px 24px rgba(36,78,113,.08);
+}
+
+html[data-theme="light"] .program-details-page .program-cover {
+    background: linear-gradient(135deg, #F4FBFD, #FFFFFF);
+    border-color: #E1ECF3;
+}
+
+html[data-theme="light"] .program-details-page .information-card,
+html[data-theme="light"] .program-details-page .participant-card {
+    background: #F9FCFE;
+    border-color: #E1ECF3;
+}
+
+html[data-theme="light"] .program-details-page .header-button.edit,
+html[data-theme="light"] .program-details-page .header-button.manage,
+html[data-theme="light"] .program-details-page .bottom-button.secondary {
+    background: #FFFFFF;
+    border-color: #D7E4EE;
+    color: #48647C;
+}
+
+</style>

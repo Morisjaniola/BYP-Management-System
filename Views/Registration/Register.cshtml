@@ -1,0 +1,186 @@
+@model BYPManagementSystem.Models.ProgramRegistration
+
+@{
+    ViewData["Title"] = "Request Program Registration";
+    var program = ViewBag.Program as BYPManagementSystem.Models.YouthProgram;
+}
+
+<div class="registration-request-page">
+
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+
+                <div class="registration-request-title">
+
+                    <span class="page-eyebrow">
+                        REGISTRATION REQUEST
+                    </span>
+
+                    <h1>
+                        Request Program Registration
+                    </h1>
+
+                    <p>
+                        Submit a request to join this youth program.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         PROGRAM SUMMARY
+    ========================================================== -->
+
+    @if (program != null)
+    {
+        <div class="program-summary-card">
+
+            <div class="program-summary-name">
+                @program.Name
+            </div>
+
+            <div class="program-summary-meta">
+                <i class="bi bi-calendar3"></i> @program.Schedule
+                <span class="program-summary-sep">&middot;</span>
+                <i class="bi bi-geo-alt"></i> @program.Barangay
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(program.Description))
+            {
+                <p class="program-summary-description">
+                    @program.Description
+                </p>
+            }
+
+        </div>
+    }
+
+
+    <!-- =========================================================
+         FORM
+    ========================================================== -->
+
+    <div class="registration-request-card">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <form asp-controller="Registration"
+              asp-action="Register"
+              asp-route-programId="@Model.ProgramId"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input asp-for="ProgramId" type="hidden" />
+
+            <div class="form-actions">
+
+                <a asp-controller="Programs"
+                   asp-action="Index"
+                   class="btn-cancel">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn-save">
+                    <i class="bi bi-person-plus-fill"></i> Submit Request
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+
+    .registration-request-page {
+        width: 100%;
+        min-height: calc(100vh - 90px);
+        padding: 12px 18px 18px;
+        box-sizing: border-box;
+    }
+
+    .registration-request-page .page-eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: #B7D7E5;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    /* Program summary + form surface (theme variables keep the
+       light/dark treatment aligned with every other module). */
+
+    .program-summary-card {
+        background: var(--byp-surface);
+        border: 1px solid var(--byp-border);
+        border-radius: 13px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
+        color: var(--byp-text);
+    }
+
+    .program-summary-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--byp-text);
+    }
+
+    .program-summary-meta {
+        margin-top: 6px;
+        font-size: 11px;
+        color: var(--byp-text-secondary);
+    }
+
+    .program-summary-meta i {
+        color: var(--byp-accent);
+    }
+
+    .program-summary-sep {
+        margin: 0 6px;
+        opacity: .6;
+    }
+
+    .program-summary-description {
+        margin: 10px 0 0;
+        font-size: 11px;
+        line-height: 1.55;
+        color: var(--byp-text-secondary);
+    }
+
+    .registration-request-card {
+        background: var(--byp-surface);
+        border: 1px solid var(--byp-border);
+        border-radius: 13px;
+        padding: 18px 20px;
+        color: var(--byp-text);
+    }
+
+    @@media (max-width: 600px) {
+        .registration-request-page { padding: 8px; }
+        .registration-request-card { padding: 14px; }
+        .form-actions { flex-direction: column-reverse; }
+        .btn-cancel, .btn-save { width: 100%; }
+    }
+
+</style>

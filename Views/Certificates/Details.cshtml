@@ -1,0 +1,411 @@
+@model BYPManagementSystem.Models.Certificate
+
+@{
+    ViewData["Title"] = "Certificate Details";
+
+    var completionDate =
+        Model.CompletionDate.ToString("MMMM dd, yyyy");
+
+    var issueDate =
+        Model.IssuedAt.ToString("MMMM dd, yyyy");
+
+    var isAdmin =
+        User.IsInRole("Admin");
+}
+
+
+<div class="certificate-details-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            @if (isAdmin)
+            {
+                <a asp-action="Index"
+                   class="back-link">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Certificates
+                </a>
+            }
+            else
+            {
+                <a asp-action="MyCertificates"
+                   class="back-link">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to My Certificates
+                </a>
+            }
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-award"></i>
+                </div>
+
+                <div class="certificate-title">
+
+                    <span class="page-eyebrow">
+                        CERTIFICATE
+                    </span>
+
+                    <h1>
+                        Certificate Details
+                    </h1>
+
+                    <p>
+                        View, print, or download this completion certificate.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a asp-action="Print"
+               asp-route-id="@Model.Id"
+               target="_blank"
+               class="btn btn-secondary">
+                <i class="bi bi-printer"></i>
+                Print
+            </a>
+
+            <a asp-action="Download"
+               asp-route-id="@Model.Id"
+               class="btn btn-secondary">
+                <i class="bi bi-download"></i>
+                Download
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         CERTIFICATE PREVIEW
+    ========================================================== -->
+
+    <div class="certificate-preview-container">
+
+        <div class="certificate-document">
+
+            <div class="cert-header">
+
+                <div class="org-name">
+                    BYProgram
+                </div>
+
+                <div class="cert-title">
+                    CERTIFICATE
+                </div>
+
+                <div class="cert-subtitle">
+                    OF COMPLETION
+                </div>
+
+            </div>
+
+            <div class="cert-body">
+
+                <div class="presented-to">
+                    This is to certify that
+                </div>
+
+                <div class="participant-name">
+                    @Model.ParticipantName
+                </div>
+
+                <div class="program-text">
+                    has successfully completed the program<br />
+                    <span class="program-name">
+                        @Model.ProgramName
+                    </span>
+                </div>
+
+                <div class="completion-date">
+                    on <strong>@completionDate</strong>
+                </div>
+
+            </div>
+
+            <div class="cert-footer">
+
+                <div class="signature-block">
+                    <div class="signature-line">
+                        <div class="signature-name">
+                            @(Model.IssuedByUserName ?? "Program Administrator")
+                        </div>
+                        <div class="signature-role">
+                            Issued By
+                        </div>
+                    </div>
+                </div>
+
+                <div class="signature-block">
+                    <div class="signature-line">
+                        <div class="signature-name">
+                            @issueDate
+                        </div>
+                        <div class="signature-role">
+                            Date Issued
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="cert-number">
+                Certificate No: @Model.CertificateNumber
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         CERTIFICATE METADATA
+    ========================================================== -->
+
+    <div class="metadata-section">
+
+        <h2>
+            <i class="bi bi-info-circle"></i>
+            Certificate Information
+        </h2>
+
+        <div class="metadata-grid">
+
+            <div class="metadata-item">
+                <label>Certificate Number</label>
+                <strong>@Model.CertificateNumber</strong>
+            </div>
+
+            <div class="metadata-item">
+                <label>Completion Date</label>
+                <span>@completionDate</span>
+            </div>
+
+            <div class="metadata-item">
+                <label>Date Issued</label>
+                <span>@issueDate</span>
+            </div>
+
+            <div class="metadata-item">
+                <label>Issued By</label>
+                <span>@(Model.IssuedByUserName ?? "System")</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+    /* Page root (standardized container — previously unstyled, so
+       content sat flush against the viewport edges). */
+    .certificate-details-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+        box-sizing: border-box;
+    }
+
+    .certificate-details-page .page-eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: #B7D7E5;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .certificate-details-page .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .certificate-details-page .certificate-preview-container {
+        background: #f5f5f5;
+        border: 1px solid var(--byp-border);
+        border-radius: 12px;
+        padding: 40px;
+        margin-bottom: 32px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .certificate-details-page .certificate-document {
+        width: 100%;
+        max-width: 800px;
+        aspect-ratio: 297 / 210;
+        background: white;
+        border: 3pt double #002F2F;
+        position: relative;
+        padding: 40px 60px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .certificate-details-page .certificate-document::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+        border: 1pt solid #009FA3;
+    }
+
+    .certificate-details-page .cert-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .certificate-details-page .org-name {
+        font-size: 14pt;
+        font-weight: bold;
+        color: #002F2F;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .certificate-details-page .cert-title {
+        font-size: 28pt;
+        font-weight: bold;
+        color: #009FA3;
+        margin: 20px 0 10px;
+        letter-spacing: 5px;
+    }
+
+    .certificate-details-page .cert-subtitle {
+        font-size: 11pt;
+        color: #666;
+        font-style: italic;
+    }
+
+    .certificate-details-page .cert-body {
+        text-align: center;
+        margin: 30px 0;
+        line-height: 1.8;
+        font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    .certificate-details-page .presented-to {
+        font-size: 12pt;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .certificate-details-page .participant-name {
+        font-size: 24pt;
+        font-weight: bold;
+        color: #002F2F;
+        margin: 10px 0;
+        border-bottom: 2pt solid #009FA3;
+        display: inline-block;
+        padding-bottom: 6px;
+    }
+
+    .certificate-details-page .program-text {
+        font-size: 12pt;
+        margin: 16px 0;
+        line-height: 1.8;
+    }
+
+    .certificate-details-page .program-name {
+        font-weight: bold;
+        color: #009FA3;
+        font-size: 14pt;
+    }
+
+    .certificate-details-page .completion-date {
+        font-size: 12pt;
+        margin: 10px 0;
+    }
+
+    .certificate-details-page .cert-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding-top: 20px;
+    }
+
+    .certificate-details-page .signature-block {
+        text-align: center;
+        width: 40%;
+    }
+
+    .certificate-details-page .signature-line {
+        border-top: 1pt solid #002F2F;
+        padding-top: 6px;
+        margin-top: 40px;
+    }
+
+    .certificate-details-page .signature-name {
+        font-weight: bold;
+        color: #002F2F;
+        font-size: 11pt;
+    }
+
+    .certificate-details-page .signature-role {
+        font-size: 9pt;
+        color: #666;
+        font-style: italic;
+    }
+
+    .certificate-details-page .cert-number {
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 9pt;
+        color: #999;
+        font-family: monospace;
+    }
+
+    .certificate-details-page .metadata-section {
+        background: var(--byp-surface);
+        border: 1px solid var(--byp-border);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .certificate-details-page .metadata-section h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--byp-text);
+    }
+
+    .certificate-details-page .metadata-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .certificate-details-page .metadata-item label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--byp-text-muted);
+        margin-bottom: 4px;
+    }
+
+    .certificate-details-page .metadata-item strong,
+    .certificate-details-page .metadata-item span {
+        display: block;
+        color: var(--byp-text);
+    }
+</style>

@@ -1,0 +1,536 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var email =
+        User.Identity?.Name
+        ?? "User";
+
+
+    var role = "User";
+
+
+    if (User.IsInRole("Admin"))
+    {
+        role = "Admin";
+    }
+    else if (User.IsInRole("Staff"))
+    {
+        role = "Staff";
+    }
+
+
+    var initial =
+        !string.IsNullOrWhiteSpace(email)
+            ? email.Substring(0, 1).ToUpper()
+            : "U";
+
+
+    <div class="login-partial">
+
+        <!-- =====================================================
+             USER INFO
+        ====================================================== -->
+
+        <a asp-controller="Profile"
+           asp-action="Index"
+           class="user-account">
+
+            <div class="user-avatar">
+
+                @initial
+
+            </div>
+
+
+            <div class="user-details">
+
+                <strong>
+                    @email
+                </strong>
+
+
+                <span>
+                    @role
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <!-- =====================================================
+             LOGOUT
+        ====================================================== -->
+
+        <form asp-controller="Account"
+              asp-action="Logout"
+              method="post"
+              class="logout-form">
+
+            @Html.AntiForgeryToken()
+
+
+            <button type="submit"
+                    class="logout-button"
+                    title="Logout">
+
+                <i class="bi bi-box-arrow-right"></i>
+
+                <span>
+                    Logout
+                </span>
+
+            </button>
+
+        </form>
+
+    </div>
+}
+else
+{
+    <div class="login-partial guest-actions">
+
+        <a asp-controller="Account"
+           asp-action="Register"
+           class="guest-button register">
+
+            <i class="bi bi-person-plus"></i>
+
+            <span>
+                Register
+            </span>
+
+        </a>
+
+
+        <a asp-controller="Account"
+           asp-action="Login"
+           class="guest-button login">
+
+            <i class="bi bi-box-arrow-in-right"></i>
+
+            <span>
+                Login
+            </span>
+
+        </a>
+
+    </div>
+}
+
+
+<style>
+
+    /* =========================================================
+       CONTAINER
+    ========================================================== */
+
+    .login-partial {
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        gap:
+            8px;
+
+    }
+
+
+    /* =========================================================
+       AUTHENTICATED USER
+    ========================================================== */
+
+    .user-account {
+
+        min-height:
+            38px;
+
+        padding:
+            3px 7px 3px 4px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        gap:
+            7px;
+
+        border:
+            1px solid transparent;
+
+        border-radius:
+            9px;
+
+        color:
+            inherit;
+
+        text-decoration:
+            none;
+
+        transition:
+            background .15s ease,
+            border-color .15s ease;
+
+    }
+
+
+    .user-account:hover {
+
+        background:
+            #f8fafc;
+
+        border-color:
+            #e7ebf0;
+
+    }
+
+
+    /* =========================================================
+       AVATAR
+    ========================================================== */
+
+    .user-avatar {
+
+        width:
+            31px;
+
+        height:
+            31px;
+
+        flex-shrink:
+            0;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        border-radius:
+            8px;
+
+        background:
+            #eff6ff;
+
+        color:
+            #2563eb;
+
+        font-size:
+            .55rem;
+
+        font-weight:
+            850;
+
+    }
+
+
+    /* =========================================================
+       USER DETAILS
+    ========================================================== */
+
+    .user-details {
+
+        min-width:
+            0;
+
+        max-width:
+            145px;
+
+        display:
+            flex;
+
+        flex-direction:
+            column;
+
+    }
+
+
+    .user-details strong {
+
+        overflow:
+            hidden;
+
+        color:
+            #475569;
+
+        font-size:
+            .48rem;
+
+        font-weight:
+            800;
+
+        line-height:
+            1.25;
+
+        text-overflow:
+            ellipsis;
+
+        white-space:
+            nowrap;
+
+    }
+
+
+    .user-details span {
+
+        margin-top:
+            2px;
+
+        color:
+            #0d6efd;
+
+        font-size:
+            .43rem;
+
+        font-weight:
+            700;
+
+    }
+
+
+    /* =========================================================
+       LOGOUT
+    ========================================================== */
+
+    .logout-form {
+
+        margin:
+            0;
+
+    }
+
+
+    .logout-button {
+
+        min-height:
+            34px;
+
+        padding:
+            0 9px;
+
+        display:
+            inline-flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        gap:
+            5px;
+
+        border:
+            1px solid #e1e6ec;
+
+        border-radius:
+            8px;
+
+        background:
+            #ffffff;
+
+        color:
+            #64748b;
+
+        font-family:
+            inherit;
+
+        font-size:
+            .49rem;
+
+        font-weight:
+            750;
+
+        cursor:
+            pointer;
+
+        transition:
+            background .15s ease,
+            border-color .15s ease,
+            color .15s ease;
+
+    }
+
+
+    .logout-button:hover {
+
+        border-color:
+            #fecaca;
+
+        background:
+            #fef2f2;
+
+        color:
+            #dc2626;
+
+    }
+
+
+    .logout-button i {
+
+        font-size:
+            .6rem;
+
+    }
+
+
+    /* =========================================================
+       GUEST
+    ========================================================== */
+
+    .guest-actions {
+
+        gap:
+            6px;
+
+    }
+
+
+    .guest-button {
+
+        min-height:
+            34px;
+
+        padding:
+            0 9px;
+
+        display:
+            inline-flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        gap:
+            5px;
+
+        border-radius:
+            8px;
+
+        font-size:
+            .49rem;
+
+        font-weight:
+            750;
+
+        text-decoration:
+            none;
+
+        transition:
+            background .15s ease,
+            border-color .15s ease,
+            color .15s ease;
+
+    }
+
+
+    .guest-button.register {
+
+        border:
+            1px solid #dfe6ee;
+
+        background:
+            #ffffff;
+
+        color:
+            #64748b;
+
+    }
+
+
+    .guest-button.register:hover {
+
+        background:
+            #f8fafc;
+
+        color:
+            #0d6efd;
+
+    }
+
+
+    .guest-button.login {
+
+        border:
+            1px solid #0d6efd;
+
+        background:
+            #0d6efd;
+
+        color:
+            #ffffff;
+
+    }
+
+
+    .guest-button.login:hover {
+
+        background:
+            #0b5ed7;
+
+        color:
+            #ffffff;
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 700px) {
+
+        .user-details {
+
+            display:
+                none;
+
+        }
+
+
+        .user-account {
+
+            padding:
+                3px;
+
+        }
+
+
+        .logout-button span,
+        .guest-button span {
+
+            display:
+                none;
+
+        }
+
+
+        .logout-button,
+        .guest-button {
+
+            width:
+                34px;
+
+            padding:
+                0;
+
+        }
+
+    }
+
+</style>

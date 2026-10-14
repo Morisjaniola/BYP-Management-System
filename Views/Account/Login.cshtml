@@ -1,0 +1,956 @@
+﻿@model BYPManagementSystem.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_AuthLayout";
+}
+
+
+<div class="login-page">
+
+    <div class="login-card">
+
+
+        <!-- =====================================================
+             LOGIN FORM
+        ====================================================== -->
+
+        <form asp-controller="Account"
+              asp-action="Login"
+              method="post"
+              class="login-form">
+
+            @Html.AntiForgeryToken()
+
+
+            <!-- =================================================
+                 VALIDATION
+            ================================================== -->
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="ModelOnly"
+                     class="validation-summary">
+                </div>
+            }
+
+
+            <!-- =================================================
+                 LOGIN TITLE
+            ================================================== -->
+
+            <div class="login-header">
+
+                <h1 class="login-title">
+                    Login
+                </h1>
+
+            </div>
+
+
+            <!-- =================================================
+                 EMAIL
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label asp-for="Email">
+                    Email Address
+                </label>
+
+
+                <div class="input-wrapper">
+
+                    <i class="bi bi-envelope input-icon"></i>
+
+
+                    <input asp-for="Email"
+                           type="email"
+                           class="form-control custom-input"
+                           placeholder="Enter your email"
+                           autocomplete="email" />
+
+                </div>
+
+
+                <span asp-validation-for="Email"
+                      class="field-error">
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 PASSWORD
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label asp-for="Password">
+                    Password
+                </label>
+
+
+                <div class="input-wrapper">
+
+                    <i class="bi bi-lock input-icon"></i>
+
+
+                    <input asp-for="Password"
+                           type="password"
+                           id="passwordInput"
+                           class="form-control custom-input password-input"
+                           placeholder="Enter your password"
+                           autocomplete="current-password" />
+
+
+                    <button type="button"
+                            id="togglePassword"
+                            class="password-toggle"
+                            aria-label="Show password">
+
+                        <i class="bi bi-eye"
+                           id="passwordIcon"></i>
+
+                    </button>
+
+                </div>
+
+
+                <span asp-validation-for="Password"
+                      class="field-error">
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 REMEMBER ME
+            ================================================== -->
+
+            <div class="remember-row">
+
+                <label class="remember-label">
+
+                    <input asp-for="RememberMe"
+                           type="checkbox"
+                           class="remember-checkbox" />
+
+                    <span>
+                        Remember me
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <!-- =================================================
+                 SIGN IN
+            ================================================== -->
+
+            <button type="submit"
+                    class="login-button">
+
+                <i class="bi bi-box-arrow-in-right"></i>
+
+                <span>
+                    Sign In
+                </span>
+
+            </button>
+
+
+            <!-- =================================================
+                 REGISTER LINK
+            ================================================== -->
+
+            <div class="register-area">
+
+                <span>
+                    Don't have an account?
+                </span>
+
+
+                <a asp-controller="Account"
+                   asp-action="Register">
+
+                    Create an account
+
+                </a>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       GLOBAL
+    ========================================================== */
+
+    .login-page,
+    .login-page * {
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+    }
+
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .login-page {
+
+        width: 100%;
+
+        min-height: auto;
+
+        height: auto;
+
+        margin: 0;
+
+        padding: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background: transparent;
+
+        box-sizing: border-box;
+
+    }
+
+
+    /* =========================================================
+       LOGIN CARD
+       SAME STYLE AS REGISTER
+    ========================================================== */
+
+    .login-card {
+
+        width: 100%;
+
+        max-width: 470px;
+
+        margin: 0 auto;
+
+        padding: 42px 40px;
+
+        background:
+            rgba(3, 22, 21, .30);
+
+        border:
+            1px solid
+            rgba(183, 215, 229, .38);
+
+        border-radius: 20px;
+
+        box-shadow:
+            0 18px 45px
+            rgba(3, 22, 21, .24);
+
+        backdrop-filter:
+            blur(16px);
+
+        -webkit-backdrop-filter:
+            blur(16px);
+
+        box-sizing: border-box;
+
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================== */
+
+    .login-header {
+
+        width: 100%;
+
+        margin:
+            0 0 28px;
+
+        text-align: center;
+
+    }
+
+
+    .login-title {
+
+        margin: 0;
+
+        color: #FFFFFF;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        font-size: 2rem;
+
+        font-weight: 800;
+
+        line-height: 1.2;
+
+        letter-spacing: -.2px;
+
+    }
+
+
+    /* =========================================================
+       FORM
+    ========================================================== */
+
+    .login-form {
+
+        width: 100%;
+
+        margin: 0;
+
+    }
+
+
+    /* =========================================================
+       FORM GROUP
+    ========================================================== */
+
+    .form-group {
+
+        width: 100%;
+
+        margin-bottom: 22px;
+
+    }
+
+
+    /* =========================================================
+       LABEL
+    ========================================================== */
+
+    .form-group > label {
+
+        display: block;
+
+        margin:
+            0 0 8px;
+
+        color: #FFFFFF;
+
+        font-size: .95rem;
+
+        font-weight: 700;
+
+        line-height: 1.3;
+
+    }
+
+
+    /* =========================================================
+       INPUT WRAPPER
+    ========================================================== */
+
+    .input-wrapper {
+
+        position: relative;
+
+        width: 100%;
+
+    }
+
+
+    /* =========================================================
+       INPUT ICON
+    ========================================================== */
+
+    .input-icon {
+
+        position: absolute;
+
+        top: 50%;
+
+        left: 15px;
+
+        z-index: 5;
+
+        width: 26px;
+
+        height: 26px;
+
+        transform:
+            translateY(-50%);
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 7px;
+
+        background:
+            rgba(255,255,255,.90);
+
+        color: #031716;
+
+        font-size: .78rem;
+
+        pointer-events: none;
+
+    }
+
+
+    /* =========================================================
+       INPUT
+    ========================================================== */
+
+    .custom-input {
+
+        width: 100%;
+
+        height: 52px;
+
+        min-height: 52px;
+
+        padding:
+            0 48px;
+
+        border:
+            1px solid
+            rgba(183,215,229,.45);
+
+        border-radius: 10px;
+
+        background:
+            rgba(104,157,184,.18);
+
+        color: #FFFFFF;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        font-size: .95rem;
+
+        font-weight: 400;
+
+        outline: none;
+
+        box-shadow:
+            0 4px 12px
+            rgba(3,22,21,.08);
+
+        backdrop-filter:
+            blur(7px);
+
+        -webkit-backdrop-filter:
+            blur(7px);
+
+        transition:
+            background .2s ease,
+            border-color .2s ease,
+            box-shadow .2s ease;
+
+        box-sizing: border-box;
+
+    }
+
+
+    /* =========================================================
+       PLACEHOLDER
+    ========================================================== */
+
+    .custom-input::placeholder {
+
+        color:
+            rgba(255,255,255,.68);
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        font-size: .95rem;
+
+        opacity: 1;
+
+    }
+
+
+    /* =========================================================
+       FOCUS
+    ========================================================== */
+
+    .custom-input:focus {
+
+        border-color:
+            rgba(183,215,229,.75);
+
+        background:
+            rgba(104,157,184,.26);
+
+        box-shadow:
+            0 0 0 3px
+            rgba(104,157,184,.16);
+
+    }
+
+
+    /* =========================================================
+       PASSWORD
+    ========================================================== */
+
+    .password-input {
+
+        padding-right: 52px;
+
+    }
+
+
+    /* =========================================================
+       PASSWORD TOGGLE
+    ========================================================== */
+
+    .password-toggle {
+
+        position: absolute;
+
+        top: 50%;
+
+        right: 7px;
+
+        z-index: 5;
+
+        width: 34px;
+
+        height: 34px;
+
+        transform:
+            translateY(-50%);
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        margin: 0;
+
+        padding: 0;
+
+        border: 0;
+
+        border-radius: 8px;
+
+        background:
+            rgba(255,255,255,.90);
+
+        color: #031716;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        font-size: .85rem;
+
+        cursor: pointer;
+
+    }
+
+
+    .password-toggle:hover {
+
+        background:
+            rgba(255,255,255,.98);
+
+        color: #052D2E;
+
+    }
+
+
+    /* =========================================================
+       REMEMBER ME
+    ========================================================== */
+
+    .remember-row {
+
+        margin:
+            2px 0 22px;
+
+    }
+
+
+    .remember-label {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        margin: 0;
+
+        color: #E5F2F6;
+
+        font-size: .9rem;
+
+        font-weight: 400;
+
+        line-height: 1.2;
+
+        cursor: pointer;
+
+    }
+
+
+    .remember-checkbox {
+
+        width: 16px;
+
+        height: 16px;
+
+        margin: 0;
+
+        accent-color: #0C9096;
+
+        cursor: pointer;
+
+    }
+
+
+    /* =========================================================
+       SIGN IN BUTTON
+       SAME STYLE AS CREATE ACCOUNT
+    ========================================================== */
+
+    .login-button {
+
+        width: 100%;
+
+        height: 52px;
+
+        min-height: 52px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 8px;
+
+        margin: 0;
+
+        padding:
+            0 20px;
+
+        border:
+            1px solid
+            rgba(104,157,184,.65);
+
+        border-radius: 10px;
+
+        background:
+            #0C9096;
+
+        color: #FFFFFF;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        font-size: .95rem;
+
+        font-weight: 700;
+
+        line-height: 1;
+
+        cursor: pointer;
+
+        box-shadow:
+            0 8px 20px
+            rgba(3,22,21,.18);
+
+        transition:
+            background .2s ease,
+            transform .2s ease;
+
+    }
+
+
+    .login-button i {
+
+        font-size: .88rem;
+
+    }
+
+
+    .login-button:hover {
+
+        background:
+            #0A6C71;
+
+        transform:
+            translateY(-1px);
+
+    }
+
+
+    .login-button:active {
+
+        transform:
+            translateY(0);
+
+    }
+
+
+    /* =========================================================
+       REGISTER
+    ========================================================== */
+
+    .register-area {
+
+        margin-top: 22px;
+
+        padding-top: 18px;
+
+        border-top:
+            1px solid
+            rgba(183,215,229,.25);
+
+        text-align: center;
+
+        color: #D3E5EC;
+
+        font-size: .88rem;
+
+        line-height: 1.4;
+
+    }
+
+
+    .register-area a {
+
+        margin-left: 4px;
+
+        color: #FFFFFF;
+
+        font-size: .88rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .register-area a:hover {
+
+        color: #D3E5EC;
+
+        text-decoration: underline;
+
+    }
+
+
+    /* =========================================================
+       VALIDATION
+    ========================================================== */
+
+    .field-error {
+
+        display: block;
+
+        margin-top: 5px;
+
+        color: #FFD6D6;
+
+        font-size: .76rem;
+
+        font-weight: 400;
+
+        line-height: 1.2;
+
+    }
+
+
+    .validation-summary {
+
+        margin-bottom: 18px;
+
+        padding: 10px 12px;
+
+        border:
+            1px solid
+            rgba(255,150,150,.40);
+
+        border-radius: 9px;
+
+        background:
+            rgba(90,20,20,.30);
+
+        color: #FFE4E4;
+
+        font-size: .82rem;
+
+        line-height: 1.4;
+
+    }
+
+
+    .validation-summary ul {
+
+        margin: 0;
+
+        padding-left: 18px;
+
+    }
+
+
+    /* =========================================================
+       DESKTOP ONLY
+    ========================================================== */
+
+    @@media (min-width: 992px) {
+
+        .login-card {
+
+            max-width: 470px;
+
+            padding:
+                44px 40px;
+
+        }
+
+
+        .login-title {
+
+            font-size:
+                2rem;
+
+        }
+
+
+        .form-group {
+
+            margin-bottom:
+                22px;
+
+        }
+
+
+        .custom-input {
+
+            height:
+                52px;
+
+            min-height:
+                52px;
+
+        }
+
+
+        .login-button {
+
+            height:
+                52px;
+
+            min-height:
+                52px;
+
+        }
+
+    }
+
+</style>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const passwordInput =
+                    document.getElementById(
+                        "passwordInput"
+                    );
+
+                const togglePassword =
+                    document.getElementById(
+                        "togglePassword"
+                    );
+
+                const passwordIcon =
+                    document.getElementById(
+                        "passwordIcon"
+                    );
+
+
+                if (
+                    passwordInput &&
+                    togglePassword &&
+                    passwordIcon
+                ) {
+
+                    togglePassword.addEventListener(
+                        "click",
+                        function () {
+
+                            const isPassword =
+                                passwordInput.type ===
+                                "password";
+
+
+                            passwordInput.type =
+                                isPassword
+                                    ? "text"
+                                    : "password";
+
+
+                            passwordIcon.className =
+                                isPassword
+                                    ? "bi bi-eye-slash"
+                                    : "bi bi-eye";
+
+
+                            togglePassword.setAttribute(
+                                "aria-label",
+                                isPassword
+                                    ? "Hide password"
+                                    : "Show password"
+                            );
+
+                        }
+                    );
+
+                }
+
+            }
+        );
+
+    </script>
+
+}

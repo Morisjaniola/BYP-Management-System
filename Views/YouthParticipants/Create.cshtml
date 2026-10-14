@@ -1,0 +1,873 @@
+﻿@model BYPManagementSystem.Models.YouthParticipant
+
+@{
+    ViewData["Title"] = "Add Youth Participant";
+}
+
+<div class="participant-form-page">
+
+    <!-- ==========================================================
+         HEADER
+         ========================================================== -->
+
+    <section class="form-header">
+
+        <div class="form-header-icon">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+
+        <div class="form-header-content">
+
+            <span class="form-header-kicker">
+                YOUTH PARTICIPANTS
+            </span>
+
+            <h1>
+                Add Youth Participant
+            </h1>
+
+            <p>
+                Create a new youth participant record.
+            </p>
+
+        </div>
+
+        <a asp-action="Index"
+           class="form-back-button">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Participants
+
+        </a>
+
+    </section>
+
+
+    <!-- ==========================================================
+         VALIDATION MESSAGE
+         ========================================================== -->
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="validation-box">
+
+            <div class="validation-icon">
+                <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+
+            <div>
+
+                <strong>
+                    Please check the information below.
+                </strong>
+
+                <p>
+                    Some required fields are missing or invalid.
+                </p>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         FORM
+         ========================================================== -->
+
+    <form asp-action="Create"
+          method="post"
+          id="createParticipantForm">
+
+        @Html.AntiForgeryToken()
+
+
+        <!-- ======================================================
+             PARTICIPANT INFORMATION
+             ====================================================== -->
+
+        <section class="form-card">
+
+            <div class="form-card-header">
+
+                <div class="form-section-icon">
+                    <i class="bi bi-person-vcard"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Participant Information
+                    </h2>
+
+                    <p>
+                        Enter the basic personal information of the youth participant.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-card-body">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="validation-summary">
+                </div>
+
+
+                <!-- FIRST NAME / LAST NAME -->
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label asp-for="FirstName">
+                            First Name
+                            <span class="required">*</span>
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="bi bi-person"></i>
+
+                            <input asp-for="FirstName"
+                                   class="form-control"
+                                   placeholder="Enter first name"
+                                   autocomplete="off" />
+
+                        </div>
+
+                        <span asp-validation-for="FirstName"
+                              class="field-error">
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label asp-for="LastName">
+                            Last Name
+                            <span class="required">*</span>
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="bi bi-person"></i>
+
+                            <input asp-for="LastName"
+                                   class="form-control"
+                                   placeholder="Enter last name"
+                                   autocomplete="off" />
+
+                        </div>
+
+                        <span asp-validation-for="LastName"
+                              class="field-error">
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BIRTH DATE / CONTACT -->
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label asp-for="BirthDate">
+                            Birth Date
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="bi bi-calendar3"></i>
+
+                            <input asp-for="BirthDate"
+                                   type="date"
+                                   class="form-control" />
+
+                        </div>
+
+                        <small class="field-help">
+                            Enter the participant's date of birth.
+                        </small>
+
+                        <span asp-validation-for="BirthDate"
+                              class="field-error">
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label asp-for="ContactNumber">
+                            Contact Number
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="bi bi-telephone"></i>
+
+                            <input asp-for="ContactNumber"
+                                   class="form-control"
+                                   placeholder="+63 912 345 6789"
+                                   autocomplete="off" />
+
+                        </div>
+
+                        <small class="field-help">
+                            Example: +63 912 345 6789
+                        </small>
+
+                        <span asp-validation-for="ContactNumber"
+                              class="field-error">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================================
+             ADDRESS INFORMATION
+             ====================================================== -->
+
+        <section class="form-card">
+
+            <div class="form-card-header">
+
+                <div class="form-section-icon">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Address Information
+                    </h2>
+
+                    <p>
+                        Provide the participant's current residential address.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-card-body">
+
+
+                <!-- BARANGAY -->
+
+                <div class="form-group">
+
+                    <label asp-for="Barangay">
+                        Barangay
+                        <span class="required">*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="bi bi-geo-alt-fill"></i>
+
+                        <input asp-for="Barangay"
+                               class="form-control"
+                               placeholder="Example: Cansiwang"
+                               autocomplete="off" />
+
+                    </div>
+
+                    <small class="field-help">
+
+                        <i class="bi bi-lightning-charge-fill"></i>
+
+                        This barangay is used for automatic program assignment.
+
+                    </small>
+
+                    <span asp-validation-for="Barangay"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- COMPLETE ADDRESS -->
+
+                <div class="form-group">
+
+                    <label asp-for="Address">
+                        Complete Address
+                    </label>
+
+                    <div class="textarea-wrapper">
+
+                        <i class="bi bi-pin-map-fill"></i>
+
+                        <textarea asp-for="Address"
+                                  class="form-control address-textarea"
+                                  rows="3"
+                                  placeholder="Enter house/purok, barangay, municipality/city, and province"></textarea>
+
+                    </div>
+
+                    <small class="field-help">
+                        Include barangay, municipality/city, and province when applicable.
+                    </small>
+
+                    <span asp-validation-for="Address"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- AUTOMATIC ASSIGNMENT -->
+
+                <div class="info-box">
+
+                    <div class="info-box-icon">
+                        <i class="bi bi-info-circle-fill"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Automatic Program Assignment
+                        </strong>
+
+                        <p>
+                            After this youth participant is saved, active programs
+                            with the same barangay can automatically assign this
+                            participant through the registration system.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- ==================================================
+                     ACTIONS
+                     ================================================== -->
+
+                <div class="form-actions">
+
+                    <a asp-action="Index"
+                       class="btn-cancel">
+
+                        <i class="bi bi-x-lg"></i>
+
+                        Cancel
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="btn-save">
+
+                        <i class="bi bi-check-lg"></i>
+
+                        Save Participant
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </form>
+
+</div>
+
+
+<style>
+
+/* ==========================================================
+   COMPACT FORM PAGE - Matches Admin Dashboard density
+   ========================================================== */
+
+.participant-form-page {
+    width: 100%;
+    padding: 12px 18px 18px;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.form-header {
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 14px 18px;
+
+    margin-bottom: 8px;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            110deg,
+            rgba(12,144,150,.25),
+            rgba(5,45,46,.82)
+        );
+
+    border:
+        1px solid
+        rgba(183,215,229,.16);
+
+    box-shadow:
+        0 8px 20px
+        rgba(0,0,0,.14);
+
+    color: #FFFFFF;
+}
+
+
+.form-header-icon {
+
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.13);
+
+    color: #69DDF2;
+    font-size: 16px;
+}
+
+
+.form-header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+
+.form-header-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: #A9D5DE;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+
+.form-header h1 {
+    margin: 0;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+
+.form-header p {
+    margin: 3px 0 0;
+    color: #C5DDE2;
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+
+.form-back-button {
+
+    min-height: 30px;
+    padding: 0 10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    border-radius: 7px;
+    border: 1px solid rgba(183,215,229,.16);
+    background: rgba(255,255,255,.06);
+    color: #C5DDE2;
+
+    text-decoration: none;
+    font-size: 7px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: .16s ease;
+}
+
+
+.form-back-button:hover {
+    color: #FFFFFF;
+    background: rgba(255,255,255,.10);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   VALIDATION
+   ========================================================== */
+
+.validation-box {
+
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+
+    padding: 10px 12px;
+
+    margin-bottom: 8px;
+
+    border-radius: 10px;
+
+    background: rgba(255,123,138,.10);
+    border: 1px solid rgba(255,123,138,.18);
+    color: #FF7B8A;
+    font-size: 7px;
+}
+
+.validation-icon { font-size: 14px; }
+
+.validation-box strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.validation-box p { margin: 0; font-size: 7px; }
+
+.validation-summary {
+    padding: 7px 10px;
+    margin-bottom: 8px;
+    border-radius: 7px;
+    background: rgba(255,123,138,.10);
+    border: 1px solid rgba(255,123,138,.18);
+    color: #FF7B8A;
+    font-size: 6px;
+}
+.validation-summary:empty { display: none; }
+
+
+/* ==========================================================
+   FORM CARD
+   ========================================================== */
+
+.form-card {
+
+    margin-top: 8px;
+    margin-bottom: 8px;
+
+    border-radius: 11px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        );
+
+    border:
+        1px solid
+        rgba(183,215,229,.14);
+
+    box-shadow:
+        0 6px 16px
+        rgba(0,0,0,.08);
+}
+
+
+.form-card-header {
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 12px;
+
+    border-bottom:
+        1px solid
+        rgba(183,215,229,.12);
+}
+
+
+.form-section-icon {
+
+    width: 30px;
+    height: 30px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background: rgba(105,199,232,.10);
+    border: 1px solid rgba(105,199,232,.12);
+    color: #69DDF2;
+    font-size: 14px;
+}
+
+
+.form-card-header h2 {
+    margin: 0 0 1px;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.form-card-header p {
+    margin: 0;
+    color: #769BA3;
+    font-size: 7px;
+}
+
+.form-card-body {
+    padding: 10px 12px;
+}
+
+
+/* ==========================================================
+   FORM
+   ========================================================== */
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group > label {
+    display: block;
+    margin-bottom: 4px;
+    color: #A9D5DE;
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: .5px;
+}
+
+.required { color: #FF7B8A; }
+
+
+/* ==========================================================
+   INPUT
+   ========================================================== */
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper > i {
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #69B8CB;
+    pointer-events: none;
+    z-index: 2;
+    font-size: 10px;
+}
+
+.form-control {
+    width: 100%;
+    min-height: 33px;
+    padding: 0 8px 0 28px;
+    box-sizing: border-box;
+    border: 1px solid rgba(183,215,229,.16);
+    border-radius: 7px;
+    background: rgba(255,255,255,.055);
+    color: #D8EEF2;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8px;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.form-control:focus {
+    border-color: #69C7E8;
+    box-shadow: 0 0 0 3px rgba(105,199,232,.15);
+}
+
+.form-control::placeholder { color: #6F969E; }
+
+
+/* ==========================================================
+   TEXTAREA
+   ========================================================== */
+
+.textarea-wrapper { position: relative; }
+.textarea-wrapper > i {
+    position: absolute;
+    top: 8px;
+    left: 9px;
+    color: #69B8CB;
+    pointer-events: none;
+    z-index: 2;
+}
+.address-textarea {
+    padding-left: 28px !important;
+    min-height: 70px;
+    resize: vertical;
+    line-height: 1.4;
+}
+
+
+/* ==========================================================
+   HELP / ERROR
+   ========================================================== */
+
+.field-help {
+    display: block;
+    margin-top: 4px;
+    color: #72969E;
+    font-size: 6px;
+    line-height: 1.4;
+}
+.field-help i { color: #69DDF2; margin-right: 3px; }
+
+.field-error {
+    display: block;
+    margin-top: 3px;
+    color: #FF7B8A;
+    font-size: 6px;
+}
+
+
+/* ==========================================================
+   INFO BOX
+   ========================================================== */
+
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 9px 11px;
+    margin-top: 4px;
+    border-radius: 8px;
+    background: rgba(105,199,232,.08);
+    border: 1px solid rgba(105,199,232,.14);
+}
+.info-box-icon { color: #69DDF2; font-size: 13px; flex-shrink: 0; }
+.info-box strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #FFFFFF;
+    font-size: 8px;
+}
+.info-box p {
+    margin: 0;
+    color: #769BA3;
+    font-size: 6px;
+    line-height: 1.4;
+}
+
+
+/* ==========================================================
+   FORM ACTIONS
+   ========================================================== */
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(183,215,229,.12);
+}
+
+.btn-cancel,
+.btn-save {
+    min-height: 30px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 7px;
+    font-size: 7px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .16s ease;
+    box-sizing: border-box;
+}
+
+.btn-cancel {
+    border: 1px solid rgba(183,215,229,.16);
+    background: rgba(255,255,255,.06);
+    color: #C5DDE2;
+}
+
+.btn-cancel:hover {
+    color: #FFFFFF;
+    background: rgba(255,255,255,.10);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.btn-save {
+    border: 1px solid #0C9096;
+    background: #0C9096;
+    color: #FFFFFF;
+}
+
+.btn-save:hover {
+    background: #0A7D82;
+    border-color: #0A7D82;
+    transform: translateY(-1px);
+}
+
+.btn-save:disabled { opacity: .7; cursor: not-allowed; }
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@@media (max-width: 800px) {
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+    .form-actions { justify-content: flex-end; }
+}
+
+@@media (max-width: 600px) {
+    .participant-form-page { padding: 8px; }
+    .form-header { padding: 12px 15px; }
+    .form-header h1 { font-size: 18px; }
+    .form-header p { font-size: 7px; }
+    .form-back-button { display: none; }
+    .form-card-header { padding: 9px 11px; }
+    .form-card-body { padding: 9px 11px; }
+    .form-actions { width: 100%; }
+    .btn-cancel, .btn-save { flex: 1; }
+}
+
+</style>

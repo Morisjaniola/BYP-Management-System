@@ -1,0 +1,1685 @@
+﻿@model BYPManagementSystem.ViewModels.RegistrationParticipantViewModel
+
+@{
+    ViewData["Title"] = "Youth Participant Details";
+
+    var youth = Model.YouthParticipant;
+
+    var registrations =
+        Model.Registrations?
+            .OrderByDescending(r => r.RegisteredAt)
+            .ToList()
+        ?? new List<BYPManagementSystem.Models.ProgramRegistration>();
+
+    var approvedPrograms =
+        registrations
+            .Where(r => r.Status == "Approved")
+            .ToList();
+
+    var pendingPrograms =
+        registrations
+            .Where(r => r.Status == "Pending")
+            .ToList();
+
+    var rejectedPrograms =
+        registrations
+            .Where(r => r.Status == "Rejected")
+            .ToList();
+
+    var firstInitial =
+        !string.IsNullOrWhiteSpace(youth.FirstName)
+            ? youth.FirstName.Substring(0, 1).ToUpper()
+            : "U";
+
+    var lastInitial =
+        !string.IsNullOrWhiteSpace(youth.LastName)
+            ? youth.LastName.Substring(0, 1).ToUpper()
+            : "";
+
+    var isAdminOrStaff =
+        User.IsInRole("Admin") || User.IsInRole("Staff");
+}
+
+
+<div class="participant-page">
+
+    <!-- =========================================================
+         HEADER
+         ========================================================= -->
+
+    <section class="form-header">
+
+        <div class="form-header-icon">
+            <i class="bi bi-person-vcard-fill"></i>
+        </div>
+
+        <div class="form-header-content">
+
+            <span class="form-header-kicker">
+                YOUTH PARTICIPANTS
+            </span>
+
+            <h1>
+                @youth.FullName
+            </h1>
+
+            <p>
+                View the youth participant account and assigned programs.
+            </p>
+
+        </div>
+
+        @if (isAdminOrStaff)
+        {
+            <div class="form-header-actions">
+
+                <a asp-controller="YouthParticipants"
+                   asp-action="Details"
+                   asp-route-id="@youth.Id"
+                   class="header-button secondary">
+
+                    <i class="bi bi-person-lines-fill"></i>
+                    Full Profile
+
+                </a>
+
+
+                <a asp-controller="Registration"
+                   asp-action="Index"
+                   class="header-button primary">
+
+                    <i class="bi bi-list-ul"></i>
+                    Registration List
+
+                </a>
+
+            </div>
+        }
+
+    </section>
+
+
+    <!-- =========================================================
+         PROFILE / ACCOUNT CARD
+         ========================================================= -->
+
+    <div class="profile-summary">
+
+        <div class="profile-avatar">
+            @firstInitial@lastInitial
+        </div>
+
+        <div class="profile-info">
+
+            <span>
+                YOUTH PARTICIPANT
+            </span>
+
+            <h2>
+                @youth.FullName
+            </h2>
+
+            <div class="profile-meta">
+
+                <span>
+                    <i class="bi bi-geo-alt-fill"></i>
+                    @(string.IsNullOrWhiteSpace(youth.Barangay)
+                        ? "Barangay not set"
+                        : youth.Barangay)
+                </span>
+
+                <span>
+                    <i class="bi bi-person-check-fill"></i>
+                    @Model.TotalPrograms assigned program@(Model.TotalPrograms == 1 ? "" : "s")
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="profile-status">
+
+            @if (youth.IsActive)
+            {
+                <span class="status-badge active">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Active
+                </span>
+            }
+            else
+            {
+                <span class="status-badge inactive">
+                    <i class="bi bi-x-circle-fill"></i>
+                    Inactive
+                </span>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         ACCOUNT / PARTICIPANT INFORMATION
+         ========================================================= -->
+
+    <section class="dashboard-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="panel-eyebrow">
+                    ACCOUNT INFORMATION
+                </span>
+
+                <h2>
+                    Personal Details
+                </h2>
+
+                <p>
+                    Basic information of the youth participant.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="information-grid">
+
+            <div class="information-card">
+
+                <div class="information-icon account">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+
+                <div class="information-content">
+
+                    <span>
+                        User / Account
+                    </span>
+
+                    @if (Model.HasUserAccount &&
+                         !string.IsNullOrWhiteSpace(Model.UserEmail))
+                    {
+                        <strong>
+                            @Model.UserEmail
+                        </strong>
+
+                        <small class="linked-text">
+                            <i class="bi bi-check-circle"></i>
+                            Linked account
+                        </small>
+                    }
+                    else
+                    {
+                        <strong class="no-account">
+                            No linked account
+                        </strong>
+
+                        <small>
+                            Participant record only
+                        </small>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon phone">
+                    <i class="bi bi-telephone"></i>
+                </div>
+
+                <div class="information-content">
+
+                    <span>
+                        Contact Number
+                    </span>
+
+                    <strong>
+                        @(string.IsNullOrWhiteSpace(youth.ContactNumber)
+                            ? "Not provided"
+                            : youth.ContactNumber)
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon location">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+
+                <div class="information-content">
+
+                    <span>
+                        Barangay
+                    </span>
+
+                    <strong>
+                        @(string.IsNullOrWhiteSpace(youth.Barangay)
+                            ? "Not assigned"
+                            : youth.Barangay)
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon date">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+
+                <div class="information-content">
+
+                    <span>
+                        Birth Date
+                    </span>
+
+                    <strong>
+                        @(youth.BirthDate.HasValue
+                            ? youth.BirthDate.Value.ToString("MMM dd, yyyy")
+                            : "Not provided")
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon created">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+
+                <div class="information-content">
+
+                    <span>
+                        Participant Created
+                    </span>
+
+                    <strong>
+                        @youth.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-card">
+
+                <div class="information-icon programs">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+
+                <div class="information-content">
+
+                    <span>
+                        Assigned Programs
+                    </span>
+
+                    <strong>
+                        @Model.TotalPrograms
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         SUMMARY
+         ========================================================= -->
+
+    <section class="summary-grid">
+
+        <div class="summary-card">
+
+            <div class="summary-icon total">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Total Programs
+                </span>
+
+                <strong>
+                    @Model.TotalPrograms
+                </strong>
+
+                <small>
+                    Assigned to this youth
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon approved">
+                <i class="bi bi-check-circle"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Approved
+                </span>
+
+                <strong>
+                    @Model.ApprovedPrograms
+                </strong>
+
+                <small>
+                    Attendance available
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon pending">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Pending
+                </span>
+
+                <strong>
+                    @Model.PendingPrograms
+                </strong>
+
+                <small>
+                    Awaiting processing
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon rejected">
+                <i class="bi bi-x-circle"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Rejected
+                </span>
+
+                <strong>
+                    @Model.RejectedPrograms
+                </strong>
+
+                <small>
+                    Rejected registrations
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ASSIGNED PROGRAMS
+         ========================================================= -->
+
+    <section class="dashboard-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="panel-eyebrow">
+                    PROGRAMS ASSIGNED TO THIS USER
+                </span>
+
+                <h2>
+                    Programs Assigned to @youth.FullName
+                </h2>
+
+                <p>
+                    List of programs where this youth participant is registered.
+                </p>
+
+            </div>
+
+
+            <div class="program-count">
+                <i class="bi bi-calendar-event"></i>
+                @registrations.Count program@(registrations.Count == 1 ? "" : "s")
+            </div>
+
+        </div>
+
+
+        @if (registrations.Any())
+        {
+            <div class="table-wrapper">
+
+                <table class="program-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                PROGRAM
+                            </th>
+
+                            <th>
+                                REGISTERED
+                            </th>
+
+                            <th>
+                                STATUS
+                            </th>
+
+                            <th>
+                                ACTIONS
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var registration in registrations)
+                        {
+                            var statusClass =
+                                registration.Status switch
+                                {
+                                    "Approved" => "approved",
+                                    "Pending" => "pending",
+                                    "Rejected" => "rejected",
+                                    _ => "neutral"
+                                };
+
+                            <tr>
+
+                                <!-- PROGRAM -->
+
+                                <td>
+
+                                    <div class="program-cell">
+
+                                        <div class="program-icon">
+                                            <i class="bi bi-calendar-event"></i>
+                                        </div>
+
+                                        <div class="program-data">
+
+                                            <strong>
+                                                @(registration.Program?.Name ?? "Unknown Program")
+                                            </strong>
+
+                                            @if (registration.Program != null)
+                                            {
+                                                <span>
+                                                    <i class="bi bi-clock"></i>
+                                                    @registration.Program.Schedule
+                                                </span>
+
+                                                <small>
+                                                    <i class="bi bi-geo-alt"></i>
+                                                    @registration.Program.Barangay
+                                                </small>
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- REGISTERED -->
+
+                                <td>
+
+                                    <div class="registered-data">
+                                        <strong>
+                                            @registration.RegisteredAt.ToLocalTime().ToString("MMM dd, yyyy")
+                                        </strong>
+                                        <span>
+                                            @registration.RegisteredAt.ToLocalTime().ToString("hh:mm tt")
+                                        </span>
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+                                    <span class="status-badge @statusClass">
+                                        @if (registration.Status == "Approved")
+                                        {
+                                            <i class="bi bi-check-circle"></i>
+                                        }
+                                        else if (registration.Status == "Pending")
+                                        {
+                                            <i class="bi bi-hourglass-split"></i>
+                                        }
+                                        else if (registration.Status == "Rejected")
+                                        {
+                                            <i class="bi bi-x-circle"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-info-circle"></i>
+                                        }
+                                        @registration.Status
+                                    </span>
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="action-group">
+
+                                        @if (registration.Status == "Approved" &&
+                                             registration.YouthParticipantId.HasValue)
+                                        {
+                                            <a asp-controller="Registration"
+                                               asp-action="Attendance"
+                                               asp-route-id="@registration.Id"
+                                               class="action-button attendance">
+
+                                                <i class="bi bi-clipboard-check"></i>
+                                                View Attendance
+
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="action-button disabled">
+                                                <i class="bi bi-lock"></i>
+                                                Attendance unavailable
+                                            </span>
+                                        }
+
+
+                                        @if (isAdminOrStaff)
+                                        {
+                                            <a asp-controller="Programs"
+                                               asp-action="Details"
+                                               asp-route-id="@registration.ProgramId"
+                                               class="action-button details">
+
+                                                <i class="bi bi-eye"></i>
+                                                Program
+
+                                            </a>
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+
+                <i class="bi bi-calendar-x"></i>
+
+                <span>
+                    No assigned programs.
+                </span>
+
+                <a asp-controller="Programs"
+                   asp-action="Index"
+                   class="empty-button">
+
+                    <i class="bi bi-calendar-event"></i>
+                    View Programs
+
+                </a>
+
+            </div>
+        }
+
+    </section>
+
+
+    <!-- =========================================================
+         APPROVAL INFORMATION
+         ========================================================= -->
+
+    @if (pendingPrograms.Any() || rejectedPrograms.Any())
+    {
+        <section class="dashboard-panel">
+
+            <div class="notice-content">
+
+                <div class="notice-icon">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+
+                <div>
+
+                    <strong>
+                        Registration Status
+                    </strong>
+
+                    @if (pendingPrograms.Any())
+                    {
+                        <p>
+                            <strong>@pendingPrograms.Count pending registration@(pendingPrograms.Count == 1 ? "" : "s")</strong>
+                            are still awaiting processing.
+                        </p>
+                    }
+
+                    @if (rejectedPrograms.Any())
+                    {
+                        <p>
+                            <strong>@rejectedPrograms.Count rejected registration@(rejectedPrograms.Count == 1 ? "" : "s")</strong>
+                            cannot be used for attendance.
+                        </p>
+                    }
+
+                </div>
+
+            </div>
+
+        </section>
+    }
+
+
+    <!-- =========================================================
+         WORKFLOW
+         ========================================================= -->
+
+    <section class="workflow-panel">
+
+        <div class="workflow-step">
+
+            <div class="workflow-number">
+                1
+            </div>
+
+            <div>
+
+                <strong>
+                    Youth Participant
+                </strong>
+
+                <span>
+                    @youth.FullName
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="workflow-arrow">
+            <i class="bi bi-arrow-right"></i>
+        </div>
+
+
+        <div class="workflow-step">
+
+            <div class="workflow-number">
+                2
+            </div>
+
+            <div>
+
+                <strong>
+                    Assigned Program
+                </strong>
+
+                <span>
+                    Registration status
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="workflow-arrow">
+            <i class="bi bi-arrow-right"></i>
+        </div>
+
+
+        <div class="workflow-step">
+
+            <div class="workflow-number">
+                3
+            </div>
+
+            <div>
+
+                <strong>
+                    Attendance
+                </strong>
+
+                <span>
+                    Approved programs only
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         BOTTOM ACTIONS
+         ========================================================= -->
+
+    <div class="bottom-actions">
+
+        <a asp-controller="Registration"
+           asp-action="Index"
+           class="bottom-button secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Back to Registration
+
+        </a>
+
+
+        <a asp-controller="YouthParticipants"
+           asp-action="Details"
+           asp-route-id="@youth.Id"
+           class="bottom-button primary">
+
+            <i class="bi bi-person"></i>
+            Open Participant Profile
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<style>
+
+/* =========================================================
+   COMPACT PARTICIPANT PAGE - Matches Admin Dashboard density
+   ========================================================= */
+
+.participant-page {
+    width: 100%;
+    padding: 12px 18px 18px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.form-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: 13px;
+    background:
+        linear-gradient(
+            110deg,
+            rgba(12,144,150,.25),
+            rgba(5,45,46,.82)
+        );
+    border: 1px solid rgba(183,215,229,.16);
+    box-shadow: 0 8px 20px rgba(0,0,0,.14);
+    color: #FFFFFF;
+}
+
+.form-header-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.13);
+    color: #69DDF2;
+    font-size: 16px;
+}
+
+.form-header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-header-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: #A9D5DE;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 1px.
+}
+
+.form-header h1 {
+    margin: 0;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.form-header p {
+    margin: 3px 0 0;
+    color: #C5DDE2;
+    font-size: 8px;
+    line-height: 1.4.
+}
+
+.form-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px.
+    flex-wrap: wrap.
+}
+
+.header-button {
+    min-height: 30px.
+    padding: 0 10px.
+    display: inline-flex.
+    align-items: center.
+    justify-content: center.
+    gap: 5px.
+    border-radius: 7px.
+    font-size: 7px.
+    font-weight: 700.
+    text-decoration: none.
+    transition: .16s ease.
+}
+
+.header-button.secondary {
+    border: 1px solid rgba(183,215,229,.16).
+    background: rgba(255,255,255,.06).
+    color: #C5DDE2.
+}
+
+.header-button.primary {
+    border: 1px solid #0C9096.
+    background: #0C9096.
+    color: #FFFFFF.
+}
+
+.header-button:hover {
+    filter: brightness(.98);
+}
+
+
+/* =========================================================
+   PROFILE SUMMARY
+   ========================================================= */
+
+.profile-summary {
+    display: flex.
+    align-items: center.
+    gap: 12px.
+    padding: 10px 12px.
+    margin-bottom: 8px.
+    border-radius: 11px.
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        ).
+    border: 1px solid rgba(183,215,229,.14).
+    box-shadow: 0 6px 16px rgba(0,0,0,.08).
+}
+
+.profile-avatar {
+    width: 42px.
+    height: 42px.
+    flex-shrink: 0.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 9px.
+    background: rgba(105,199,232,.15).
+    color: #69DDF2.
+    font-size: 15px.
+    font-weight: 800.
+}
+
+.profile-info {
+    flex: 1.
+    min-width: 0.
+}
+
+.profile-info > span {
+    display: block.
+    margin-bottom: 2px.
+    color: #69DDF2.
+    font-size: 6px.
+    font-weight: 700.
+    letter-spacing: .8px.
+}
+
+.profile-info h2 {
+    margin: 0 0 4px.
+    overflow: hidden.
+    color: #FFFFFF.
+    font-size: 14px.
+    font-weight: 700.
+    text-overflow: ellipsis.
+    white-space: nowrap.
+}
+
+.profile-meta {
+    display: flex.
+    flex-wrap: wrap.
+    gap: 8px.
+}
+
+.profile-meta span {
+    display: inline-flex.
+    align-items: center.
+    gap: 4px.
+    color: #72969E.
+    font-size: 6px.
+}
+
+.profile-meta i { color: #69DDF2; }
+
+.profile-status { align-self: flex-start; }
+
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.status-badge {
+    display: inline-flex.
+    align-items: center.
+    gap: 4px.
+    padding: 5px 8px.
+    border-radius: 999px.
+    font-size: 6px.
+    font-weight: 700.
+    white-space: nowrap.
+}
+
+.status-badge.active {
+    color: #69F0AE.
+    background: rgba(43,166,126,.12).
+    border: 1px solid rgba(105,240,174,.17).
+}
+
+.status-badge.inactive {
+    color: #FF7B8A.
+    background: rgba(255,123,138,.10).
+    border: 1px solid rgba(255,123,138,.15).
+}
+
+.status-badge.pending {
+    color: #FFD166.
+    background: rgba(255,209,102,.12).
+    border: 1px solid rgba(255,209,102,.18).
+}
+
+.status-badge.rejected {
+    color: #FF7B8A.
+    background: rgba(255,123,138,.12).
+    border: 1px solid rgba(255,123,138,.18).
+}
+
+.status-badge.neutral {
+    color: #8DDCF2.
+    background: rgba(105,199,232,.12).
+    border: 1px solid rgba(105,199,232,.15).
+}
+
+
+/* =========================================================
+   PANEL
+   ========================================================= */
+
+.dashboard-panel {
+    padding: 10px.
+    border-radius: 11px.
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5,45,46,.82),
+            rgba(3,23,22,.94)
+        ).
+    border: 1px solid rgba(183,215,229,.14).
+    box-shadow: 0 6px 16px rgba(0,0,0,.08).
+}
+
+.dashboard-panel + .dashboard-panel { margin-top: 8px; }
+
+.panel-header {
+    min-height: 34px.
+    display: flex.
+    align-items: center.
+    justify-content: space-between.
+    gap: 8px.
+    margin-bottom: 8px.
+}
+
+.panel-eyebrow {
+    display: block.
+    color: #69DDF2.
+    font-size: 6px.
+    font-weight: 700.
+    letter-spacing: .8px.
+}
+
+.panel-header h2 {
+    margin: 2px 0 1px.
+    color: #FFFFFF.
+    font-size: 12px.
+    line-height: 1.1.
+}
+
+.panel-header p {
+    margin: 0.
+    color: #769BA3.
+    font-size: 7px.
+}
+
+.panel-icon-box {
+    width: 30px.
+    height: 30px.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 7px.
+    color: #69DDF2.
+    background: rgba(105,199,232,.09).
+    border: 1px solid rgba(105,199,232,.12).
+}
+
+.panel-link {
+    display: inline-flex.
+    align-items: center.
+    gap: 4px.
+    color: #8DDCF2.
+    font-size: 7px.
+    font-weight: 700.
+    text-decoration: none.
+}
+
+.panel-link:hover { color: #FFFFFF; text-decoration: none; }
+
+
+/* =========================================================
+   INFORMATION GRID
+   ========================================================= */
+
+.information-grid {
+    display: grid.
+    grid-template-columns: repeat(3, 1fr).
+    gap: 8px.
+    margin-top: 8px.
+}
+
+.information-card {
+    min-height: 64px.
+    padding: 9px 10px.
+    display: flex.
+    align-items: center.
+    gap: 8px.
+    border-radius: 9px.
+    background: rgba(255,255,255,.035).
+    border: 1px solid rgba(183,215,229,.10).
+}
+
+.information-icon {
+    width: 32px.
+    height: 32px.
+    flex-shrink: 0.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 7px.
+    background: rgba(255,255,255,.06).
+    font-size: 11px.
+}
+
+.information-icon.account { color: #69DDF2; }
+.information-icon.phone { color: #69F0AE; }
+.information-icon.location { color: #FFD166; }
+.information-icon.date { color: #8DDCF2; }
+.information-icon.created { color: #B9BFFF; }
+.information-icon.programs { color: #69DDF2; }
+
+.information-content span {
+    display: block.
+    color: #9FC6CC.
+    font-size: 6px.
+    font-weight: 600.
+}
+
+.information-content strong {
+    display: block.
+    margin-top: 1px.
+    color: #FFFFFF.
+    font-size: 14px.
+    line-height: 1.2.
+}
+
+.information-content small {
+    display: block.
+    margin-top: 2px.
+    color: #72969E.
+    font-size: 6px.
+}
+
+.information-content small.linked-text {
+    color: #69F0AE;
+}
+
+.information-content small.linked-text i { margin-right: 3px; }
+
+
+/* =========================================================
+   SUMMARY GRID
+   ========================================================= */
+
+.summary-grid {
+    margin-top: 8px.
+    display: grid.
+    grid-template-columns: repeat(4, 1fr).
+    gap: 8px.
+}
+
+.summary-card {
+    min-height: 64px.
+    padding: 10px 11px.
+    display: flex.
+    align-items: center.
+    gap: 8px.
+    border-radius: 10px.
+    border: 1px solid rgba(183,215,229,.13).
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.025).
+}
+
+.summary-icon {
+    width: 34px.
+    height: 34px.
+    flex: 0 0 34px.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 9px.
+    background: rgba(255,255,255,.07).
+    color: #69DDF2.
+    font-size: 14px.
+}
+
+.summary-icon.total { color: #69DDF2; }
+.summary-icon.approved { color: #69F0AE; }
+.summary-icon.pending { color: #FFD166; }
+.summary-icon.rejected { color: #FF7B8A; }
+
+.summary-content { min-width: 0; }
+.summary-content span { display: block; color: #9FC6CC; font-size: 6px; font-weight: 600; }
+.summary-content strong { display: block; margin-top: 1px; color: #FFFFFF; font-size: 16px; line-height: 1; }
+.summary-content small { display: block; margin-top: 3px; color: #72969E; font-size: 6px; }
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto.
+    border-radius: 10px.
+    border: 1px solid rgba(105,199,232,.20).
+}
+
+.program-table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse.
+    table-layout: fixed.
+}
+
+.program-table thead {
+    background: linear-gradient(90deg, #69C7E8, #8DDCF2).
+}
+
+.program-table th {
+    height: 32px.
+    padding: 0 8px.
+    text-align: left.
+    vertical-align: middle.
+    color: #06363B.
+    font-size: 7px.
+    font-weight: 800.
+    letter-spacing: .6px.
+    border-right: 1px solid rgba(5,45,46,.10).
+}
+.program-table th:last-child { border-right: 0; }
+
+.program-table th:nth-child(1) { width: 25%; }
+.program-table th:nth-child(2) { width: 15%; }
+.program-table th:nth-child(3) { width: 15%; }
+.program-table th:nth-child(4) { width: 20%; text-align: center; }
+
+.program-table tbody tr {
+    height: 48px.
+    border-top: 1px solid rgba(183,215,229,.10).
+    background: rgba(255,255,255,.035).
+    transition: background .15s ease.
+}
+.program-table tbody tr:nth-child(even) { background: rgba(105,199,232,.035); }
+.program-table tbody tr:hover { background: rgba(105,199,232,.10); }
+
+.program-table td {
+    padding: 6px 8px.
+    vertical-align: middle.
+    color: #C1D8DD.
+    font-size: 7px.
+    border-right: 1px solid rgba(183,215,229,.07).
+}
+.program-table td:last-child { border-right: 0; }
+
+
+/* =========================================================
+   PROGRAM CELL
+   ========================================================= */
+
+.program-cell {
+    display: flex.
+    align-items: center.
+    gap: 8px.
+}
+
+.program-icon {
+    width: 28px.
+    height: 28px.
+    flex-shrink: 0.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 6px.
+    background: rgba(105,199,232,.14).
+    color: #69DDF2.
+    font-size: 10px.
+}
+
+.program-data { min-width: 0; }
+
+.program-data strong {
+    display: block.
+    overflow: hidden.
+    color: #FFFFFF.
+    font-size: 8px.
+    font-weight: 700.
+    text-overflow: ellipsis.
+    white-space: nowrap.
+}
+
+.program-data span,
+.program-data small {
+    display: block.
+    margin-top: 2px.
+    overflow: hidden.
+    color: #72969E.
+    font-size: 6px.
+    text-overflow: ellipsis.
+    white-space: nowrap.
+}
+
+.program-data i { color: #69DDF2; font-size: 7px; }
+
+
+/* =========================================================
+   REGISTERED
+   ========================================================= */
+
+.registered-data strong {
+    display: block.
+    color: #FFFFFF.
+    font-size: 8px.
+    font-weight: 700.
+}
+
+.registered-data span {
+    display: block.
+    margin-top: 2px.
+    color: #72969E.
+    font-size: 6px.
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.action-group {
+    display: flex.
+    align-items: center.
+    gap: 5px.
+    flex-wrap: wrap.
+}
+
+.action-button {
+    min-height: 28px.
+    padding: 0 8px.
+    display: inline-flex.
+    align-items: center.
+    justify-content: center.
+    gap: 4px.
+    border-radius: 6px.
+    font-size: 6px.
+    font-weight: 700.
+    text-decoration: none.
+    white-space: nowrap.
+    transition: .13s ease.
+}
+
+.action-button.attendance {
+    border: 1px solid rgba(105,199,232,.35).
+    background: rgba(105,199,232,.10).
+    color: #8DDCF2.
+}
+
+.action-button.attendance:hover {
+    background: rgba(105,199,232,.20).
+    color: #FFFFFF.
+}
+
+.action-button.details {
+    border: 1px solid rgba(183,215,229,.15).
+    background: rgba(255,255,255,.04).
+    color: #B9BFFF.
+}
+
+.action-button.details:hover {
+    background: rgba(105,199,232,.08).
+    color: #FFFFFF.
+}
+
+.action-button.disabled {
+    border: 1px solid rgba(183,215,229,.10).
+    background: rgba(255,255,255,.03).
+    color: #628D96.
+    cursor: not-allowed.
+}
+
+
+/* =========================================================
+   NOTICE CONTENT
+   ========================================================= */
+
+.notice-content {
+    display: flex.
+    align-items: flex-start.
+    gap: 10px.
+    padding: 10px 12px.
+    border-radius: 8px.
+    background: rgba(105,199,232,.08).
+    border: 1px solid rgba(105,199,232,.14).
+}
+
+.notice-icon {
+    width: 30px.
+    height: 30px.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    flex-shrink: 0.
+    border-radius: 7px.
+    background: rgba(105,199,232,.10).
+    color: #69DDF2.
+    font-size: 12px.
+}
+
+.notice-content strong {
+    display: block.
+    color: #FFFFFF.
+    font-size: 9px.
+    margin-bottom: 4px.
+}
+
+.notice-content p {
+    margin: 0.
+    color: #769BA3.
+    font-size: 7px.
+    line-height: 1.4.
+}
+
+
+/* =========================================================
+   WORKFLOW
+   ========================================================= */
+
+.workflow-panel {
+    display: flex.
+    align-items: center.
+    justify-content: space-around.
+    gap: 10px.
+    padding: 8px 11px.
+    margin-top: 8px.
+    border-radius: 9px.
+    background:
+        linear-gradient(
+            90deg,
+            rgba(12,144,150,.14),
+            rgba(104,157,184,.07)
+        ).
+    border: 1px solid rgba(183,215,229,.12).
+}
+
+.workflow-step {
+    display: flex.
+    align-items: center.
+    gap: 6px.
+    color: #72969E.
+    font-size: 6px.
+    font-weight: 700.
+    white-space: nowrap.
+}
+
+.workflow-number {
+    width: 24px.
+    height: 24px.
+    display: flex.
+    align-items: center.
+    justify-content: center.
+    border-radius: 50%.
+    background: rgba(255,255,255,.07).
+    color: #69DDF2.
+    font-size: 7px.
+    font-weight: 800.
+}
+
+.workflow-arrow {
+    color: #628D96.
+    font-size: 8px.
+}
+
+.workflow-step strong {
+    display: block.
+    color: #FFFFFF.
+    font-size: 8px.
+}
+
+.workflow-step span {
+    display: block.
+    margin-top: 1px.
+    color: #72969E.
+    font-size: 6px.
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    min-height: 90px.
+    display: flex.
+    flex-direction: column.
+    align-items: center.
+    justify-content: center.
+    gap: 5px.
+    color: #668A92.
+    text-align: center.
+}
+
+.empty-state i { color: #69C7E8; font-size: 18px; }
+.empty-state span { font-size: 7px; }
+
+.empty-button {
+    min-height: 26px.
+    padding: 0 9px.
+    display: flex.
+    align-items: center.
+    gap: 4px.
+    border-radius: 6px.
+    color: #052D2E.
+    background: #69C7E8.
+    font-size: 6px.
+    font-weight: 700.
+    text-decoration: none.
+}
+.empty-button:hover { color: #052D2E; background: #8DDCF2; }
+
+
+/* =========================================================
+   BOTTOM ACTIONS
+   ========================================================= */
+
+.bottom-actions {
+    margin-top: 8px.
+    display: flex.
+    align-items: center.
+    justify-content: space-between.
+    gap: 8px.
+}
+
+.bottom-button {
+    min-height: 30px.
+    padding: 0 10px.
+    display: inline-flex.
+    align-items: center.
+    justify-content: center.
+    gap: 5px.
+    border-radius: 7px.
+    font-size: 7px.
+    font-weight: 700.
+    text-decoration: none.
+    transition: .16s ease.
+}
+
+.bottom-button.secondary {
+    border: 1px solid rgba(183,215,229,.16).
+    background: rgba(255,255,255,.06).
+    color: #C5DDE2.
+}
+.bottom-button.secondary:hover {
+    color: #FFFFFF.
+    background: rgba(255,255,255,.10).
+    text-decoration: none.
+    transform: translateY(-1px).
+}
+
+.bottom-button.primary {
+    border: 1px solid #0C9096.
+    background: #0C9096.
+    color: #FFFFFF.
+}
+.bottom-button.primary:hover {
+    background: #0A7D82.
+    border-color: #0A7D82.
+    color: #FFFFFF.
+    text-decoration: none.
+    transform: translateY(-1px).
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@@media (max-width: 1000px) {
+    .information-grid { grid-template-columns: repeat(2, 1fr); }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@@media (max-width: 800px) {
+    .participant-page { padding: 12px 18px 18px; }
+    .form-header { flex-direction: column; align-items: stretch; }
+    .form-header-content { order: 1; }
+    .form-header-actions { order: 2; width: 100%; }
+    .header-button { flex: 1; }
+    .information-grid { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .profile-summary { align-items: flex-start; flex-wrap: wrap; }
+    .profile-status { width: 100%; margin-left: 54px; }
+    .workflow-panel { justify-content: flex-start; overflow-x: auto; }
+    .workflow-arrow { display: none; }
+    .bottom-actions { flex-direction: column; }
+    .bottom-button { width: 100%; }
+}
+
+@@media (max-width: 550px) {
+    .form-header { padding: 12px 15px; }
+    .form-header h1 { font-size: 18px; }
+    .form-header p { font-size: 7px; }
+    .profile-avatar { width: 34px; height: 34px; font-size: 12px; }
+    .profile-info h2 { font-size: 12px; }
+    .form-header-actions { flex-direction: column; }
+    .header-button { width: 100%; }
+}
+
+</style>

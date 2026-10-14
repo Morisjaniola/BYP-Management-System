@@ -1,0 +1,2362 @@
+@using BYPManagementSystem.Models
+
+@{
+    ViewData["Title"] = "Staff Dashboard";
+
+    var staffEmail =
+        ViewBag.StaffEmail as string
+        ?? "Staff";
+
+    var totalParticipants =
+        ViewBag.TotalParticipants ?? 0;
+
+    var activeParticipants =
+        ViewBag.ActiveParticipants ?? 0;
+
+    var totalPrograms =
+        ViewBag.TotalPrograms ?? 0;
+
+    var activePrograms =
+        ViewBag.ActivePrograms ?? 0;
+
+    var totalRegistrations =
+        ViewBag.TotalRegistrations ?? 0;
+
+    var pendingRegistrations =
+        ViewBag.PendingRegistrations ?? 0;
+
+    var approvedRegistrations =
+        ViewBag.ApprovedRegistrations ?? 0;
+
+    var totalAttendance =
+        ViewBag.TotalAttendance ?? 0;
+
+    var presentAttendance =
+        ViewBag.PresentAttendance ?? 0;
+
+    var absentAttendance =
+        ViewBag.AbsentAttendance ?? 0;
+
+    var lateAttendance =
+        ViewBag.LateAttendance ?? 0;
+
+    var excusedAttendance =
+        ViewBag.ExcusedAttendance ?? 0;
+
+    var recentRegistrations =
+        ViewBag.RecentRegistrations
+        as IEnumerable<ProgramRegistration>
+        ?? Enumerable.Empty<ProgramRegistration>();
+
+    var recentAttendance =
+        ViewBag.RecentAttendance
+        as IEnumerable<AttendanceRecord>
+        ?? Enumerable.Empty<AttendanceRecord>();
+}
+
+
+<div class="staff-dashboard">
+
+    <!-- ==========================================================
+         HEADER
+     =========================================================== -->
+
+    <section class="dashboard-header">
+
+        <div class="dashboard-title-area">
+
+            <span class="dashboard-eyebrow">
+                STAFF PORTAL
+            </span>
+
+            <div class="dashboard-title-row">
+
+                <div class="dashboard-title-icon">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+
+                <div>
+
+                    <h1>
+                        Staff Dashboard
+                    </h1>
+
+                    <p>
+                        Monitor youth participants, programs,
+                        registrations, and attendance.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-actions">
+
+            <div class="staff-account">
+
+                <div class="staff-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+
+                <div>
+
+                    <span>STAFF</span>
+
+                    <strong>@staffEmail</strong>
+
+                    <small>Staff Account</small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         SUMMARY CARDS
+     =========================================================== -->
+
+    <section class="summary-grid">
+
+        <!-- PARTICIPANTS -->
+
+        <div class="stat-card participants-card">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-people-fill"></i>
+
+            </div>
+
+            <div class="stat-content">
+
+                <span>
+                    Youth Participants
+                </span>
+
+                <strong>
+                    @totalParticipants
+                </strong>
+
+                <small>
+                    @activeParticipants active participants
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- PROGRAMS -->
+
+        <div class="stat-card programs-card">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-calendar-event-fill"></i>
+
+            </div>
+
+            <div class="stat-content">
+
+                <span>
+                    Youth Programs
+                </span>
+
+                <strong>
+                    @totalPrograms
+                </strong>
+
+                <small>
+                    @activePrograms active programs
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- REGISTRATIONS -->
+
+        <div class="stat-card registrations-card">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-person-check-fill"></i>
+
+            </div>
+
+            <div class="stat-content">
+
+                <span>
+                    Registrations
+                </span>
+
+                <strong>
+                    @totalRegistrations
+                </strong>
+
+                <small>
+                    @pendingRegistrations pending
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ATTENDANCE -->
+
+        <div class="stat-card attendance-card">
+
+            <div class="stat-icon">
+
+                <i class="bi bi-clipboard-check-fill"></i>
+
+            </div>
+
+            <div class="stat-content">
+
+                <span>
+                    Attendance Records
+                </span>
+
+                <strong>
+                    @totalAttendance
+                </strong>
+
+                <small>
+                    @presentAttendance present
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         REGISTRATION + ATTENDANCE STATUS
+     =========================================================== -->
+
+    <section class="two-column-grid">
+
+        <!-- REGISTRATION STATUS -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-eyebrow orange">
+                        REGISTRATION
+                    </span>
+
+                    <h2>
+                        Registration Status
+                    </h2>
+
+                    <p>
+                        Current registration totals.
+                    </p>
+
+                </div>
+
+                <a asp-controller="Registration"
+                   asp-action="Index"
+                   class="panel-link">
+
+                    View
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <div class="status-grid">
+
+                <div class="status-card pending">
+
+                    <span>
+                        Pending
+                    </span>
+
+                    <strong>
+                        @pendingRegistrations
+                    </strong>
+
+                </div>
+
+
+                <div class="status-card approved">
+
+                    <span>
+                        Approved
+                    </span>
+
+                    <strong>
+                        @approvedRegistrations
+                    </strong>
+
+                </div>
+
+
+                <div class="status-card rejected">
+
+                    <span>
+                        Rejected
+                    </span>
+
+                    <strong>
+                        @(totalRegistrations - pendingRegistrations - approvedRegistrations)
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ATTENDANCE STATUS -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-eyebrow green">
+                        ATTENDANCE
+                    </span>
+
+                    <h2>
+                        Attendance Status
+                    </h2>
+
+                    <p>
+                        Current attendance totals.
+                    </p>
+
+                </div>
+
+                <a asp-controller="Attendance"
+                   asp-action="Index"
+                   class="panel-link">
+
+                    View
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <div class="status-grid">
+
+                <div class="status-card present">
+
+                    <span>
+                        Present
+                    </span>
+
+                    <strong>
+                        @presentAttendance
+                    </strong>
+
+                </div>
+
+
+                <div class="status-card absent">
+
+                    <span>
+                        Absent
+                    </span>
+
+                    <strong>
+                        @absentAttendance
+                    </strong>
+
+                </div>
+
+
+                <div class="status-card other">
+
+                    <span>
+                        Other
+                    </span>
+
+                    <strong>
+                        @(lateAttendance + excusedAttendance)
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         RECENT REGISTRATIONS + ATTENDANCE
+     =========================================================== -->
+
+    <section class="two-column-grid">
+
+        <!-- RECENT REGISTRATIONS -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-eyebrow">
+                        RECENT ACTIVITY
+                    </span>
+
+                    <h2>
+                        Recent Registrations
+                    </h2>
+
+                    <p>
+                        Latest program registrations.
+                    </p>
+
+                </div>
+
+                <a asp-controller="Registration"
+                   asp-action="Index"
+                   class="panel-link">
+
+                    View All
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <div class="activity-list">
+
+                @if (!recentRegistrations.Any())
+                {
+                    <div class="empty-state">
+
+                        <i class="bi bi-inbox"></i>
+
+                        <span>
+                            No registration activity yet.
+                        </span>
+
+                    </div>
+                }
+                else
+                {
+                    foreach (var registration in recentRegistrations.Take(6))
+                    {
+                        var statusClass =
+                            registration.Status
+                                ?.ToLowerInvariant()
+                                ?? "pending";
+
+                        <div class="activity-item">
+
+                            <div class="activity-avatar registration">
+
+                                <i class="bi bi-person-check-fill"></i>
+
+                            </div>
+
+
+                            <div class="activity-info">
+
+                                <strong>
+
+                                    @(registration.YouthParticipant?.FullName
+                                      ?? registration.UserEmail
+                                      ?? "Youth Participant")
+
+                                </strong>
+
+                                <span>
+
+                                    @(registration.Program?.Name
+                                      ?? "Program")
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="activity-right">
+
+                                @if (registration.Status == "Approved")
+                                {
+                                    <span class="table-status approved">
+                                        Approved
+                                    </span>
+                                }
+                                else if (registration.Status == "Pending")
+                                {
+                                    <span class="table-status pending">
+                                        Pending
+                                    </span>
+                                }
+                                else if (registration.Status == "Rejected")
+                                {
+                                    <span class="table-status rejected">
+                                        Rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="table-status inactive">
+                                        @registration.Status
+                                    </span>
+                                }
+
+                                <small>
+                                    @(registration.RegisteredAt.ToLocalTime().ToString("MMM dd"))
+                                </small>
+
+                            </div>
+
+                        </div>
+                    }
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- RECENT ATTENDANCE -->
+
+        <div class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-eyebrow green">
+                        RECENT ACTIVITY
+                    </span>
+
+                    <h2>
+                        Recent Attendance
+                    </h2>
+
+                    <p>
+                        Latest recorded attendance.
+                    </p>
+
+                </div>
+
+                <a asp-controller="Attendance"
+                   asp-action="Index"
+                   class="panel-link">
+
+                    View All
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <div class="activity-list">
+
+                @if (!recentAttendance.Any())
+                {
+                    <div class="empty-state">
+
+                        <i class="bi bi-clipboard-x"></i>
+
+                        <span>
+                            No attendance activity yet.
+                        </span>
+
+                    </div>
+                }
+                else
+                {
+                    foreach (var attendance in recentAttendance.Take(6))
+                    {
+                        var attendanceClass =
+                            attendance.Status
+                                ?.ToLowerInvariant()
+                                ?? "present";
+
+                        <div class="activity-item">
+
+                            <div class="activity-avatar attendance">
+
+                                <i class="bi bi-clipboard-check-fill"></i>
+
+                            </div>
+
+
+                            <div class="activity-info">
+
+                                <strong>
+
+                                    @(attendance.Registration
+                                        ?.YouthParticipant
+                                        ?.FullName
+                                        ?? attendance.Registration
+                                        ?.UserEmail
+                                        ?? "Youth Participant")
+
+                                </strong>
+
+                                <span>
+
+                                    @(attendance.Registration
+                                        ?.Program?.Name
+                                        ?? "Program")
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="activity-right">
+
+                                @if (attendance.Status == "Present")
+                                {
+                                    <span class="table-status present">
+                                        Present
+                                    </span>
+                                }
+                                else if (attendance.Status == "Absent")
+                                {
+                                    <span class="table-status rejected">
+                                        Absent
+                                    </span>
+                                }
+                                else if (attendance.Status == "Late")
+                                {
+                                    <span class="table-status pending">
+                                        Late
+                                    </span>
+                                }
+                                else if (attendance.Status == "Excused")
+                                {
+                                    <span class="table-status approved">
+                                        Excused
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="table-status inactive">
+                                        @attendance.Status
+                                    </span>
+                                }
+
+                                <small>
+                                    @attendance.AttendanceDate.ToString("MMM dd")
+                                </small>
+
+                            </div>
+
+                        </div>
+                    }
+                }
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         STAFF MODULES
+     =========================================================== -->
+
+    <section class="dashboard-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="panel-eyebrow">
+                    STAFF MODULES
+                </span>
+
+                <h2>
+                    Operational Management
+                </h2>
+
+                <p>
+                    Access all staff operational areas.
+                </p>
+
+            </div>
+
+            <div class="panel-icon-box">
+
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="quick-grid">
+
+            <a asp-controller="YouthParticipants"
+               asp-action="Index"
+               class="quick-card participants">
+
+                <div class="quick-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div class="quick-content">
+
+                    <strong>
+                        Youth Participants
+                    </strong>
+
+                    <span>
+                        Manage participant records
+                    </span>
+
+                </div>
+
+                <div class="quick-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <a asp-controller="Programs"
+               asp-action="Index"
+               class="quick-card programs">
+
+                <div class="quick-icon">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+
+                <div class="quick-content">
+
+                    <strong>
+                        Programs
+                    </strong>
+
+                    <span>
+                        Create and manage programs
+                    </span>
+
+                </div>
+
+                <div class="quick-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <a asp-controller="Registration"
+               asp-action="Index"
+               class="quick-card registrations">
+
+                <div class="quick-icon">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+
+                <div class="quick-content">
+
+                    <strong>
+                        Registration
+                    </strong>
+
+                    <span>
+                        Review registration requests
+                    </span>
+
+                </div>
+
+                <div class="quick-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <a asp-controller="Attendance"
+               asp-action="Index"
+               class="quick-card attendance">
+
+                <div class="quick-icon">
+                    <i class="bi bi-clipboard-check-fill"></i>
+                </div>
+
+                <div class="quick-content">
+
+                    <strong>
+                        Attendance
+                    </strong>
+
+                    <span>
+                        Monitor youth attendance
+                    </span>
+
+                </div>
+
+                <div class="quick-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <a asp-controller="Reports"
+               asp-action="Index"
+               class="quick-card reports">
+
+                <div class="quick-icon">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                </div>
+
+                <div class="quick-content">
+
+                    <strong>
+                        Reports
+                    </strong>
+
+                    <span>
+                        View operational reports
+                    </span>
+
+                </div>
+
+                <div class="quick-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <a asp-controller="Profile"
+               asp-action="Index"
+               class="quick-card profile">
+
+                <div class="quick-icon">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+
+                <div class="quick-content">
+
+                    <strong>
+                        Profile
+                    </strong>
+
+                    <span>
+                        Manage your staff account
+                    </span>
+
+                </div>
+
+                <div class="quick-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         ACCESS NOTICE
+     =========================================================== -->
+
+    <section class="dashboard-panel">
+
+        <div class="notice-content">
+
+            <div class="notice-icon">
+
+                <i class="bi bi-shield-check"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Staff Access
+                </strong>
+
+                <p>
+                    Staff accounts have operational access to youth
+                    participants, programs, registrations, attendance,
+                    reports, and their profile. Administrative user and
+                    role management are not part of the Staff portal.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<style>
+
+/* =========================================================
+   STAFF DASHBOARD - COMPACT LIGHT THEME
+   Matches Admin Dashboard density with light colors
+   ========================================================= */
+
+.staff-dashboard {
+
+    min-height:
+        calc(100vh - 76px);
+
+    padding:
+        12px 18px 18px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    color:
+        #1f2b46;
+
+    background:
+        #f8fafc;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.dashboard-header {
+
+    min-height:
+        84px;
+
+    padding:
+        14px 18px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        14px;
+
+    border-radius:
+        13px;
+
+    background:
+        #ffffff;
+
+    border:
+        1px solid
+        #e5e9ef;
+
+    box-shadow:
+        0 4px 16px
+        rgba(31, 43, 70, .05);
+}
+
+
+.dashboard-title-area {
+    min-width: 0;
+}
+
+
+.dashboard-eyebrow {
+
+    display:
+        block;
+
+    margin-bottom:
+        4px;
+
+    color:
+        #64748b;
+
+    font-size:
+        7px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        1px;
+}
+
+
+.dashboard-title-row {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        12px;
+}
+
+
+.dashboard-title-icon {
+
+    width:
+        38px;
+
+    height:
+        38px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    flex-shrink:
+        0;
+
+    border-radius:
+        10px;
+
+    color:
+        #0d6efd;
+
+    background:
+        #eff6ff;
+
+    border:
+        1px solid
+        #dbeafe;
+
+    font-size:
+        16px;
+}
+
+
+.dashboard-header h1 {
+
+    margin:
+        0;
+
+    color:
+        #1f2b46;
+
+    font-size:
+        20px;
+
+    line-height:
+        1.1;
+
+    font-weight:
+        700;
+}
+
+
+.dashboard-header p {
+
+    margin:
+        3px 0 0;
+
+    color:
+        #64748b;
+
+    font-size:
+        8px;
+
+    line-height:
+        1.4;
+}
+
+
+.dashboard-actions {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+
+    flex-shrink:
+        0;
+}
+
+
+.staff-account {
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    min-width: 200px;
+
+    padding:
+        8px 10px;
+
+    background:
+        #f8fafc;
+
+    border:
+        1px solid
+        #e5e9ef;
+
+    border-radius:
+        8px;
+}
+
+
+.staff-avatar {
+
+    width:
+        32px;
+
+    height:
+        32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius:
+        8px;
+
+    background:
+        #eff6ff;
+
+    color:
+        #0d6efd;
+
+    font-size:
+        14px;
+
+    flex-shrink: 0;
+}
+
+
+.staff-account > div:last-child {
+
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+
+.staff-account span {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        5px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .08em;
+
+    text-transform: uppercase;
+}
+
+
+.staff-account strong {
+
+    margin-top:
+        1px;
+
+    color:
+        #1f2b46;
+
+    font-size:
+        11px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.staff-account small {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        9px;
+}
+
+
+/* =========================================================
+   SUMMARY GRID
+   ========================================================= */
+
+.summary-grid {
+
+    margin-top:
+        8px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap:
+        8px;
+}
+
+
+.stat-card {
+
+    min-height:
+        64px;
+
+    padding:
+        10px 11px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    border-radius:
+        10px;
+
+    border:
+        1px solid
+        #e5e9ef;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255,255,255,.5);
+
+    background:
+        #ffffff;
+}
+
+
+/* Card-specific backgrounds */
+
+.participants-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            #eff6ff 0%,
+            #ffffff 100%
+        );
+}
+
+.participants-card .stat-icon {
+    color: #0d6efd;
+    background: #dbeafe;
+}
+
+.programs-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            #f5f3ff 0%,
+            #ffffff 100%
+        );
+}
+
+.programs-card .stat-icon {
+    color: #7c3aed;
+    background: #ede9fe;
+}
+
+.registrations-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff7ed 0%,
+            #ffffff 100%
+        );
+}
+
+.registrations-card .stat-icon {
+    color: #ea580c;
+    background: #ffedd5;
+}
+
+.attendance-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            #ecfdf5 0%,
+            #ffffff 100%
+        );
+}
+
+.attendance-card .stat-icon {
+    color: #16a34a;
+    background: #d1fae5;
+}
+
+
+.stat-icon {
+
+    width:
+        34px;
+
+    height:
+        34px;
+
+    flex:
+        0 0 34px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        9px;
+
+    background:
+        #f1f5f9;
+
+    color:
+        #475569;
+
+    font-size:
+        14px;
+}
+
+
+.stat-content {
+    min-width: 0;
+}
+
+
+.stat-content span {
+
+    display:
+        block;
+
+    color:
+        #64748b;
+
+    font-size:
+        6px;
+
+    font-weight:
+        600;
+}
+
+
+.stat-content strong {
+
+    display:
+        block;
+
+    margin-top:
+        1px;
+
+    color:
+        #1f2b46;
+
+    font-size:
+        16px;
+
+    line-height:
+        1;
+}
+
+
+.stat-content small {
+
+    display:
+        block;
+
+    margin-top:
+        3px;
+
+    color:
+        #94a3b8;
+
+    font-size:
+        6px;
+}
+
+
+/* =========================================================
+   GENERAL PANEL
+   ========================================================= */
+
+.dashboard-panel {
+
+    padding:
+        10px;
+
+    border-radius:
+        11px;
+
+    background:
+        #ffffff;
+
+    border:
+        1px solid
+        #e5e9ef;
+
+    box-shadow:
+        0 4px 16px
+        rgba(31, 43, 70, .04);
+}
+
+
+.dashboard-panel + .dashboard-panel {
+    margin-top: 8px;
+}
+
+
+.panel-header {
+
+    min-height:
+        34px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        8px;
+
+    margin-bottom:
+        8px;
+}
+
+
+.panel-eyebrow {
+
+    display:
+        block;
+
+    color:
+        #0d6efd;
+
+    font-size:
+        6px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .8px;
+}
+
+
+.panel-eyebrow.orange {
+    color: #ea580c;
+}
+
+.panel-eyebrow.green {
+    color: #16a34a;
+}
+
+
+.panel-header h2 {
+
+    margin:
+        2px 0 1px;
+
+    color:
+        #1f2b46;
+
+    font-size:
+        12px;
+
+    line-height:
+        1.1;
+}
+
+
+.panel-header p {
+
+    margin:
+        0;
+
+    color:
+        #64748b;
+
+    font-size:
+        7px;
+}
+
+
+.panel-icon-box {
+
+    width:
+        30px;
+
+    height:
+        30px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        7px;
+
+    color:
+        #0d6efd;
+
+    background:
+        #eff6ff;
+
+    border:
+        1px solid
+        #dbeafe;
+}
+
+
+.panel-link {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        4px;
+
+    color:
+        #0d6efd;
+
+    font-size:
+        7px;
+
+    font-weight:
+        700;
+
+    text-decoration:
+        none;
+}
+
+
+.panel-link:hover {
+
+    color:
+        #1f2b46;
+
+    text-decoration:
+        none;
+}
+
+
+/* =========================================================
+   QUICK ACCESS (quick-grid)
+   ========================================================= */
+
+.dashboard-panel:has(.quick-grid) {
+
+    margin-top:
+        12px;
+}
+
+
+.quick-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        6px;
+}
+
+
+.quick-card {
+
+    min-height:
+        52px;
+
+    padding:
+        7px 8px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+
+    border-radius:
+        8px;
+
+    background:
+        #f8fafc;
+
+    border:
+        1px solid
+        #e5e9ef;
+
+    text-decoration:
+        none;
+
+    color: inherit;
+
+    transition:
+        .14s ease;
+}
+
+
+.quick-card:hover {
+
+    color:
+        inherit;
+
+    background:
+        #eff6ff;
+
+    border-color:
+        #bfdbfe;
+
+    transform:
+        translateY(-1px);
+
+    text-decoration:
+        none;
+}
+
+
+.quick-icon {
+
+    width:
+        28px;
+
+    height:
+        28px;
+
+    flex:
+        0 0 28px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        7px;
+
+    background:
+        #f1f5f9;
+
+    color:
+        #475569;
+
+    font-size:
+        11px;
+}
+
+
+.quick-card.participants .quick-icon {
+    color: #0d6efd;
+    background: #dbeafe;
+}
+
+.quick-card.programs .quick-icon {
+    color: #7c3aed;
+    background: #ede9fe;
+}
+
+.quick-card.registrations .quick-icon {
+    color: #ea580c;
+    background: #ffedd5;
+}
+
+.quick-card.attendance .quick-icon {
+    color: #16a34a;
+    background: #d1fae5;
+}
+
+.quick-card.reports .quick-icon {
+    color: #4f46e5;
+    background: #eef2ff;
+}
+
+.quick-card.profile .quick-icon {
+    color: #0d6efd;
+    background: #dbeafe;
+}
+
+
+.quick-content {
+
+    flex:
+        1;
+
+    min-width:
+        0;
+}
+
+
+.quick-content strong {
+
+    display:
+        block;
+
+    overflow:
+        hidden;
+
+    color:
+        #1f2b46;
+
+    font-size:
+        8px;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+}
+
+
+.quick-content span {
+
+    display:
+        block;
+
+    margin-top:
+        2px;
+
+    overflow:
+        hidden;
+
+    color:
+        #64748b;
+
+    font-size:
+        6px;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+}
+
+
+.quick-arrow {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        8px;
+}
+
+
+.quick-card:hover .quick-arrow {
+    color: #0d6efd;
+}
+
+
+/* =========================================================
+   TWO COLUMN GRID
+   ========================================================= */
+
+.two-column-grid {
+
+    margin-top:
+        8px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap:
+        8px;
+}
+
+
+/* =========================================================
+   STATUS GRID
+   ========================================================= */
+
+.status-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        6px;
+}
+
+
+.status-card {
+
+    min-height:
+        56px;
+
+    padding:
+        9px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+
+    border-radius:
+        7px;
+
+    background:
+        #f8fafc;
+
+    border:
+        1px solid
+        #e5e9ef;
+}
+
+
+.status-card span {
+
+    color:
+        #64748b;
+
+    font-size:
+        6px;
+
+    font-weight:
+        700;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .4px;
+}
+
+
+.status-card strong {
+
+    margin-top:
+        4px;
+
+    color:
+        #1f2b46;
+
+    font-size:
+        16px;
+
+    line-height:
+        1;
+}
+
+
+/* Status card variants */
+
+.status-card.pending {
+    border-color: #fef3c7;
+}
+
+.status-card.pending strong {
+    color: #b45309;
+}
+
+.status-card.approved {
+    border-color: #d1fae5;
+}
+
+.status-card.approved strong {
+    color: #065f46;
+}
+
+.status-card.rejected {
+    border-color: #fee2e2;
+}
+
+.status-card.rejected strong {
+    color: #991b1b;
+}
+
+.status-card.present {
+    border-color: #d1fae5;
+}
+
+.status-card.present strong {
+    color: #065f46;
+}
+
+.status-card.absent {
+    border-color: #fee2e2;
+}
+
+.status-card.absent strong {
+    color: #991b1b;
+}
+
+.status-card.other strong {
+    color: #475569;
+}
+
+
+/* =========================================================
+   ACTIVITY LIST
+   ========================================================= */
+
+.activity-list {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        5px;
+}
+
+
+.activity-item {
+
+    min-height:
+        44px;
+
+    padding:
+        5px 7px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    border-radius:
+        7px;
+
+    background:
+        #f8fafc;
+
+    border:
+        1px solid
+        #e5e9ef;
+
+    transition:
+        .13s ease;
+}
+
+
+.activity-item:hover {
+
+    background:
+        #eff6ff;
+
+    border-color:
+        #bfdbfe;
+}
+
+
+.activity-avatar {
+
+    width:
+        26px;
+
+    height:
+        26px;
+
+    flex:
+        0 0 26px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        6px;
+
+    background:
+        #eff6ff;
+
+    color:
+        #0d6efd;
+
+    font-size:
+        10px;
+}
+
+
+.activity-avatar.registration {
+    color: #ea580c;
+    background: #fff7ed;
+}
+
+.activity-avatar.attendance {
+    color: #16a34a;
+    background: #ecfdf5;
+}
+
+
+.activity-info {
+
+    min-width:
+        0;
+
+    flex:
+        1;
+}
+
+
+.activity-info strong {
+
+    display:
+        block;
+
+    overflow:
+        hidden;
+
+    color:
+        #1f2b46;
+
+    font-size:
+        7px;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+}
+
+
+.activity-info span {
+
+    display:
+        block;
+
+    margin-top:
+        2px;
+
+    overflow:
+        hidden;
+
+    color:
+        #64748b;
+
+    font-size:
+        6px;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+}
+
+
+.activity-right {
+
+    min-width:
+        60px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        flex-end;
+
+    gap:
+        3px;
+}
+
+
+.activity-right small {
+
+    color:
+        #94a3b8;
+
+    font-size:
+        5px;
+}
+
+
+/* =========================================================
+   TABLE STATUS BADGES
+   ========================================================= */
+
+.table-status {
+
+    min-height:
+        16px;
+
+    padding:
+        0 5px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        999px;
+
+    font-size:
+        5px;
+
+    font-weight:
+        700;
+}
+
+
+.table-status.approved,
+.table-status.present {
+
+    color:
+        #16a34a;
+
+    background:
+        #dcfce7;
+
+    border:
+        1px solid
+        #86efac;
+}
+
+
+.table-status.pending {
+
+    color:
+        #ea580c;
+
+    background:
+        #fff7ed;
+
+    border:
+        1px solid
+        #fed7aa;
+}
+
+
+.table-status.rejected {
+
+    color:
+        #dc2626;
+
+    background:
+        #fee2e2;
+
+    border:
+        1px solid
+        #fecaca;
+}
+
+
+.table-status.inactive {
+
+    color:
+        #94a3b8;
+
+    background:
+        #f1f5f9;
+
+    border:
+        1px solid
+        #e5e9ef;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+
+    min-height:
+        90px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        5px;
+
+    color:
+        #94a3b8;
+
+    text-align:
+        center;
+}
+
+
+.empty-state i {
+
+    color:
+        #0d6efd;
+
+    font-size:
+        18px;
+}
+
+
+.empty-state span {
+
+    font-size:
+        7px;
+}
+
+
+/* =========================================================
+   NOTICE CONTENT
+   ========================================================= */
+
+.notice-content {
+
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e5e9ef;
+    border-radius: 8px;
+}
+
+
+.notice-icon {
+
+    width:
+        30px;
+
+    height:
+        30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius:
+        7px;
+
+    background:
+        #eff6ff;
+
+    color:
+        #0d6efd;
+
+    font-size:
+        14px;
+}
+
+
+.notice-content strong {
+
+    display: block;
+    color: #1f2b46;
+    font-size: 11px;
+    margin-bottom: 3px;
+}
+
+.notice-content p {
+
+    margin: 0;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+</style>

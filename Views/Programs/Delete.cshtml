@@ -1,0 +1,1379 @@
+﻿@model BYPManagementSystem.Models.YouthProgram
+
+@{
+    ViewData["Title"] = "Delete Program";
+}
+
+<div class="delete-program-page">
+
+    <!-- ==========================================================
+         HEADER
+         ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-icon">
+
+            <i class="bi bi-trash3-fill"></i>
+
+        </div>
+
+        <div class="header-content">
+
+            <span class="header-kicker">
+                PROGRAM MANAGEMENT
+            </span>
+
+            <h1>
+                Delete Program
+            </h1>
+
+            <p>
+                Review the program information before confirming
+                the deletion.
+            </p>
+
+        </div>
+
+        <a asp-action="Details"
+           asp-route-id="@Model.Id"
+           class="back-button">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Program
+
+        </a>
+
+    </div>
+
+
+    <!-- ==========================================================
+         WARNING
+         ========================================================== -->
+
+    <div class="warning-card">
+
+        <div class="warning-icon">
+
+            <i class="bi bi-exclamation-triangle-fill"></i>
+
+        </div>
+
+        <div class="warning-content">
+
+            <strong>
+                Confirm Program Deletion
+            </strong>
+
+            <p>
+                You are about to delete this youth program.
+                Please review the details below before continuing.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         PROGRAM DETAILS
+         ========================================================== -->
+
+    <div class="program-card">
+
+        <div class="program-heading">
+
+            <div class="program-icon">
+
+                <i class="bi bi-calendar-event-fill"></i>
+
+            </div>
+
+            <div class="program-title">
+
+                <span>
+                    YOUTH PROGRAM
+                </span>
+
+                <h2>
+                    @Model.Name
+                </h2>
+
+                <div class="program-status">
+
+                    @if (Model.Status == "Active")
+                    {
+
+                        <span class="status-badge active">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            Active
+
+                        </span>
+
+                    }
+                    else
+                    {
+
+                        <span class="status-badge inactive">
+
+                            <i class="bi bi-pause-circle-fill"></i>
+
+                            Inactive
+
+                        </span>
+
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ======================================================
+             PROGRAM INFORMATION
+             ====================================================== -->
+
+        <div class="information-grid">
+
+            <div class="information-item">
+
+                <div class="information-icon blue">
+
+                    <i class="bi bi-clock-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Schedule
+                    </span>
+
+                    <strong>
+                        @Model.Schedule
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-item">
+
+                <div class="information-icon green">
+
+                    <i class="bi bi-geo-alt-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Barangay
+                    </span>
+
+                    <strong>
+                        @(string.IsNullOrWhiteSpace(Model.Barangay)
+                            ? "Barangay not set"
+                            : Model.Barangay)
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-item">
+
+                <div class="information-icon purple">
+
+                    <i class="bi bi-people-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Capacity
+                    </span>
+
+                    <strong>
+                        @Model.Capacity
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="information-item">
+
+                <div class="information-icon orange">
+
+                    <i class="bi bi-hash"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Program ID
+                    </span>
+
+                    <strong>
+                        #@Model.Id
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ======================================================
+             DESCRIPTION
+             ====================================================== -->
+
+        <div class="description-section">
+
+            <span>
+                Description
+            </span>
+
+            <div class="description-box">
+
+                <i class="bi bi-card-text"></i>
+
+                <p>
+                    @(string.IsNullOrWhiteSpace(Model.Description)
+                        ? "No description provided."
+                        : Model.Description)
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         DELETION INFORMATION
+         ========================================================== -->
+
+    <div class="impact-card">
+
+        <div class="impact-header">
+
+            <div class="impact-icon">
+
+                <i class="bi bi-info-circle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Before you delete
+                </strong>
+
+                <p>
+                    Make sure this program should no longer exist
+                    in the system.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="impact-items">
+
+            <div class="impact-item">
+
+                <i class="bi bi-calendar-event"></i>
+
+                <span>
+                    Program information will be removed.
+                </span>
+
+            </div>
+
+
+            <div class="impact-item">
+
+                <i class="bi bi-people"></i>
+
+                <span>
+                    Related participant/registration records may
+                    affect whether deletion is permitted.
+                </span>
+
+            </div>
+
+
+            <div class="impact-item">
+
+                <i class="bi bi-arrow-left-right"></i>
+
+                <span>
+                    Barangay-based assignment for this program will
+                    no longer apply after deletion.
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         DELETE FORM
+         ========================================================== -->
+
+    <div class="confirmation-card">
+
+        <div class="confirmation-heading">
+
+            <div class="confirmation-icon">
+
+                <i class="bi bi-shield-exclamation"></i>
+
+            </div>
+
+            <div>
+
+                <h2>
+                    Final Confirmation
+                </h2>
+
+                <p>
+                    This action is intended for authorized
+                    administrators.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form asp-action="Delete"
+              method="post"
+              class="delete-form">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+
+            <div class="confirmation-message">
+
+                <i class="bi bi-question-circle-fill"></i>
+
+                <span>
+                    Are you sure you want to delete
+                    <strong>@Model.Name</strong>?
+                </span>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <a asp-action="Details"
+                   asp-route-id="@Model.Id"
+                   class="cancel-button">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Cancel
+
+                </a>
+
+
+                <button type="submit"
+                        class="delete-button">
+
+                    <i class="bi bi-trash3-fill"></i>
+
+                    Delete Program
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ==========================================================
+         FOOTER
+         ========================================================== -->
+
+    <div class="footer-actions">
+
+        <a asp-action="Index"
+           class="footer-back">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Programs
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ==========================================================
+       PAGE
+       ========================================================== */
+
+    .delete-program-page {
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+        box-sizing: border-box;
+    }
+
+
+    /* ==========================================================
+       HEADER
+       ========================================================== */
+
+    .page-header {
+        position: relative;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 17px;
+
+        padding: 25px 28px;
+
+        margin-bottom: 18px;
+
+        border-radius: 19px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #1475f5,
+                #1555ae
+            );
+
+        color: #ffffff;
+
+        overflow: hidden;
+    }
+
+    .page-header::after {
+        content: "";
+
+        position: absolute;
+
+        width: 300px;
+        height: 300px;
+
+        right: -110px;
+        top: -180px;
+
+        border-radius: 50%;
+
+        background:
+            rgba(255,255,255,.08);
+    }
+
+    .header-icon {
+        position: relative;
+
+        z-index: 2;
+
+        width: 60px;
+        height: 60px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 16px;
+
+        background:
+            rgba(255,255,255,.14);
+
+        border:
+            1px solid
+            rgba(255,255,255,.2);
+
+        font-size: 25px;
+    }
+
+    .header-content {
+        position: relative;
+
+        z-index: 2;
+    }
+
+    .header-kicker {
+        display: block;
+
+        margin-bottom: 4px;
+
+        font-size: 10px;
+
+        font-weight: 800;
+
+        letter-spacing: 1px;
+
+        opacity: .88;
+    }
+
+    .page-header h1 {
+        margin: 0 0 5px;
+
+        font-size: 28px;
+
+        font-weight: 800;
+    }
+
+    .page-header p {
+        margin: 0;
+
+        font-size: 12px;
+
+        opacity: .9;
+    }
+
+
+    /* ==========================================================
+       BACK BUTTON
+       ========================================================== */
+
+    .back-button {
+        position: relative;
+
+        z-index: 2;
+
+        margin-left: auto;
+
+        min-height: 42px;
+
+        padding: 0 15px;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.25);
+
+        border-radius: 10px;
+
+        background:
+            rgba(255,255,255,.08);
+
+        color: #ffffff;
+
+        text-decoration: none;
+
+        font-size: 10px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+    .back-button:hover {
+        color: #ffffff;
+
+        background:
+            rgba(255,255,255,.17);
+    }
+
+
+    /* ==========================================================
+       WARNING
+       ========================================================== */
+
+    .warning-card {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 11px;
+
+        padding: 14px 16px;
+
+        margin-bottom: 18px;
+
+        border:
+            1px solid #f0d79b;
+
+        border-radius: 12px;
+
+        background: #fff8e7;
+    }
+
+    .warning-icon {
+        color: #b97900;
+
+        font-size: 18px;
+    }
+
+    .warning-content strong {
+        display: block;
+
+        margin-bottom: 3px;
+
+        color: #825d00;
+
+        font-size: 10px;
+    }
+
+    .warning-content p {
+        margin: 0;
+
+        color: #866f3c;
+
+        font-size: 8px;
+
+        line-height: 1.5;
+    }
+
+
+    /* ==========================================================
+       PROGRAM CARD
+       ========================================================== */
+
+    .program-card {
+        padding: 20px;
+
+        margin-bottom: 18px;
+
+        background: #ffffff;
+
+        border:
+            1px solid #e4ebf2;
+
+        border-radius: 17px;
+
+        box-shadow:
+            0 6px 22px
+            rgba(20,50,90,.04);
+    }
+
+    .program-heading {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 13px;
+
+        padding-bottom: 18px;
+
+        border-bottom:
+            1px solid #edf1f5;
+    }
+
+    .program-icon {
+        width: 55px;
+        height: 55px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 14px;
+
+        background: #edf5ff;
+
+        color: #1475f5;
+
+        font-size: 21px;
+    }
+
+    .program-title {
+        min-width: 0;
+
+        flex: 1;
+    }
+
+    .program-title > span {
+        display: block;
+
+        margin-bottom: 4px;
+
+        color: #8b98a8;
+
+        font-size: 8px;
+
+        font-weight: 800;
+
+        letter-spacing: .7px;
+    }
+
+    .program-title h2 {
+        margin: 0 0 7px;
+
+        overflow: hidden;
+
+        color: #172a41;
+
+        font-size: 20px;
+
+        font-weight: 800;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+
+
+    /* ==========================================================
+       STATUS
+       ========================================================== */
+
+    .status-badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        padding: 7px 10px;
+
+        border-radius: 20px;
+
+        font-size: 8px;
+
+        font-weight: 800;
+    }
+
+    .status-badge.active {
+        color: #087747;
+
+        background: #dcf8e9;
+    }
+
+    .status-badge.inactive {
+        color: #986600;
+
+        background: #fff2d0;
+    }
+
+
+    /* ==========================================================
+       INFORMATION
+       ========================================================== */
+
+    .information-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 10px;
+
+        padding: 18px 0;
+    }
+
+    .information-item {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        min-width: 0;
+
+        padding: 11px;
+
+        border:
+            1px solid #e9eef4;
+
+        border-radius: 10px;
+
+        background: #fafcff;
+    }
+
+    .information-icon {
+        width: 35px;
+        height: 35px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 9px;
+
+        font-size: 13px;
+    }
+
+    .information-icon.blue {
+        color: #1475f5;
+
+        background: #edf5ff;
+    }
+
+    .information-icon.green {
+        color: #108557;
+
+        background: #eafaf2;
+    }
+
+    .information-icon.purple {
+        color: #7050bd;
+
+        background: #f1ebff;
+    }
+
+    .information-icon.orange {
+        color: #b97700;
+
+        background: #fff4dc;
+    }
+
+    .information-item > div:last-child {
+        min-width: 0;
+    }
+
+    .information-item span {
+        display: block;
+
+        margin-bottom: 3px;
+
+        color: #8996a6;
+
+        font-size: 7px;
+
+        text-transform: uppercase;
+
+        letter-spacing: .4px;
+    }
+
+    .information-item strong {
+        display: block;
+
+        overflow: hidden;
+
+        color: #35485e;
+
+        font-size: 9px;
+
+        font-weight: 800;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+
+
+    /* ==========================================================
+       DESCRIPTION
+       ========================================================== */
+
+    .description-section > span {
+        display: block;
+
+        margin-bottom: 6px;
+
+        color: #8996a6;
+
+        font-size: 8px;
+
+        font-weight: 800;
+
+        text-transform: uppercase;
+
+        letter-spacing: .4px;
+    }
+
+    .description-box {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 8px;
+
+        padding: 12px;
+
+        border:
+            1px solid #e8edf3;
+
+        border-radius: 10px;
+
+        background: #fafcff;
+    }
+
+    .description-box i {
+        margin-top: 2px;
+
+        color: #1475f5;
+
+        font-size: 13px;
+    }
+
+    .description-box p {
+        margin: 0;
+
+        color: #66788c;
+
+        font-size: 9px;
+
+        line-height: 1.55;
+    }
+
+
+    /* ==========================================================
+       IMPACT
+       ========================================================== */
+
+    .impact-card {
+        padding: 16px;
+
+        margin-bottom: 18px;
+
+        border:
+            1px solid #e5ebf2;
+
+        border-radius: 14px;
+
+        background: #ffffff;
+
+        box-shadow:
+            0 5px 20px
+            rgba(20,50,90,.03);
+    }
+
+    .impact-header {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+        margin-bottom: 13px;
+    }
+
+    .impact-icon {
+        color: #1475f5;
+
+        font-size: 16px;
+    }
+
+    .impact-header strong {
+        display: block;
+
+        margin-bottom: 3px;
+
+        color: #34485f;
+
+        font-size: 10px;
+    }
+
+    .impact-header p {
+        margin: 0;
+
+        color: #7d8c9c;
+
+        font-size: 8px;
+    }
+
+    .impact-items {
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+        gap: 9px;
+    }
+
+    .impact-item {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 7px;
+
+        padding: 10px;
+
+        border:
+            1px solid #edf1f5;
+
+        border-radius: 10px;
+
+        background: #fafcff;
+
+        color: #718197;
+
+        font-size: 8px;
+
+        line-height: 1.45;
+    }
+
+    .impact-item i {
+        color: #7e91a7;
+
+        font-size: 12px;
+    }
+
+
+    /* ==========================================================
+       CONFIRMATION
+       ========================================================== */
+
+    .confirmation-card {
+        overflow: hidden;
+
+        margin-bottom: 18px;
+
+        background: #ffffff;
+
+        border:
+            1px solid #f0d3d8;
+
+        border-radius: 15px;
+
+        box-shadow:
+            0 6px 22px
+            rgba(120,30,40,.04);
+    }
+
+    .confirmation-heading {
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 17px 19px;
+
+        border-bottom:
+            1px solid #f4e3e6;
+
+        background: #fffafa;
+    }
+
+    .confirmation-icon {
+        width: 39px;
+        height: 39px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 10px;
+
+        background: #ffe9ed;
+
+        color: #ca3048;
+
+        font-size: 16px;
+    }
+
+    .confirmation-heading h2 {
+        margin: 0 0 3px;
+
+        color: #5a3440;
+
+        font-size: 13px;
+
+        font-weight: 800;
+    }
+
+    .confirmation-heading p {
+        margin: 0;
+
+        color: #8d7780;
+
+        font-size: 8px;
+    }
+
+    .delete-form {
+        padding: 18px 19px;
+    }
+
+    .confirmation-message {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 12px;
+
+        margin-bottom: 18px;
+
+        border:
+            1px solid #f2dfe3;
+
+        border-radius: 10px;
+
+        background: #fff8f9;
+
+        color: #76535d;
+
+        font-size: 9px;
+    }
+
+    .confirmation-message > i {
+        color: #ca3048;
+
+        font-size: 15px;
+    }
+
+    .confirmation-message strong {
+        color: #b32942;
+    }
+
+
+    /* ==========================================================
+       ACTIONS
+       ========================================================== */
+
+    .form-actions {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 8px;
+
+        padding-top: 17px;
+
+        border-top:
+            1px solid #edf1f5;
+    }
+
+    .cancel-button,
+    .delete-button {
+        min-height: 43px;
+
+        padding: 0 15px;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        border-radius: 9px;
+
+        font-size: 10px;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+        box-sizing: border-box;
+    }
+
+    .cancel-button {
+        border:
+            1px solid #ccd7e2;
+
+        background: #ffffff;
+
+        color: #64758a;
+    }
+
+    .cancel-button:hover {
+        color: #3e526a;
+
+        border-color: #b8c6d5;
+
+        background: #f9fbfd;
+    }
+
+    .delete-button {
+        border:
+            1px solid #ca3048;
+
+        background: #ca3048;
+
+        color: #ffffff;
+
+        cursor: pointer;
+    }
+
+    .delete-button:hover {
+        border-color: #b5263d;
+
+        background: #b5263d;
+    }
+
+
+    /* ==========================================================
+       FOOTER
+       ========================================================== */
+
+    .footer-actions {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-start;
+    }
+
+    .footer-back {
+        min-height: 40px;
+
+        padding: 0 13px;
+
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 6px;
+
+        border:
+            1px solid #ccd7e2;
+
+        border-radius: 9px;
+
+        background: #ffffff;
+
+        color: #607288;
+
+        text-decoration: none;
+
+        font-size: 9px;
+
+        font-weight: 750;
+    }
+
+    .footer-back:hover {
+        border-color: #1475f5;
+
+        color: #1475f5;
+    }
+
+
+    /* ==========================================================
+       RESPONSIVE
+       ========================================================== */
+
+    @@media (max-width: 900px) {
+
+        .information-grid {
+            grid-template-columns:
+                repeat(2, 1fr);
+        }
+
+        .impact-items {
+            grid-template-columns:
+                1fr;
+        }
+
+    }
+
+
+    @@media (max-width: 700px) {
+
+        .delete-program-page {
+            padding: 14px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+
+            padding: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+        }
+
+        .back-button {
+            display: none;
+        }
+
+        .program-summary-card {
+            align-items: flex-start;
+        }
+
+        .program-heading {
+            align-items: flex-start;
+        }
+
+        .program-status {
+            margin-top: 2px;
+        }
+
+        .information-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .cancel-button,
+        .delete-button {
+            width: 100%;
+        }
+
+    }
+
+
+    @@media (max-width: 500px) {
+
+        .program-card {
+            padding: 17px;
+        }
+
+        .program-title h2 {
+            font-size: 16px;
+        }
+
+        .program-icon {
+            width: 47px;
+            height: 47px;
+        }
+
+        .warning-card {
+            padding: 12px;
+        }
+
+        .confirmation-heading {
+            padding: 15px;
+        }
+
+        .delete-form {
+            padding: 15px;
+        }
+
+    }
+
+</style>

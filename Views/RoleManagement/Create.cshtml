@@ -1,0 +1,1737 @@
+﻿@model BYPManagementSystem.Controllers.RoleManagementController.RoleInputViewModel
+
+@{
+    ViewData["Title"] = "Create Role";
+}
+
+
+<div class="create-role-page">
+
+    <!-- ==========================================================
+         HEADER
+    =========================================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <a asp-controller="RoleManagement"
+               asp-action="Index"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Role Management
+
+            </a>
+
+            <span class="page-eyebrow">
+                ADMINISTRATION
+            </span>
+
+            <h1>
+                Create Role
+            </h1>
+
+            <p>
+                Add a custom role that can be assigned to
+                authorized user accounts.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         VALIDATION
+    =========================================================== -->
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert-box error">
+
+            <div class="alert-icon">
+
+                <i class="bi bi-exclamation-circle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Role creation failed.
+                </strong>
+
+                <div class="validation-list">
+
+                    @foreach (
+                        var error in
+                        ViewData.ModelState.Values
+                            .SelectMany(v => v.Errors)
+                    )
+                    {
+                        if (!string.IsNullOrWhiteSpace(
+                            error.ErrorMessage))
+                        {
+                            <div>
+                                @error.ErrorMessage
+                            </div>
+                        }
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         MAIN LAYOUT
+    =========================================================== -->
+
+    <div class="create-role-layout">
+
+
+        <!-- ======================================================
+             FORM
+        ======================================================= -->
+
+        <section class="form-card">
+
+            <div class="card-header">
+
+                <div class="header-icon">
+
+                    <i class="bi bi-shield-plus"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        ROLE MANAGEMENT
+                    </span>
+
+                    <h2>
+                        New Custom Role
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <form asp-controller="RoleManagement"
+                  asp-action="Create"
+                  method="post"
+                  class="role-form">
+
+                @Html.AntiForgeryToken()
+
+
+                <!-- ==================================================
+                     ROLE NAME
+                =================================================== -->
+
+                <div class="form-section">
+
+                    <div class="section-heading">
+
+                        <i class="bi bi-shield"></i>
+
+                        <div>
+
+                            <strong>
+                                Role Information
+                            </strong>
+
+                            <span>
+                                Enter the name of the new role.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label asp-for="Name">
+                            Role Name
+                        </label>
+
+                        <input asp-for="Name"
+                               class="form-control"
+                               placeholder="Example: Program Coordinator"
+                               autocomplete="off" />
+
+                        <span asp-validation-for="Name"
+                              class="field-error">
+                        </span>
+
+                        <small>
+                            Role names must contain 2 to 50 characters.
+                        </small>
+
+                    </div>
+
+
+                    <!-- PREVIEW -->
+
+                    <div class="role-preview">
+
+                        <div class="preview-icon">
+
+                            <i class="bi bi-shield"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                ROLE PREVIEW
+                            </span>
+
+                            <strong id="rolePreview">
+                                New Custom Role
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     SYSTEM ROLE NOTICE
+                =================================================== -->
+
+                <div class="notice-box">
+
+                    <div class="notice-icon">
+
+                        <i class="bi bi-info-circle"></i>
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Protected System Roles
+                        </strong>
+
+                        <p>
+                            The application's main roles are
+                            <strong>Admin</strong>,
+                            <strong>Staff</strong>, and
+                            <strong>User</strong>.
+                            These role names are reserved by the system
+                            and cannot be replaced by a custom role.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACTIONS
+                =================================================== -->
+
+                <div class="form-actions">
+
+                    <a asp-controller="RoleManagement"
+                       asp-action="Index"
+                       class="cancel-button">
+
+                        <i class="bi bi-x-circle"></i>
+
+                        Cancel
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="save-button">
+
+                        <i class="bi bi-shield-plus"></i>
+
+                        Create Role
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- ======================================================
+             SIDE PANEL
+        ======================================================= -->
+
+        <aside class="side-panel">
+
+
+            <!-- ROLE PURPOSE -->
+
+            <div class="side-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-diagram-3"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            ROLE PURPOSE
+                        </span>
+
+                        <h3>
+                            Custom Access
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <p>
+                    A custom role can be created for a specific
+                    responsibility within the system.
+                </p>
+
+
+                <div class="example-box">
+
+                    <span>
+                        EXAMPLE
+                    </span>
+
+                    <strong>
+                        Program Coordinator
+                    </strong>
+
+                    <small>
+                        Can be used as an organizational role
+                        when your project requirements define it.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- SYSTEM ROLES -->
+
+            <div class="side-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-shield-lock"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            SYSTEM ROLES
+                        </span>
+
+                        <h3>
+                            Protected Roles
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="system-role-list">
+
+                    <div class="system-role-item">
+
+                        <div class="role-circle admin">
+
+                            <i class="bi bi-shield-lock"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Admin
+                            </strong>
+
+                            <span>
+                                Full administrative access.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="system-role-item">
+
+                        <div class="role-circle staff">
+
+                            <i class="bi bi-person-badge"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Staff
+                            </strong>
+
+                            <span>
+                                Operational access.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="system-role-item">
+
+                        <div class="role-circle user">
+
+                            <i class="bi bi-person"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                User
+                            </strong>
+
+                            <span>
+                                Youth portal access.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SECURITY -->
+
+            <div class="side-card security-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-lock-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            SECURITY
+                        </span>
+
+                        <h3>
+                            Admin Only
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="security-list">
+
+                    <div>
+
+                        <i class="bi bi-check-circle"></i>
+
+                        <span>
+                            Only Admin accounts can access this page.
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <i class="bi bi-check-circle"></i>
+
+                        <span>
+                            Role creation uses ASP.NET Core Identity.
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <i class="bi bi-check-circle"></i>
+
+                        <span>
+                            Form uses anti-forgery protection.
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <i class="bi bi-check-circle"></i>
+
+                        <span>
+                            Duplicate role names are prevented.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- WORKFLOW -->
+
+            <div class="side-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-list-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            WORKFLOW
+                        </span>
+
+                        <h3>
+                            Role Creation
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="workflow">
+
+                    <div class="workflow-step">
+
+                        <span>
+                            1
+                        </span>
+
+                        <strong>
+                            Enter role name
+                        </strong>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span>
+                            2
+                        </span>
+
+                        <strong>
+                            Submit role
+                        </strong>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span>
+                            3
+                        </span>
+
+                        <strong>
+                            Identity creates role
+                        </strong>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span>
+                            4
+                        </span>
+
+                        <strong>
+                            Assign role to users
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ============================================================
+       PAGE
+    ============================================================ */
+
+    .create-role-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+    }
+
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+
+    .page-header {
+
+        margin-bottom: 21px;
+
+    }
+
+
+    .back-link {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        margin-bottom: 10px;
+
+        color: #6f7a8b;
+
+        text-decoration: none;
+
+        font-size: .68rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .back-link:hover {
+
+        color: #1f2b46;
+
+        text-decoration: none;
+
+    }
+
+
+    .page-eyebrow {
+
+        display: block;
+
+        color: #7e8999;
+
+        font-size: .67rem;
+
+        font-weight: 700;
+
+        letter-spacing: .14em;
+
+    }
+
+
+    .page-header h1 {
+
+        margin: 5px 0 5px;
+
+        color: #202b3c;
+
+        font-size: 2rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .page-header p {
+
+        margin: 0;
+
+        color: #7b8595;
+
+        font-size: .84rem;
+
+    }
+
+
+    /* ============================================================
+       ALERT
+    ============================================================ */
+
+    .alert-box {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 10px;
+
+        padding: 13px 15px;
+
+        margin-bottom: 17px;
+
+        border-radius: 12px;
+
+    }
+
+
+    .alert-box.error {
+
+        background: #f8eeee;
+
+        border: 1px solid #efdede;
+
+        color: #945b5b;
+
+    }
+
+
+    .alert-icon {
+
+        margin-top: 1px;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .alert-box strong {
+
+        display: block;
+
+        font-size: .72rem;
+
+    }
+
+
+    .validation-list {
+
+        margin-top: 5px;
+
+        font-size: .65rem;
+
+        line-height: 1.6;
+
+    }
+
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+
+    .create-role-layout {
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1.55fr)
+            minmax(275px, .8fr);
+
+        gap: 18px;
+
+        align-items: start;
+
+    }
+
+
+    .form-card,
+
+    .side-card {
+
+        background: white;
+
+        border: 1px solid #e5e9ef;
+
+        border-radius: 16px;
+
+        box-shadow:
+            0 6px 24px
+            rgba(31, 43, 70, .035);
+
+    }
+
+
+    .form-card {
+
+        overflow: hidden;
+
+    }
+
+
+    /* ============================================================
+       CARD HEADER
+    ============================================================ */
+
+    .card-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        padding: 18px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .header-icon {
+
+        width: 42px;
+
+        height: 42px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 11px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .card-header > div:last-child span {
+
+        display: block;
+
+        color: #8d96a4;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        letter-spacing: .11em;
+
+    }
+
+
+    .card-header h2 {
+
+        margin: 3px 0 0;
+
+        color: #293446;
+
+        font-size: .98rem;
+
+        font-weight: 800;
+
+    }
+
+
+    /* ============================================================
+       FORM
+    ============================================================ */
+
+    .role-form {
+
+        padding: 20px;
+
+    }
+
+
+    .form-section {
+
+        padding-bottom: 21px;
+
+        margin-bottom: 19px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .section-heading {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+        margin-bottom: 14px;
+
+    }
+
+
+    .section-heading > i {
+
+        margin-top: 2px;
+
+        color: #667386;
+
+        font-size: .8rem;
+
+    }
+
+
+    .section-heading > div {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .section-heading strong {
+
+        color: #354153;
+
+        font-size: .75rem;
+
+    }
+
+
+    .section-heading span {
+
+        margin-top: 2px;
+
+        color: #919aa8;
+
+        font-size: .61rem;
+
+    }
+
+
+    .form-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .form-group label {
+
+        margin-bottom: 6px;
+
+        color: #4c5768;
+
+        font-size: .67rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .form-control {
+
+        width: 100%;
+
+        min-height: 43px;
+
+        padding: 8px 11px;
+
+        border: 1px solid #dfe4ec;
+
+        border-radius: 9px;
+
+        background: white;
+
+        color: #293446;
+
+        font-size: .73rem;
+
+        outline: none;
+
+        box-shadow: none;
+
+    }
+
+
+    .form-control:focus {
+
+        border-color: #b9c2ce;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(31, 43, 70, .05);
+
+    }
+
+
+    .form-group small {
+
+        margin-top: 5px;
+
+        color: #9aa2ae;
+
+        font-size: .59rem;
+
+        line-height: 1.4;
+
+    }
+
+
+    .field-error {
+
+        margin-top: 4px;
+
+        color: #a05f5f;
+
+        font-size: .6rem;
+
+    }
+
+
+    /* ============================================================
+       ROLE PREVIEW
+    ============================================================ */
+
+    .role-preview {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 11px;
+
+        margin-top: 16px;
+
+        padding: 13px;
+
+        border: 1px solid #edf0f4;
+
+        border-radius: 11px;
+
+        background: #f8f9fa;
+
+    }
+
+
+    .preview-icon {
+
+        width: 42px;
+
+        height: 42px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 11px;
+
+        background: white;
+
+        color: #1f2b46;
+
+    }
+
+
+    .role-preview > div:last-child {
+
+        display: flex;
+
+        flex-direction: column;
+
+        min-width: 0;
+
+    }
+
+
+    .role-preview span {
+
+        color: #929aa7;
+
+        font-size: .57rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .role-preview strong {
+
+        margin-top: 3px;
+
+        color: #3d4859;
+
+        font-size: .76rem;
+
+        word-break: break-word;
+
+    }
+
+
+    /* ============================================================
+       NOTICE
+    ============================================================ */
+
+    .notice-box {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+        padding: 12px;
+
+        margin-bottom: 20px;
+
+        border-radius: 10px;
+
+        background: #f3f5f8;
+
+        color: #6d7889;
+
+    }
+
+
+    .notice-icon {
+
+        width: 31px;
+
+        height: 31px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 8px;
+
+        background: white;
+
+        color: #697386;
+
+    }
+
+
+    .notice-box strong {
+
+        display: block;
+
+        color: #586375;
+
+        font-size: .66rem;
+
+    }
+
+
+    .notice-box p {
+
+        margin: 3px 0 0;
+
+        color: #838d9b;
+
+        font-size: .6rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* ============================================================
+       FORM ACTIONS
+    ============================================================ */
+
+    .form-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 9px;
+
+    }
+
+
+    .cancel-button,
+
+    .save-button {
+
+        min-height: 40px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 7px;
+
+        padding: 0 14px;
+
+        border-radius: 10px;
+
+        font-size: .7rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .cancel-button {
+
+        background: #f2f4f7;
+
+        color: #697386;
+
+    }
+
+
+    .save-button {
+
+        border: 0;
+
+        background: #1f2b46;
+
+        color: white;
+
+        cursor: pointer;
+
+    }
+
+
+    .cancel-button:hover {
+
+        color: #344054;
+
+        text-decoration: none;
+
+    }
+
+
+    .save-button:hover {
+
+        background: #172137;
+
+    }
+
+
+    /* ============================================================
+       SIDE PANEL
+    ============================================================ */
+
+    .side-panel {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 15px;
+
+    }
+
+
+    .side-card {
+
+        padding: 17px;
+
+    }
+
+
+    .side-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        margin-bottom: 13px;
+
+    }
+
+
+    .side-icon {
+
+        width: 38px;
+
+        height: 38px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 10px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .side-header span {
+
+        display: block;
+
+        color: #9098a5;
+
+        font-size: .58rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .side-header h3 {
+
+        margin: 3px 0 0;
+
+        color: #2c3748;
+
+        font-size: .81rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .side-card > p {
+
+        margin: 0;
+
+        color: #818a99;
+
+        font-size: .63rem;
+
+        line-height: 1.55;
+
+    }
+
+
+    /* ============================================================
+       EXAMPLE
+    ============================================================ */
+
+    .example-box {
+
+        margin-top: 12px;
+
+        padding: 11px;
+
+        border-radius: 9px;
+
+        background: #f3f5f8;
+
+        border: 1px solid #edf0f4;
+
+    }
+
+
+    .example-box span {
+
+        display: block;
+
+        color: #929aa7;
+
+        font-size: .55rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .example-box strong {
+
+        display: block;
+
+        margin-top: 3px;
+
+        color: #4b5667;
+
+        font-size: .7rem;
+
+    }
+
+
+    .example-box small {
+
+        display: block;
+
+        margin-top: 3px;
+
+        color: #9098a5;
+
+        font-size: .57rem;
+
+        line-height: 1.45;
+
+    }
+
+
+    /* ============================================================
+       SYSTEM ROLES
+    ============================================================ */
+
+    .system-role-list {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 11px;
+
+    }
+
+
+    .system-role-item {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+    }
+
+
+    .role-circle {
+
+        width: 34px;
+
+        height: 34px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 9px;
+
+        background: #f2f4f7;
+
+        color: #657186;
+
+    }
+
+
+    .system-role-item > div:last-child {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .system-role-item strong {
+
+        color: #4c5768;
+
+        font-size: .64rem;
+
+    }
+
+
+    .system-role-item span {
+
+        margin-top: 2px;
+
+        color: #929aa7;
+
+        font-size: .57rem;
+
+    }
+
+
+    /* ============================================================
+       SECURITY
+    ============================================================ */
+
+    .security-list {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 9px;
+
+    }
+
+
+    .security-list > div {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 7px;
+
+        color: #758091;
+
+        font-size: .6rem;
+
+        line-height: 1.45;
+
+    }
+
+
+    .security-list i {
+
+        color: #63806c;
+
+        margin-top: 1px;
+
+        flex-shrink: 0;
+
+    }
+
+
+    /* ============================================================
+       WORKFLOW
+    ============================================================ */
+
+    .workflow {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .workflow-step {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+    }
+
+
+    .workflow-step > span {
+
+        width: 25px;
+
+        height: 25px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 8px;
+
+        background: #eef2f7;
+
+        color: #566377;
+
+        font-size: .61rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .workflow-step strong {
+
+        color: #566172;
+
+        font-size: .62rem;
+
+    }
+
+
+    .workflow-line {
+
+        width: 1px;
+
+        height: 12px;
+
+        margin-left: 12px;
+
+        background: #dfe4ec;
+
+    }
+
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+
+    @@media (max-width: 900px) {
+
+        .create-role-layout {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .side-panel {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            align-items: start;
+
+        }
+
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .create-role-page {
+
+            padding-left: 8px;
+
+            padding-right: 8px;
+
+        }
+
+
+        .side-panel {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .page-header h1 {
+
+            font-size: 1.65rem;
+
+        }
+
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial"
+        );
+    }
+
+
+    <script>
+
+        const roleInput =
+            document.getElementById("Name");
+
+        const rolePreview =
+            document.getElementById("rolePreview");
+
+
+        function updateRolePreview()
+        {
+            if (!roleInput ||
+                !rolePreview)
+            {
+                return;
+            }
+
+
+            const value =
+                roleInput.value.trim();
+
+
+            rolePreview.textContent =
+                value.length > 0
+                    ? value
+                    : "New Custom Role";
+        }
+
+
+        if (roleInput)
+        {
+            roleInput.addEventListener(
+                "input",
+                updateRolePreview
+            );
+
+            updateRolePreview();
+        }
+
+    </script>
+
+}

@@ -1,0 +1,290 @@
+@model BYPManagementSystem.Models.Certificate
+
+@{
+    Layout = null;
+
+    var completionDate =
+        Model.CompletionDate.ToString("MMMM dd, yyyy");
+
+    var issueDate =
+        Model.IssuedAt.ToString("MMMM dd, yyyy");
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        Certificate @Model.CertificateNumber
+    </title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: white;
+            color: #1a1a1a;
+        }
+
+        .certificate {
+            width: 297mm;
+            min-height: 210mm;
+            margin: 20px auto;
+            padding: 20mm 25mm;
+            border: 3pt double #002F2F;
+            position: relative;
+            background: white;
+        }
+
+            .certificate::before {
+                content: '';
+                position: absolute;
+                top: 8mm;
+                left: 8mm;
+                right: 8mm;
+                bottom: 8mm;
+                border: 1pt solid #009FA3;
+            }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15mm;
+        }
+
+        .org-name {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #002F2F;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 5mm;
+        }
+
+        .cert-title {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #009FA3;
+            margin: 10mm 0 5mm;
+            letter-spacing: 5px;
+        }
+
+        .cert-subtitle {
+            font-size: 11pt;
+            color: #666;
+            font-style: italic;
+        }
+
+        .body {
+            text-align: center;
+            margin: 15mm 0;
+            line-height: 1.8;
+        }
+
+        .presented-to {
+            font-size: 12pt;
+            color: #666;
+            margin-bottom: 5mm;
+        }
+
+        .participant-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #002F2F;
+            margin: 5mm 0;
+            border-bottom: 2pt solid #009FA3;
+            display: inline-block;
+            padding-bottom: 3mm;
+        }
+
+        .program-text {
+            font-size: 12pt;
+            margin: 8mm 0;
+            line-height: 1.8;
+        }
+
+        .program-name {
+            font-weight: bold;
+            color: #009FA3;
+            font-size: 14pt;
+        }
+
+        .completion-date {
+            font-size: 12pt;
+            margin: 5mm 0;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20mm;
+            padding-top: 10mm;
+        }
+
+        .signature-block {
+            text-align: center;
+            width: 40%;
+        }
+
+        .signature-line {
+            border-top: 1pt solid #002F2F;
+            padding-top: 3mm;
+            margin-top: 15mm;
+        }
+
+        .signature-name {
+            font-weight: bold;
+            color: #002F2F;
+            font-size: 11pt;
+        }
+
+        .signature-role {
+            font-size: 9pt;
+            color: #666;
+            font-style: italic;
+        }
+
+        .cert-number {
+            position: absolute;
+            bottom: 12mm;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9pt;
+            color: #999;
+            font-family: monospace;
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #009FA3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+            .print-button:hover {
+                background: #007a7d;
+            }
+
+        @@media print {
+            body {
+                margin: 0;
+            }
+
+            .certificate {
+                margin: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .print-button {
+                display: none !important;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <button class="print-button"
+            onclick="window.print()">
+        <i class="bi bi-printer"></i>
+        Print Certificate
+    </button>
+
+    <div class="certificate">
+
+        <div class="header">
+
+            <div class="org-name">
+                BYProgram
+            </div>
+
+            <div class="cert-title">
+                CERTIFICATE
+            </div>
+
+            <div class="cert-subtitle">
+                OF COMPLETION
+            </div>
+
+        </div>
+
+        <div class="body">
+
+            <div class="presented-to">
+                This is to certify that
+            </div>
+
+            <div class="participant-name">
+                @Model.ParticipantName
+            </div>
+
+            <div class="program-text">
+                has successfully completed the program<br />
+                <span class="program-name">
+                    @Model.ProgramName
+                </span>
+            </div>
+
+            <div class="completion-date">
+                on <strong>@completionDate</strong>
+            </div>
+
+        </div>
+
+        <div class="footer">
+
+            <div class="signature-block">
+                <div class="signature-line">
+                    <div class="signature-name">
+                        @(Model.IssuedByUserName ?? "Program Administrator")
+                    </div>
+                    <div class="signature-role">
+                        Issued By
+                    </div>
+                </div>
+            </div>
+
+            <div class="signature-block">
+                <div class="signature-line">
+                    <div class="signature-name">
+                        @issueDate
+                    </div>
+                    <div class="signature-role">
+                        Date Issued
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="cert-number">
+            Certificate No: @Model.CertificateNumber
+        </div>
+
+    </div>
+
+</body>
+
+</html>

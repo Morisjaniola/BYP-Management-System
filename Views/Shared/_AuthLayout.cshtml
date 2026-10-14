@@ -1,0 +1,1052 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        @ViewData["Title"] - BYP Management System
+    </title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <!-- Site CSS -->
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <script>
+        (function () {
+            var t = localStorage.getItem('byp-theme');
+            if (!t) { t = 'dark'; }
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+
+    <link rel="stylesheet"
+          href="~/css/theme.css"
+          asp-append-version="true" />
+
+
+    <style>
+
+        /* =====================================================
+           GLOBAL
+        ====================================================== */
+
+        html,
+        body {
+
+            width: 100%;
+            height: 100%;
+
+            margin: 0;
+            padding: 0;
+
+            overflow: hidden;
+
+        }
+
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            color: #172033;
+
+        }
+
+
+        /* =====================================================
+           AUTH PAGE
+        ====================================================== */
+
+        .auth-page {
+
+            width: 100%;
+            height: 100vh;
+            min-height: 100vh;
+
+            margin: 0;
+            padding: 0;
+
+            display: flex;
+
+            overflow: hidden;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #031716 0%,
+                    #052D2E 25%,
+                    #0A6C71 55%,
+                    #0C9096 100%
+                );
+
+        }
+
+
+        /* =====================================================
+           CONTAINER
+        ====================================================== */
+
+        .auth-container {
+
+            width: 100%;
+            height: 100%;
+
+            margin: 0;
+            padding: 0;
+
+        }
+
+
+        /* =====================================================
+           TWO COLUMN LAYOUT
+        ====================================================== */
+
+        .auth-card {
+
+            width: 100%;
+            height: 100vh;
+
+            display: grid;
+
+            grid-template-columns: 50% 50%;
+
+            margin: 0;
+            padding: 0;
+
+            overflow: hidden;
+
+            border: none;
+            border-radius: 0;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #031716 0%,
+                    #052D2E 30%,
+                    #0A6C71 65%,
+                    #0C9096 100%
+                );
+
+        }
+
+
+        /* =====================================================
+           LEFT BRAND SIDE
+        ====================================================== */
+
+        .auth-brand {
+
+            width: 100%;
+            height: 100vh;
+
+            padding: 60px 7%;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            box-sizing: border-box;
+
+            background: transparent;
+
+        }
+
+
+        /* =====================================================
+           BRAND CONTENT
+        ====================================================== */
+
+        .brand-content {
+
+            width: 100%;
+
+            max-width: 720px;
+
+            margin: 0 auto;
+
+        }
+
+
+        /* =====================================================
+           LOGO + TITLE
+        ====================================================== */
+
+        .brand-top {
+
+            width: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 28px;
+
+            margin: 0 0 25px 0;
+
+        }
+
+
+        /* =====================================================
+           NORMAL LOGO
+        ====================================================== */
+
+        .brand-logo {
+
+            width: 100px;
+            height: 100px;
+
+            min-width: 100px;
+            min-height: 100px;
+
+            max-width: 100px;
+            max-height: 100px;
+
+            flex: 0 0 100px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            margin: 0;
+            padding: 0;
+
+            background: transparent;
+
+            border: none;
+
+            box-shadow: none;
+
+        }
+
+
+        .brand-logo-image {
+
+            width: 100px;
+            height: 100px;
+
+            min-width: 100px;
+            min-height: 100px;
+
+            max-width: 100px;
+            max-height: 100px;
+
+            object-fit: contain;
+
+            display: block;
+
+            margin: 0;
+            padding: 0;
+
+        }
+
+
+        /* =====================================================
+           TITLE
+        ====================================================== */
+
+        .brand-title {
+
+            max-width: 480px;
+
+            margin: 0;
+
+            color: #FFFFFF !important;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            font-size: 2rem;
+
+            font-weight: 800;
+
+            line-height: 1.1;
+
+            letter-spacing: -.3px;
+
+        }
+
+
+        /* =====================================================
+           DESCRIPTION
+        ====================================================== */
+
+        .brand-description {
+
+            max-width: 600px;
+
+            margin: 10px 0 0;
+
+            color: #D3E5EC !important;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            font-size: .95rem;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* =====================================================
+           FEATURES
+        ====================================================== */
+
+        .brand-feature-list {
+
+            margin-top: 22px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+        }
+
+
+        .brand-feature {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            color: #F4FAFC !important;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            font-size: .84rem;
+
+            font-weight: 600;
+
+        }
+
+
+        /* =====================================================
+           FEATURE ICON
+        ====================================================== */
+
+        .brand-feature i {
+
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border-radius: 9px;
+
+            background:
+                rgba(255,255,255,.92);
+
+            color: #031716;
+
+            border:
+                1px solid
+                rgba(255,255,255,.65);
+
+            box-shadow:
+                0 4px 12px
+                rgba(0,0,0,.15);
+
+            font-size: .85rem;
+
+        }
+
+
+        /* =====================================================
+           RIGHT FORM SIDE
+        ====================================================== */
+
+        .auth-form-side {
+
+            width: 100%;
+            height: 100vh;
+
+            padding: 45px 7%;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            box-sizing: border-box;
+
+            background: transparent;
+
+            color: #FFFFFF;
+
+        }
+
+
+        /* =====================================================
+           LOGIN PAGE
+        ====================================================== */
+
+        .auth-form-side > .login-page {
+
+            width: 100%;
+
+            height: auto;
+
+            min-height: auto;
+
+            margin: 0;
+            padding: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: transparent;
+
+        }
+
+
+        /* =====================================================
+           LOGIN CARD
+        ====================================================== */
+
+        .auth-form-side > .login-page > .login-card {
+
+            width: 100%;
+
+            max-width: 460px;
+
+            margin: 0 auto;
+
+            padding: 44px 40px;
+
+            background:
+                rgba(255,255,255,.22);
+
+            border:
+                1px solid
+                rgba(255,255,255,.55);
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 18px 45px
+                rgba(15,23,42,.10);
+
+            backdrop-filter:
+                blur(14px);
+
+            -webkit-backdrop-filter:
+                blur(14px);
+
+            box-sizing: border-box;
+
+        }
+
+
+        /* =====================================================
+           HIDE OLD HEADER
+        ====================================================== */
+
+        .auth-form-header {
+
+            display: none;
+
+        }
+
+
+        /* =====================================================
+           HIDE AUTH FOOTER
+        ====================================================== */
+
+        .auth-footer {
+
+            display: none;
+
+        }
+
+
+        /* =====================================================
+           FORCE COLORS
+        ====================================================== */
+
+        .brand-title {
+
+            color: #FFFFFF !important;
+
+        }
+
+
+        .brand-description {
+
+            color: #D3E5EC !important;
+
+        }
+
+
+        .brand-feature {
+
+            color: #F4FAFC !important;
+
+        }
+
+
+        /* =====================================================
+           FORCE ARIAL
+        ====================================================== */
+
+        .auth-form-side,
+        .auth-form-side *,
+        .brand-title,
+        .brand-description,
+        .brand-feature {
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+        }
+
+
+        /* =====================================================
+           LARGE SCREEN
+        ====================================================== */
+
+        @@media (min-width: 1500px) {
+
+            .brand-content {
+
+                max-width: 760px;
+
+            }
+
+
+            .brand-logo {
+
+                width: 105px;
+                height: 105px;
+
+                min-width: 105px;
+                min-height: 105px;
+
+                max-width: 105px;
+                max-height: 105px;
+
+                flex-basis: 105px;
+
+            }
+
+
+            .brand-logo-image {
+
+                width: 105px;
+                height: 105px;
+
+                min-width: 105px;
+                min-height: 105px;
+
+                max-width: 105px;
+                max-height: 105px;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           LAPTOP
+        ====================================================== */
+
+        @@media (max-width: 1200px) {
+
+            .auth-brand {
+
+                padding:
+                    50px 5%;
+
+            }
+
+
+            .brand-content {
+
+                max-width: 650px;
+
+            }
+
+
+            .brand-top {
+
+                gap: 22px;
+
+            }
+
+
+            .brand-logo {
+
+                width: 90px;
+                height: 90px;
+
+                min-width: 90px;
+                min-height: 90px;
+
+                max-width: 90px;
+                max-height: 90px;
+
+                flex-basis: 90px;
+
+            }
+
+
+            .brand-logo-image {
+
+                width: 90px;
+                height: 90px;
+
+                min-width: 90px;
+                min-height: 90px;
+
+                max-width: 90px;
+                max-height: 90px;
+
+            }
+
+
+            .brand-title {
+
+                font-size: 1.8rem;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           TABLET
+        ====================================================== */
+
+        @@media (max-width: 900px) {
+
+            html,
+            body {
+
+                height: auto;
+
+                overflow-x: hidden;
+
+                overflow-y: auto;
+
+            }
+
+
+            .auth-page {
+
+                height: auto;
+
+                min-height: 100vh;
+
+                overflow: visible;
+
+            }
+
+
+            .auth-card {
+
+                height: auto;
+
+                min-height: 100vh;
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .auth-brand {
+
+                height: auto;
+
+                min-height: auto;
+
+                padding:
+                    45px 30px 35px;
+
+            }
+
+
+            .brand-content {
+
+                max-width: 700px;
+
+            }
+
+
+            .brand-top {
+
+                justify-content: center;
+
+            }
+
+
+            .brand-logo {
+
+                width: 90px;
+                height: 90px;
+
+                min-width: 90px;
+                min-height: 90px;
+
+                max-width: 90px;
+                max-height: 90px;
+
+                flex-basis: 90px;
+
+            }
+
+
+            .brand-logo-image {
+
+                width: 90px;
+                height: 90px;
+
+                min-width: 90px;
+                min-height: 90px;
+
+                max-width: 90px;
+                max-height: 90px;
+
+            }
+
+
+            .brand-title {
+
+                font-size: 1.7rem;
+
+            }
+
+
+            .auth-form-side {
+
+                height: auto;
+
+                min-height: auto;
+
+                padding:
+                    30px 25px 45px;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ====================================================== */
+
+        @@media (max-width: 600px) {
+
+            .auth-brand {
+
+                padding:
+                    35px 20px 25px;
+
+            }
+
+
+            .brand-top {
+
+                flex-direction: column;
+
+                text-align: center;
+
+                gap: 12px;
+
+            }
+
+
+            .brand-logo {
+
+                width: 75px;
+                height: 75px;
+
+                min-width: 75px;
+                min-height: 75px;
+
+                max-width: 75px;
+                max-height: 75px;
+
+                flex-basis: 75px;
+
+            }
+
+
+            .brand-logo-image {
+
+                width: 75px;
+                height: 75px;
+
+                min-width: 75px;
+                min-height: 75px;
+
+                max-width: 75px;
+                max-height: 75px;
+
+            }
+
+
+            .brand-title {
+
+                max-width: 100%;
+
+                font-size: 1.55rem;
+
+                text-align: center;
+
+            }
+
+
+            .brand-description {
+
+                font-size: .88rem;
+
+                text-align: center;
+
+            }
+
+
+            .brand-feature-list {
+
+                margin-top: 18px;
+
+            }
+
+
+            .brand-feature {
+
+                font-size: .8rem;
+
+            }
+
+
+            .auth-form-side {
+
+                padding:
+                    25px 18px 35px;
+
+            }
+
+
+            .auth-form-side > .login-page > .login-card {
+
+                padding:
+                    30px 22px;
+
+                border-radius: 18px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         AUTH PAGE
+    ====================================================== -->
+
+    <div class="auth-page">
+
+
+        <div class="auth-container">
+
+
+            <div class="auth-card">
+
+
+                <!-- =============================================
+                     LEFT BRAND
+                ============================================== -->
+
+                <section class="auth-brand">
+
+
+                    <div class="brand-content">
+
+
+                        <!-- LOGO + TITLE -->
+
+                        <div class="brand-top">
+
+
+                            <div class="brand-logo">
+
+                                <img src="~/images/Login_image.png"
+                                     alt="Barangay Youth Program Management System Logo"
+                                     class="brand-logo-image" />
+
+                            </div>
+
+
+                            <h2 class="brand-title">
+
+                                Barangay Youth Program Management System
+
+                            </h2>
+
+
+                        </div>
+
+
+                        <!-- DESCRIPTION -->
+
+                        <p class="brand-description">
+
+                            A centralized system for managing youth
+                            participants, programs, registrations,
+                            and attendance in the barangay.
+
+                        </p>
+
+
+                        <!-- FEATURES -->
+
+                        <div class="brand-feature-list">
+
+
+                            <div class="brand-feature">
+
+                                <i class="bi bi-person-check"></i>
+
+                                <span>
+                                    Youth participant management
+                                </span>
+
+                            </div>
+
+
+                            <div class="brand-feature">
+
+                                <i class="bi bi-calendar-event"></i>
+
+                                <span>
+                                    Youth program management
+                                </span>
+
+                            </div>
+
+
+                            <div class="brand-feature">
+
+                                <i class="bi bi-clipboard-check"></i>
+
+                                <span>
+                                    Registration tracking
+                                </span>
+
+                            </div>
+
+
+                            <div class="brand-feature">
+
+                                <i class="bi bi-check2-square"></i>
+
+                                <span>
+                                    Attendance monitoring
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =============================================
+                     RIGHT LOGIN
+                ============================================== -->
+
+                <section class="auth-form-side">
+
+                    @RenderBody()
+
+                </section>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         SCRIPTS
+    ====================================================== -->
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false
+    )
+
+
+</body>
+
+</html>

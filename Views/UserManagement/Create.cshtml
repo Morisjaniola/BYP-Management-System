@@ -1,0 +1,1828 @@
+﻿@model BYPManagementSystem.Controllers.UserManagementController.UserCreateViewModel
+
+@{
+    ViewData["Title"] = "Create User";
+
+    var roles =
+        ViewBag.Roles as IEnumerable<string>
+        ?? Enumerable.Empty<string>();
+}
+
+
+<div class="create-user-page">
+
+    <!-- ==========================================================
+         HEADER
+    =========================================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <a asp-controller="UserManagement"
+               asp-action="Index"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to User Management
+
+            </a>
+
+            <span class="page-eyebrow">
+                ADMINISTRATION
+            </span>
+
+            <h1>
+                Create User
+            </h1>
+
+            <p>
+                Create an authorized system account and assign
+                an appropriate role.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         VALIDATION SUMMARY
+    =========================================================== -->
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert-box error">
+
+            <div class="alert-icon">
+
+                <i class="bi bi-exclamation-circle-fill"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Please correct the following:
+                </strong>
+
+                <div class="validation-list">
+
+                    @foreach (
+                        var error in
+                        ViewData.ModelState.Values
+                            .SelectMany(v => v.Errors)
+                    )
+                    {
+                        if (!string.IsNullOrWhiteSpace(
+                            error.ErrorMessage))
+                        {
+                            <div>
+                                @error.ErrorMessage
+                            </div>
+                        }
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         MAIN
+    =========================================================== -->
+
+    <div class="create-user-layout">
+
+
+        <!-- ======================================================
+             FORM
+        ======================================================= -->
+
+        <section class="form-card">
+
+            <div class="card-header">
+
+                <div class="header-icon">
+
+                    <i class="bi bi-person-plus"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        ACCOUNT INFORMATION
+                    </span>
+
+                    <h2>
+                        New User Account
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <form asp-controller="UserManagement"
+                  asp-action="Create"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="user-form">
+
+                @Html.AntiForgeryToken()
+
+
+                <!-- ==================================================
+                     LOGIN INFORMATION
+                =================================================== -->
+
+                <div class="form-section">
+
+                    <div class="section-heading">
+
+                        <i class="bi bi-shield-lock"></i>
+
+                        <div>
+
+                            <strong>
+                                Login Information
+                            </strong>
+
+                            <span>
+                                Information used to sign in to the system.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+
+                        <!-- EMAIL -->
+
+                        <div class="form-group full">
+
+                            <label asp-for="Email">
+                                Email Address
+                            </label>
+
+                            <input asp-for="Email"
+                                   class="form-control"
+                                   placeholder="example@email.com"
+                                   autocomplete="email" />
+
+                            <span asp-validation-for="Email"
+                                  class="field-error">
+                            </span>
+
+                            <small>
+                                The email address will also be used as
+                                the account username.
+                            </small>
+
+                        </div>
+
+
+                        <!-- PASSWORD -->
+
+                        <div class="form-group">
+
+                            <label asp-for="Password">
+                                Password
+                            </label>
+
+                            <div class="password-wrapper">
+
+                                <input asp-for="Password"
+                                       type="password"
+                                       class="form-control password-input"
+                                       id="password"
+                                       placeholder="Enter password"
+                                       autocomplete="new-password" />
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        onclick="togglePassword('password', this)"
+                                        aria-label="Show password">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+
+                            </div>
+
+                            <span asp-validation-for="Password"
+                                  class="field-error">
+                            </span>
+
+                            <small>
+                                Minimum 6 characters with the configured
+                                Identity password rules.
+                            </small>
+
+                        </div>
+
+
+                        <!-- CONFIRM PASSWORD -->
+
+                        <div class="form-group">
+
+                            <label asp-for="ConfirmPassword">
+                                Confirm Password
+                            </label>
+
+                            <div class="password-wrapper">
+
+                                <input asp-for="ConfirmPassword"
+                                       type="password"
+                                       class="form-control password-input"
+                                       id="confirmPassword"
+                                       placeholder="Repeat password"
+                                       autocomplete="new-password" />
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        onclick="togglePassword('confirmPassword', this)"
+                                        aria-label="Show password">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+
+                            </div>
+
+                            <span asp-validation-for="ConfirmPassword"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- ROLE -->
+
+                        <div class="form-group">
+
+                            <label asp-for="Role">
+                                User Role
+                            </label>
+
+                            <select asp-for="Role"
+                                    class="form-control">
+
+                                @foreach (var roleName in roles)
+                                {
+                                    <option value="@roleName">
+
+                                        @roleName
+
+                                    </option>
+                                }
+
+                            </select>
+
+                            <span asp-validation-for="Role"
+                                  class="field-error">
+                            </span>
+
+                            <small>
+                                Assign only the role appropriate to
+                                the user's responsibilities.
+                            </small>
+
+                        </div>
+
+
+                        <!-- EMAIL CONFIRMED -->
+
+                        <div class="form-group checkbox-group">
+
+                            <label class="checkbox-label">
+
+                                <input asp-for="EmailConfirmed"
+                                       type="checkbox" />
+
+                                <span>
+                                    Mark email as confirmed
+                                </span>
+
+                            </label>
+
+                            <small>
+                                This allows the account to be used
+                                without requiring email confirmation.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     YOUTH INFORMATION
+                =================================================== -->
+
+                <div class="form-section">
+
+                    <div class="section-heading">
+
+                        <i class="bi bi-person-vcard"></i>
+
+                        <div>
+
+                            <strong>
+                                Youth Participant Information
+                            </strong>
+
+                            <span>
+                                Complete these fields when creating a
+                                User / Youth account.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-note">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        <span>
+                            These fields are optional for Admin and Staff
+                            accounts. For a User / Youth account, providing
+                            the participant information will also create the
+                            corresponding Youth Participant record.
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group full">
+                            <label asp-for="ProfileImage">Profile Picture</label>
+                            <input asp-for="ProfileImage" type="file" class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+                            <span asp-validation-for="ProfileImage" class="field-error"></span>
+                            <small>Optional. JPG, JPEG, PNG, or WEBP; maximum 5 MB.</small>
+                        </div>
+
+
+                        <!-- FIRST NAME -->
+
+                        <div class="form-group">
+
+                            <label asp-for="FirstName">
+                                First Name
+                            </label>
+
+                            <input asp-for="FirstName"
+                                   class="form-control"
+                                   placeholder="Enter first name"
+                                   autocomplete="given-name" />
+
+                            <span asp-validation-for="FirstName"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- LAST NAME -->
+
+                        <div class="form-group">
+
+                            <label asp-for="LastName">
+                                Last Name
+                            </label>
+
+                            <input asp-for="LastName"
+                                   class="form-control"
+                                   placeholder="Enter last name"
+                                   autocomplete="family-name" />
+
+                            <span asp-validation-for="LastName"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- BIRTH DATE -->
+
+                        <div class="form-group">
+
+                            <label asp-for="BirthDate">
+                                Birth Date
+                            </label>
+
+                            <input asp-for="BirthDate"
+                                   type="date"
+                                   class="form-control" />
+
+                            <span asp-validation-for="BirthDate"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- CONTACT -->
+
+                        <div class="form-group">
+
+                            <label asp-for="ContactNumber">
+                                Contact Number
+                            </label>
+
+                            <input asp-for="ContactNumber"
+                                   class="form-control"
+                                   placeholder="09XXXXXXXXX"
+                                   autocomplete="tel" />
+
+                            <span asp-validation-for="ContactNumber"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- BARANGAY -->
+
+                        <div class="form-group full">
+
+                            <label asp-for="Barangay">
+                                Barangay
+                            </label>
+
+                            <input asp-for="Barangay"
+                                   class="form-control"
+                                   placeholder="Enter barangay" />
+
+                            <span asp-validation-for="Barangay"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- ADDRESS -->
+
+                        <div class="form-group full">
+
+                            <label asp-for="Address">
+                                Complete Address
+                            </label>
+
+                            <textarea asp-for="Address"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Enter complete address"></textarea>
+
+                            <span asp-validation-for="Address"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACTIONS
+                =================================================== -->
+
+                <div class="form-actions">
+
+                    <a asp-controller="UserManagement"
+                       asp-action="Index"
+                       class="cancel-button">
+
+                        <i class="bi bi-x-circle"></i>
+
+                        Cancel
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="save-button">
+
+                        <i class="bi bi-person-plus"></i>
+
+                        Create User
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- ======================================================
+             INFORMATION PANEL
+        ======================================================= -->
+
+        <aside class="side-panel">
+
+
+            <!-- ROLE INFORMATION -->
+
+            <div class="side-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-shield-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            ROLE ACCESS
+                        </span>
+
+                        <h3>
+                            Available Roles
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="role-info">
+
+                    <div class="role-info-item">
+
+                        <span class="role-dot admin"></span>
+
+                        <div>
+
+                            <strong>
+                                Admin
+                            </strong>
+
+                            <p>
+                                Full system administration,
+                                users, roles, and records.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="role-info-item">
+
+                        <span class="role-dot staff"></span>
+
+                        <div>
+
+                            <strong>
+                                Staff
+                            </strong>
+
+                            <p>
+                                Operational management of youth,
+                                programs, registrations, and attendance.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="role-info-item">
+
+                        <span class="role-dot user"></span>
+
+                        <div>
+
+                            <strong>
+                                User / Youth
+                            </strong>
+
+                            <p>
+                                Personal profile, programs,
+                                registrations, and attendance.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- WORKFLOW -->
+
+            <div class="side-card workflow-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-diagram-3"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            USER WORKFLOW
+                        </span>
+
+                        <h3>
+                            User / Youth
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="workflow">
+
+                    <div class="workflow-step">
+
+                        <span>
+                            1
+                        </span>
+
+                        <div>
+                            <strong>
+                                Create Account
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span>
+                            2
+                        </span>
+
+                        <div>
+                            <strong>
+                                Complete Profile
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span>
+                            3
+                        </span>
+
+                        <div>
+                            <strong>
+                                Browse Programs
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span>
+                            4
+                        </span>
+
+                        <div>
+                            <strong>
+                                Register
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span>
+                            5
+                        </span>
+
+                        <div>
+                            <strong>
+                                Track Attendance
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ============================================================
+       PAGE
+    ============================================================ */
+
+    .create-user-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+    }
+
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+
+    .page-header {
+
+        margin-bottom: 21px;
+
+    }
+
+
+    .back-link {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        margin-bottom: 10px;
+
+        color: #6f7a8b;
+
+        text-decoration: none;
+
+        font-size: .68rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .back-link:hover {
+
+        color: #1f2b46;
+
+        text-decoration: none;
+
+    }
+
+
+    .page-eyebrow {
+
+        display: block;
+
+        color: #7e8999;
+
+        font-size: .67rem;
+
+        font-weight: 700;
+
+        letter-spacing: .14em;
+
+    }
+
+
+    .page-header h1 {
+
+        margin: 5px 0 5px;
+
+        color: #202b3c;
+
+        font-size: 2rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .page-header p {
+
+        margin: 0;
+
+        color: #7b8595;
+
+        font-size: .84rem;
+
+    }
+
+
+    /* ============================================================
+       ALERT
+    ============================================================ */
+
+    .alert-box {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 10px;
+
+        padding: 13px 15px;
+
+        margin-bottom: 17px;
+
+        border-radius: 12px;
+
+    }
+
+
+    .alert-box.error {
+
+        background: #f8eeee;
+
+        border: 1px solid #efdede;
+
+        color: #945b5b;
+
+    }
+
+
+    .alert-icon {
+
+        flex-shrink: 0;
+
+        margin-top: 1px;
+
+    }
+
+
+    .alert-box strong {
+
+        display: block;
+
+        font-size: .72rem;
+
+    }
+
+
+    .validation-list {
+
+        margin-top: 5px;
+
+        font-size: .65rem;
+
+        line-height: 1.6;
+
+    }
+
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+
+    .create-user-layout {
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1.7fr)
+            minmax(265px, .75fr);
+
+        gap: 18px;
+
+        align-items: start;
+
+    }
+
+
+    .form-card,
+
+    .side-card {
+
+        background: white;
+
+        border: 1px solid #e5e9ef;
+
+        border-radius: 16px;
+
+        box-shadow: 0 6px 24px rgba(31, 43, 70, .035);
+
+    }
+
+
+    .form-card {
+
+        overflow: hidden;
+
+    }
+
+
+    /* ============================================================
+       CARD HEADER
+    ============================================================ */
+
+    .card-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        padding: 18px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .header-icon {
+
+        width: 42px;
+
+        height: 42px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 11px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .card-header > div:last-child span {
+
+        display: block;
+
+        color: #8d96a4;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        letter-spacing: .11em;
+
+    }
+
+
+    .card-header h2 {
+
+        margin: 3px 0 0;
+
+        color: #293446;
+
+        font-size: .98rem;
+
+        font-weight: 800;
+
+    }
+
+
+    /* ============================================================
+       FORM
+    ============================================================ */
+
+    .user-form {
+
+        padding: 20px;
+
+    }
+
+
+    .form-section {
+
+        padding-bottom: 21px;
+
+        margin-bottom: 20px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .form-section:last-of-type {
+
+        margin-bottom: 0;
+
+    }
+
+
+    .section-heading {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+        margin-bottom: 14px;
+
+    }
+
+
+    .section-heading > i {
+
+        margin-top: 2px;
+
+        color: #667386;
+
+        font-size: .8rem;
+
+    }
+
+
+    .section-heading > div {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .section-heading strong {
+
+        color: #354153;
+
+        font-size: .75rem;
+
+    }
+
+
+    .section-heading span {
+
+        margin-top: 2px;
+
+        color: #919aa8;
+
+        font-size: .61rem;
+
+    }
+
+
+    .info-note {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 8px;
+
+        padding: 10px 11px;
+
+        margin-bottom: 14px;
+
+        border-radius: 9px;
+
+        background: #f3f5f8;
+
+        color: #6d7889;
+
+        font-size: .62rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    .info-note i {
+
+        margin-top: 1px;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .form-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 14px;
+
+    }
+
+
+    .form-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .form-group.full {
+
+        grid-column: 1 / -1;
+
+    }
+
+
+    .form-group label {
+
+        margin-bottom: 6px;
+
+        color: #4c5768;
+
+        font-size: .67rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .form-control {
+
+        width: 100%;
+
+        min-height: 41px;
+
+        padding: 8px 10px;
+
+        border: 1px solid #dfe4ec;
+
+        border-radius: 9px;
+
+        background: white;
+
+        color: #293446;
+
+        font-size: .71rem;
+
+        outline: none;
+
+        box-shadow: none;
+
+    }
+
+
+    textarea.form-control {
+
+        min-height: 82px;
+
+        resize: vertical;
+
+    }
+
+
+    select.form-control {
+
+        padding-right: 30px;
+
+    }
+
+
+    .form-control:focus {
+
+        border-color: #b9c2ce;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(31, 43, 70, .05);
+
+    }
+
+
+    .form-group small {
+
+        margin-top: 5px;
+
+        color: #9aa2ae;
+
+        font-size: .59rem;
+
+        line-height: 1.4;
+
+    }
+
+
+    .field-error {
+
+        margin-top: 4px;
+
+        color: #a05f5f;
+
+        font-size: .6rem;
+
+    }
+
+
+    /* ============================================================
+       PASSWORD
+    ============================================================ */
+
+    .password-wrapper {
+
+        position: relative;
+
+    }
+
+
+    .password-wrapper .form-control {
+
+        padding-right: 37px;
+
+    }
+
+
+    .password-toggle {
+
+        position: absolute;
+
+        top: 50%;
+
+        right: 8px;
+
+        transform: translateY(-50%);
+
+        width: 28px;
+
+        height: 28px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border: 0;
+
+        background: transparent;
+
+        color: #929aa7;
+
+        cursor: pointer;
+
+        border-radius: 7px;
+
+    }
+
+
+    .password-toggle:hover {
+
+        background: #f2f4f7;
+
+        color: #596579;
+
+    }
+
+
+    /* ============================================================
+       CHECKBOX
+    ============================================================ */
+
+    .checkbox-group {
+
+        justify-content: flex-start;
+
+        padding-top: 25px;
+
+    }
+
+
+    .checkbox-label {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        margin: 0 !important;
+
+        cursor: pointer;
+
+        color: #4b5667 !important;
+
+    }
+
+
+    .checkbox-label input {
+
+        width: 15px;
+
+        height: 15px;
+
+        accent-color: #1f2b46;
+
+    }
+
+
+    /* ============================================================
+       FORM ACTIONS
+    ============================================================ */
+
+    .form-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 9px;
+
+        padding-top: 1px;
+
+    }
+
+
+    .cancel-button,
+
+    .save-button {
+
+        min-height: 40px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 7px;
+
+        padding: 0 14px;
+
+        border-radius: 10px;
+
+        font-size: .7rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .cancel-button {
+
+        background: #f2f4f7;
+
+        color: #697386;
+
+    }
+
+
+    .save-button {
+
+        border: 0;
+
+        background: #1f2b46;
+
+        color: white;
+
+        cursor: pointer;
+
+    }
+
+
+    .cancel-button:hover {
+
+        color: #344054;
+
+        text-decoration: none;
+
+    }
+
+
+    .save-button:hover {
+
+        background: #172137;
+
+    }
+
+
+    /* ============================================================
+       SIDE PANEL
+    ============================================================ */
+
+    .side-panel {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 15px;
+
+    }
+
+
+    .side-card {
+
+        padding: 17px;
+
+    }
+
+
+    .side-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        margin-bottom: 14px;
+
+    }
+
+
+    .side-icon {
+
+        width: 38px;
+
+        height: 38px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 10px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .side-header span {
+
+        display: block;
+
+        color: #9098a5;
+
+        font-size: .58rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .side-header h3 {
+
+        margin: 3px 0 0;
+
+        color: #2c3748;
+
+        font-size: .81rem;
+
+        font-weight: 800;
+
+    }
+
+
+    /* ============================================================
+       ROLE INFO
+    ============================================================ */
+
+    .role-info {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 13px;
+
+    }
+
+
+    .role-info-item {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+    }
+
+
+    .role-dot {
+
+        width: 9px;
+
+        height: 9px;
+
+        margin-top: 4px;
+
+        flex-shrink: 0;
+
+        border-radius: 50%;
+
+        background: #8994a5;
+
+    }
+
+
+    .role-dot.admin {
+
+        background: #6b7488;
+
+    }
+
+
+    .role-dot.staff {
+
+        background: #87909d;
+
+    }
+
+
+    .role-dot.user {
+
+        background: #768d8d;
+
+    }
+
+
+    .role-info-item strong {
+
+        display: block;
+
+        color: #394457;
+
+        font-size: .68rem;
+
+    }
+
+
+    .role-info-item p {
+
+        margin: 3px 0 0;
+
+        color: #858e9c;
+
+        font-size: .6rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* ============================================================
+       WORKFLOW
+    ============================================================ */
+
+    .workflow {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .workflow-step {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+    }
+
+
+    .workflow-step > span {
+
+        width: 25px;
+
+        height: 25px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 8px;
+
+        background: #eef2f7;
+
+        color: #566377;
+
+        font-size: .61rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .workflow-step strong {
+
+        color: #566172;
+
+        font-size: .62rem;
+
+    }
+
+
+    .workflow-line {
+
+        width: 1px;
+
+        height: 12px;
+
+        margin-left: 12px;
+
+        background: #dfe4ec;
+
+    }
+
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+
+    @@media (max-width: 950px) {
+
+        .create-user-layout {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .side-panel {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            align-items: start;
+
+        }
+
+
+        .workflow-card {
+
+            grid-column: 1 / -1;
+
+        }
+
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .form-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .form-group.full {
+
+            grid-column: auto;
+
+        }
+
+
+        .side-panel {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .workflow-card {
+
+            grid-column: auto;
+
+        }
+
+
+        .page-header h1 {
+
+            font-size: 1.65rem;
+
+        }
+
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial"
+        );
+    }
+
+
+    <script>
+
+        function togglePassword(
+            inputId,
+            button
+        )
+        {
+            const input =
+                document.getElementById(inputId);
+
+            if (!input)
+                return;
+
+            const icon =
+                button.querySelector("i");
+
+            if (input.type === "password")
+            {
+                input.type = "text";
+
+                icon.classList.remove(
+                    "bi-eye"
+                );
+
+                icon.classList.add(
+                    "bi-eye-slash"
+                );
+
+                button.setAttribute(
+                    "aria-label",
+                    "Hide password"
+                );
+            }
+            else
+            {
+                input.type = "password";
+
+                icon.classList.remove(
+                    "bi-eye-slash"
+                );
+
+                icon.classList.add(
+                    "bi-eye"
+                );
+
+                button.setAttribute(
+                    "aria-label",
+                    "Show password"
+                );
+            }
+        }
+
+    </script>
+}

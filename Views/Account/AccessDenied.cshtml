@@ -1,0 +1,716 @@
+﻿@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_AuthLayout";
+}
+
+<div class="access-denied-page">
+
+    <div class="access-denied-card">
+
+        <!-- =====================================================
+             ICON
+        ====================================================== -->
+
+        <div class="access-icon">
+
+            <i class="bi bi-shield-lock-fill"></i>
+
+        </div>
+
+
+        <!-- =====================================================
+             CONTENT
+        ====================================================== -->
+
+        <span class="access-label">
+            ACCESS RESTRICTED
+        </span>
+
+
+        <h1>
+            Access Denied
+        </h1>
+
+
+        <p class="access-message">
+            You do not have permission to access this page.
+        </p>
+
+
+        <p class="access-description">
+            Your current account role does not have the required
+            permission for this section of the Barangay Youth
+            Program Management System.
+        </p>
+
+
+        <!-- =====================================================
+             CURRENT ROLE
+        ====================================================== -->
+
+        <div class="role-box">
+
+            <div class="role-icon">
+
+                <i class="bi bi-person-badge"></i>
+
+            </div>
+
+
+            <div class="role-content">
+
+                <span>
+                    CURRENT ACCOUNT
+                </span>
+
+
+                <strong>
+                    @(User.Identity?.Name ?? "Authenticated User")
+                </strong>
+
+
+                <small>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <span>Administrator</span>
+                    }
+                    else if (User.IsInRole("Staff"))
+                    {
+                        <span>Staff</span>
+                    }
+                    else if (User.IsInRole("User"))
+                    {
+                        <span>User / Youth</span>
+                    }
+                    else
+                    {
+                        <span>Authenticated User</span>
+                    }
+
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             ACTIONS
+        ====================================================== -->
+
+        <div class="access-actions">
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin"
+                   asp-action="Dashboard"
+                   class="access-button primary">
+
+                    <i class="bi bi-grid"></i>
+
+                    Go to Admin Dashboard
+
+                </a>
+            }
+            else if (User.IsInRole("Staff"))
+            {
+                <a asp-controller="Staff"
+                   asp-action="Dashboard"
+                   class="access-button primary">
+
+                    <i class="bi bi-grid"></i>
+
+                    Go to Staff Dashboard
+
+                </a>
+            }
+            else if (User.IsInRole("User"))
+            {
+                <a asp-controller="Youth"
+                   asp-action="Dashboard"
+                   class="access-button primary">
+
+                    <i class="bi bi-grid"></i>
+
+                    Go to Youth Dashboard
+
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="access-button primary">
+
+                    <i class="bi bi-house"></i>
+
+                    Go to Home
+
+                </a>
+            }
+
+
+            <a asp-controller="Profile"
+               asp-action="Index"
+               class="access-button secondary">
+
+                <i class="bi bi-person"></i>
+
+                My Profile
+
+            </a>
+
+        </div>
+
+
+        <!-- =====================================================
+             HELP
+        ====================================================== -->
+
+        <div class="help-note">
+
+            <i class="bi bi-info-circle"></i>
+
+            <span>
+                Contact the system administrator if you believe
+                you should have access to this page.
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .access-denied-page {
+
+        min-height:
+            calc(100vh - 30px);
+
+        padding:
+            35px 18px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        background:
+            #f7f9fc;
+
+    }
+
+
+    /* =========================================================
+       CARD
+    ========================================================== */
+
+    .access-denied-card {
+
+        width:
+            100%;
+
+        max-width:
+            470px;
+
+        padding:
+            32px;
+
+        border:
+            1px solid #e3e8ef;
+
+        border-radius:
+            16px;
+
+        background:
+            #ffffff;
+
+        text-align:
+            center;
+
+        box-shadow:
+            0 18px 45px
+            rgba(15, 23, 42, .08);
+
+    }
+
+
+    /* =========================================================
+       ICON
+    ========================================================== */
+
+    .access-icon {
+
+        width:
+            68px;
+
+        height:
+            68px;
+
+        margin:
+            0 auto 15px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        border-radius:
+            18px;
+
+        background:
+            #fff7ed;
+
+        color:
+            #ea580c;
+
+        font-size:
+            1.35rem;
+
+    }
+
+
+    /* =========================================================
+       TITLE
+    ========================================================== */
+
+    .access-label {
+
+        display:
+            block;
+
+        color:
+            #ea580c;
+
+        font-size:
+            .52rem;
+
+        font-weight:
+            850;
+
+        letter-spacing:
+            .11em;
+
+    }
+
+
+    .access-denied-card h1 {
+
+        margin:
+            5px 0 7px;
+
+        color:
+            #1f2937;
+
+        font-size:
+            1.4rem;
+
+        font-weight:
+            850;
+
+        letter-spacing:
+            -.3px;
+
+    }
+
+
+    .access-message {
+
+        margin:
+            0;
+
+        color:
+            #475569;
+
+        font-size:
+            .68rem;
+
+        font-weight:
+            700;
+
+    }
+
+
+    .access-description {
+
+        max-width:
+            370px;
+
+        margin:
+            8px auto 20px;
+
+        color:
+            #94a3b8;
+
+        font-size:
+            .55rem;
+
+        line-height:
+            1.55;
+
+    }
+
+
+    /* =========================================================
+       ROLE BOX
+    ========================================================== */
+
+    .role-box {
+
+        margin-bottom:
+            18px;
+
+        padding:
+            11px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        gap:
+            9px;
+
+        border:
+            1px solid #e7ebf0;
+
+        border-radius:
+            9px;
+
+        background:
+            #fbfcfe;
+
+        text-align:
+            left;
+
+    }
+
+
+    .role-icon {
+
+        width:
+            35px;
+
+        height:
+            35px;
+
+        flex-shrink:
+            0;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        border-radius:
+            8px;
+
+        background:
+            #eff6ff;
+
+        color:
+            #2563eb;
+
+        font-size:
+            .67rem;
+
+    }
+
+
+    .role-content {
+
+        min-width:
+            0;
+
+    }
+
+
+    .role-content span {
+
+        display:
+            block;
+
+        color:
+            #94a3b8;
+
+        font-size:
+            .43rem;
+
+        font-weight:
+            750;
+
+        letter-spacing:
+            .05em;
+
+    }
+
+
+    .role-content strong {
+
+        display:
+            block;
+
+        margin-top:
+            2px;
+
+        overflow:
+            hidden;
+
+        color:
+            #475569;
+
+        font-size:
+            .55rem;
+
+        font-weight:
+            800;
+
+        text-overflow:
+            ellipsis;
+
+        white-space:
+            nowrap;
+
+    }
+
+
+    .role-content small {
+
+        display:
+            block;
+
+        margin-top:
+            2px;
+
+        color:
+            #0d6efd;
+
+        font-size:
+            .46rem;
+
+        font-weight:
+            700;
+
+    }
+
+
+    /* =========================================================
+       ACTIONS
+    ========================================================== */
+
+    .access-actions {
+
+        display:
+            flex;
+
+        flex-direction:
+            column;
+
+        gap:
+            7px;
+
+    }
+
+
+    .access-button {
+
+        width:
+            100%;
+
+        min-height:
+            42px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        gap:
+            6px;
+
+        border-radius:
+            9px;
+
+        font-family:
+            inherit;
+
+        font-size:
+            .56rem;
+
+        font-weight:
+            800;
+
+        text-decoration:
+            none;
+
+        transition:
+            background .15s ease,
+            transform .15s ease;
+
+    }
+
+
+    .access-button.primary {
+
+        border:
+            1px solid #0d6efd;
+
+        background:
+            #0d6efd;
+
+        color:
+            #ffffff;
+
+    }
+
+
+    .access-button.primary:hover {
+
+        background:
+            #0b5ed7;
+
+        color:
+            #ffffff;
+
+        transform:
+            translateY(-1px);
+
+    }
+
+
+    .access-button.secondary {
+
+        border:
+            1px solid #dfe6ee;
+
+        background:
+            #ffffff;
+
+        color:
+            #64748b;
+
+    }
+
+
+    .access-button.secondary:hover {
+
+        background:
+            #f8fafc;
+
+        color:
+            #0d6efd;
+
+    }
+
+
+    /* =========================================================
+       HELP
+    ========================================================== */
+
+    .help-note {
+
+        margin-top:
+            18px;
+
+        padding:
+            9px 10px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        gap:
+            6px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius:
+            8px;
+
+        background:
+            #f8fafc;
+
+        color:
+            #94a3b8;
+
+        font-size:
+            .46rem;
+
+        line-height:
+            1.4;
+
+    }
+
+
+    .help-note i {
+
+        flex-shrink:
+            0;
+
+        color:
+            #2563eb;
+
+        font-size:
+            .6rem;
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 500px) {
+
+        .access-denied-page {
+
+            padding:
+                20px 12px;
+
+        }
+
+
+        .access-denied-card {
+
+            padding:
+                25px 18px;
+
+            border-radius:
+                13px;
+
+        }
+
+    }
+
+</style>

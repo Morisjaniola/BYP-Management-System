@@ -1,0 +1,1113 @@
+@model BYPManagementSystem.Models.AttendancePhotoSubmission
+
+@{
+    ViewData["Title"] = "Review Attendance Photo";
+
+    var registration =
+        Model.Registration;
+
+    var program =
+        registration?.Program;
+
+    var youth =
+        registration?.YouthParticipant;
+
+    var isPending =
+        Model.Status == "Pending";
+
+    var photoUrl =
+        Url.Action(
+            "SubmissionPhoto",
+            "Attendance",
+            new { id = Model.Id });
+}
+
+
+<div class="photo-review-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <a asp-controller="Attendance"
+               asp-action="PhotoReviews"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Photo Review Queue
+
+            </a>
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-camera-fill"></i>
+                </div>
+
+                <div>
+
+                    <span class="page-eyebrow">
+                        ATTENDANCE MONITORING
+                    </span>
+
+                    <h1>
+                        Review Attendance Photo
+                    </h1>
+
+                    <p>
+                        Verify the submitted picture before recording attendance.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <span class="review-status @Model.Status.ToLowerInvariant()">
+
+                <span class="review-status-dot"></span>
+
+                @Model.Status
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         FEEDBACK
+    ========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+
+        <div class="review-alert success">
+
+            <i class="bi bi-check-circle-fill"></i>
+
+            <p>
+                @TempData["Success"]
+            </p>
+
+        </div>
+
+    }
+
+    @if (TempData["Error"] != null)
+    {
+
+        <div class="review-alert error">
+
+            <i class="bi bi-exclamation-triangle-fill"></i>
+
+            <p>
+                @TempData["Error"]
+            </p>
+
+        </div>
+
+    }
+
+
+    <div class="review-layout">
+
+
+        <!-- =====================================================
+             PHOTO
+        ====================================================== -->
+
+        <section class="review-card photo-card">
+
+            <div class="review-card-header">
+
+                <span>
+                    SUBMITTED PHOTO
+                </span>
+
+                <i class="bi bi-image"></i>
+
+            </div>
+
+
+            <a href="@photoUrl"
+               target="_blank"
+               rel="noopener"
+               class="photo-frame">
+
+                <img src="@photoUrl"
+                     alt="Attendance photo submitted by @(youth?.FullName ?? "youth participant")" />
+
+            </a>
+
+
+            <div class="photo-meta">
+
+                <span>
+
+                    <i class="bi bi-file-earmark"></i>
+
+                    @(Model.FileName.Split('.').LastOrDefault()?.ToUpperInvariant() ?? "IMAGE")
+
+                </span>
+
+                <span>
+
+                    <i class="bi bi-hdd"></i>
+
+                    @Math.Max(1, Model.FileSizeBytes / 1024) KB
+
+                </span>
+
+                <span>
+
+                    <i class="bi bi-clock"></i>
+
+                    @Model.SubmittedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             DETAILS + ACTIONS
+        ====================================================== -->
+
+        <div class="review-column">
+
+
+            <section class="review-card">
+
+                <div class="review-card-header">
+
+                    <span>
+                        SUBMISSION DETAILS
+                    </span>
+
+                    <i class="bi bi-person"></i>
+
+                </div>
+
+
+                <div class="detail-grid">
+
+                    <div class="detail-item">
+                        <span>Participant</span>
+                        <strong>@(youth?.FullName ?? "Youth Participant")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Program</span>
+                        <strong>@(program?.Name ?? "Program")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Barangay</span>
+                        <strong>@(youth?.Barangay ?? "Not specified")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Attendance Date</span>
+                        <strong>@Model.AttendanceDate.ToString("MMM dd, yyyy")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Registration Status</span>
+                        <strong>@(registration?.Status ?? "Unknown")</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Submitted</span>
+                        <strong>@Model.SubmittedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</strong>
+                    </div>
+
+                </div>
+
+
+                @if (!isPending)
+                {
+
+                    <div class="review-outcome">
+
+                        <div class="detail-item">
+                            <span>Reviewed By</span>
+                            <strong>@(Model.ReviewedByUserName ?? "Staff")</strong>
+                        </div>
+
+                        <div class="detail-item">
+                            <span>Reviewed At</span>
+                            <strong>
+                                @(Model.ReviewedAt?.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                                    ?? "—")
+                            </strong>
+                        </div>
+
+                        @if (Model.Status == "Rejected" &&
+                             !string.IsNullOrWhiteSpace(Model.RejectionReason))
+                        {
+
+                            <div class="detail-item full">
+                                <span>Rejection Reason</span>
+                                <strong class="reason-text">
+                                    @Model.RejectionReason
+                                </strong>
+                            </div>
+
+                        }
+
+                    </div>
+
+                }
+
+            </section>
+
+
+            @if (isPending)
+            {
+
+                <!-- =============================================
+                     APPROVE
+                ============================================== -->
+
+                <section class="review-card">
+
+                    <div class="review-card-header">
+
+                        <span>
+                            APPROVE
+                        </span>
+
+                        <i class="bi bi-check-circle"></i>
+
+                    </div>
+
+
+                    <p class="review-note">
+                        Approving records this participant as
+                        <strong>Present</strong> for
+                        @Model.AttendanceDate.ToString("MMM dd, yyyy").
+                        Existing attendance for the same date is updated instead
+                        of duplicated.
+                    </p>
+
+
+                    <form asp-controller="Attendance"
+                          asp-action="ApprovePhoto"
+                          method="post"
+                          class="review-form">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+
+                        <button type="submit"
+                                class="approve-button"
+                                onclick="return confirm('Approve this photo and record attendance as Present?');">
+
+                            <i class="bi bi-check-lg"></i>
+
+                            Approve &amp; Record Present
+
+                        </button>
+
+                    </form>
+
+                </section>
+
+
+                <!-- =============================================
+                     REJECT
+                ============================================== -->
+
+                <section class="review-card">
+
+                    <div class="review-card-header">
+
+                        <span>
+                            REJECT
+                        </span>
+
+                        <i class="bi bi-x-circle"></i>
+
+                    </div>
+
+
+                    <p class="review-note">
+                        A rejection reason is required. The youth is notified
+                        with the reason.
+                    </p>
+
+
+                    <form asp-controller="Attendance"
+                          asp-action="RejectPhoto"
+                          method="post"
+                          class="review-form">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+
+                        <label class="review-label" for="rejectionReason">
+                            Rejection Reason
+                            <span class="review-required">*</span>
+                        </label>
+
+
+                        <textarea name="rejectionReason"
+                                  class="review-textarea"
+                                  rows="3"
+                                  maxlength="500"
+                                  required
+                                  placeholder="Explain why this photo cannot be accepted..."></textarea>
+
+
+                        @Html.ValidationMessage(
+                            "RejectionReason",
+                            null,
+                            new { @class = "review-field-error" })
+
+
+                        <button type="submit"
+                                class="reject-button"
+                                onclick="return confirm('Reject this photo and notify the youth?');">
+
+                            <i class="bi bi-x-lg"></i>
+
+                            Reject Photo
+
+                        </button>
+
+                    </form>
+
+                </section>
+
+            }
+            else
+            {
+
+                <section class="review-card">
+
+                    <div class="review-card-header">
+
+                        <span>
+                            OUTCOME
+                        </span>
+
+                        <i class="bi bi-clipboard-check"></i>
+
+                    </div>
+
+
+                    <p class="review-note">
+                        @if (Model.Status == "Approved")
+                        {
+                            <text>
+                                This photo was approved. The attendance record for
+                                @Model.AttendanceDate.ToString("MMM dd, yyyy") is
+                                marked as Present.
+                            </text>
+                        }
+                        else
+                        {
+                            <text>
+                                This photo was rejected. No attendance record was
+                                created from this submission.
+                            </text>
+                        }
+                    </p>
+
+
+                    @if (registration != null &&
+                         registration.YouthParticipantId.HasValue)
+                    {
+
+                        <a asp-controller="Attendance"
+                           asp-action="Records"
+                           asp-route-programId="@registration.ProgramId"
+                           asp-route-youthParticipantId="@registration.YouthParticipantId.Value"
+                           class="records-link">
+
+                            <i class="bi bi-table"></i>
+
+                            Open Attendance Records
+
+                        </a>
+
+                    }
+
+                </section>
+
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .photo-review-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #C5DDE2;
+    }
+
+
+    .photo-review-page .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 9px;
+        color: #769BA3;
+        font-size: .59rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+
+    .photo-review-page .back-link:hover {
+        color: #69DDF2;
+    }
+
+
+    .photo-review-page .page-header {
+        margin-bottom: 14px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+    .photo-review-page .page-eyebrow {
+        display: block;
+        color: #69DDF2;
+        font-size: .56rem;
+        font-weight: 850;
+        letter-spacing: .1em;
+    }
+
+
+    .photo-review-page .page-header h1 {
+        margin: 5px 0 4px;
+        color: #FFFFFF;
+        font-size: 1.55rem;
+        font-weight: 850;
+        letter-spacing: -.4px;
+    }
+
+
+    .photo-review-page .page-header p {
+        margin: 0;
+        color: #769BA3;
+        font-size: .67rem;
+    }
+
+
+    /* =========================================================
+       STATUS
+    ========================================================== */
+
+    .review-status {
+        min-height: 24px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        font-size: .58rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        white-space: nowrap;
+    }
+
+
+    .review-status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+
+    .review-status.pending {
+        color: #F1A33C;
+        background: rgba(241,147,22,.10);
+        border: 1px solid rgba(241,147,22,.24);
+    }
+
+
+    .review-status.approved {
+        color: #69F0AE;
+        background: rgba(43,166,126,.12);
+        border: 1px solid rgba(105,240,174,.20);
+    }
+
+
+    .review-status.rejected {
+        color: #F56D78;
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.20);
+    }
+
+
+    /* =========================================================
+       ALERTS
+    ========================================================== */
+
+    .review-alert {
+        margin-bottom: 8px;
+        padding: 9px 11px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 8px;
+        font-size: .63rem;
+        font-weight: 700;
+    }
+
+
+    .review-alert p {
+        margin: 0;
+    }
+
+
+    .review-alert.success {
+        background: rgba(43,166,126,.12);
+        border: 1px solid rgba(105,240,174,.20);
+        color: #69F0AE;
+    }
+
+
+    .review-alert.error {
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.20);
+        color: #F56D78;
+    }
+
+
+    /* =========================================================
+       LAYOUT
+    ========================================================== */
+
+    .review-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+        align-items: start;
+        gap: 12px;
+    }
+
+
+    .review-column {
+        display: grid;
+        gap: 10px;
+    }
+
+
+    .review-card {
+        padding: 13px;
+        border: 1px solid rgba(183,215,229,.14);
+        border-radius: 11px;
+        background: linear-gradient(135deg, rgba(5,45,46,.82), rgba(3,23,22,.94));
+        box-shadow: 0 6px 16px rgba(0,0,0,.08);
+    }
+
+
+    .review-card-header {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+
+    .review-card-header span {
+        color: #69DDF2;
+        font-size: 7px;
+        font-weight: 800;
+        letter-spacing: .08em;
+    }
+
+
+    .review-card-header i {
+        color: #769BA3;
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       PHOTO
+    ========================================================== */
+
+    .photo-frame {
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 9px;
+        border: 1px solid rgba(105,199,232,.20);
+        background: rgba(3,23,22,.6);
+    }
+
+
+    .photo-frame img {
+        display: block;
+        width: 100%;
+        max-height: 480px;
+        object-fit: contain;
+    }
+
+
+    .photo-meta {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+
+    .photo-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #8DDCF2;
+        font-size: 7px;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       DETAILS
+    ========================================================== */
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+
+    .detail-item {
+        min-width: 0;
+        padding: 7px 9px;
+        border-radius: 7px;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(183,215,229,.10);
+    }
+
+
+    .detail-item.full {
+        grid-column: span 2;
+    }
+
+
+    .detail-item span {
+        display: block;
+        color: #668B94;
+        font-size: 6px;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+
+    .detail-item strong {
+        display: block;
+        margin-top: 3px;
+        overflow-wrap: anywhere;
+        color: #FFFFFF;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+
+    .detail-item strong.reason-text {
+        color: #F56D78;
+    }
+
+
+    .review-outcome {
+        margin-top: 9px;
+        padding-top: 9px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        border-top: 1px solid rgba(183,215,229,.10);
+    }
+
+
+    /* =========================================================
+       FORMS
+    ========================================================== */
+
+    .review-note {
+        margin: 0 0 10px;
+        color: #AFC8CD;
+        font-size: 7px;
+        line-height: 1.5;
+    }
+
+
+    .review-note strong {
+        color: #69F0AE;
+    }
+
+
+    .review-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #8DDCF2;
+        font-size: 7px;
+        font-weight: 700;
+    }
+
+
+    .review-required {
+        color: #F56D78;
+    }
+
+
+    .review-textarea {
+        width: 100%;
+        padding: 8px 10px;
+        resize: vertical;
+        border-radius: 7px;
+        border: 1px solid rgba(105,199,232,.22);
+        background: rgba(3,23,22,.65);
+        color: #FFFFFF;
+        font-family: inherit;
+        font-size: 7px;
+        line-height: 1.5;
+        outline: none;
+    }
+
+
+    .review-textarea:focus {
+        border-color: #69C7E8;
+        box-shadow: 0 0 0 3px rgba(105,199,232,.12);
+    }
+
+
+    .review-field-error {
+        display: block;
+        margin-top: 4px;
+        color: #F56D78;
+        font-size: 7px;
+        font-weight: 700;
+    }
+
+
+    .review-form {
+        display: grid;
+        gap: 7px;
+    }
+
+
+    .approve-button,
+    .reject-button {
+        min-height: 34px;
+        padding: 0 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border: 0;
+        border-radius: 7px;
+        font-family: inherit;
+        font-size: 7px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+
+    .approve-button {
+        background: #2BA67E;
+        color: #FFFFFF;
+    }
+
+
+    .approve-button:hover {
+        background: #22896A;
+    }
+
+
+    .reject-button {
+        background: rgba(241,91,103,.14);
+        border: 1px solid rgba(241,91,103,.30);
+        color: #F56D78;
+    }
+
+
+    .reject-button:hover {
+        background: rgba(241,91,103,.22);
+    }
+
+
+    .records-link {
+        min-height: 30px;
+        padding: 0 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 7px;
+        background: rgba(105,199,232,.10);
+        border: 1px solid rgba(105,199,232,.20);
+        color: #69DDF2;
+        font-size: 7px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+
+    .records-link:hover {
+        background: rgba(105,199,232,.18);
+        color: #8DDCF2;
+        text-decoration: none;
+    }
+
+
+    /* =========================================================
+       LIGHT MODE
+    ========================================================== */
+
+    html[data-theme="light"] .photo-review-page {
+        color: #21344a;
+    }
+
+
+    html[data-theme="light"] .photo-review-page .back-link {
+        color: #61758c;
+    }
+
+
+    html[data-theme="light"] .photo-review-page .back-link:hover {
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .photo-review-page .page-eyebrow {
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .photo-review-page .page-header h1 {
+        color: #1f3650;
+    }
+
+
+    html[data-theme="light"] .photo-review-page .page-header p {
+        color: #61758c;
+    }
+
+
+    html[data-theme="light"] .review-status.pending {
+        color: #976600;
+        background: rgba(241,147,22,.10);
+        border-color: rgba(241,147,22,.26);
+    }
+
+
+    html[data-theme="light"] .review-status.approved {
+        color: #14804a;
+        background: rgba(43,166,126,.10);
+        border-color: rgba(43,166,126,.24);
+    }
+
+
+    html[data-theme="light"] .review-status.rejected {
+        color: #c12b3c;
+        background: rgba(220,53,69,.08);
+        border-color: rgba(220,53,69,.24);
+    }
+
+
+    html[data-theme="light"] .review-card {
+        background: #FFFFFF;
+        border-color: rgba(68,105,140,.14);
+        box-shadow: 0 8px 24px rgba(36,78,113,.08);
+    }
+
+
+    html[data-theme="light"] .review-card-header span {
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .review-card-header i {
+        color: #8fa3b5;
+    }
+
+
+    html[data-theme="light"] .photo-frame {
+        background: #f4f8fb;
+        border-color: rgba(12,144,150,.20);
+    }
+
+
+    html[data-theme="light"] .photo-meta span {
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .detail-item {
+        background: rgba(12,144,150,.04);
+        border-color: rgba(68,105,140,.10);
+    }
+
+
+    html[data-theme="light"] .detail-item span {
+        color: #61758c;
+    }
+
+
+    html[data-theme="light"] .detail-item strong {
+        color: #1f3650;
+    }
+
+
+    html[data-theme="light"] .detail-item strong.reason-text {
+        color: #c12b3c;
+    }
+
+
+    html[data-theme="light"] .review-outcome {
+        border-top-color: rgba(68,105,140,.10);
+    }
+
+
+    html[data-theme="light"] .review-note {
+        color: #61758c;
+    }
+
+
+    html[data-theme="light"] .review-note strong {
+        color: #14804a;
+    }
+
+
+    html[data-theme="light"] .review-label {
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .review-textarea {
+        background: #FFFFFF;
+        color: #1f3650;
+        border-color: rgba(12,144,150,.28);
+    }
+
+
+    html[data-theme="light"] .review-textarea:focus {
+        border-color: #0c9096;
+        box-shadow: 0 0 0 3px rgba(12,144,150,.10);
+    }
+
+
+    html[data-theme="light"] .approve-button {
+        background: #0c9096;
+    }
+
+
+    html[data-theme="light"] .approve-button:hover {
+        background: #0a7c81;
+    }
+
+
+    html[data-theme="light"] .reject-button {
+        background: rgba(220,53,69,.06);
+        border-color: rgba(220,53,69,.30);
+        color: #c12b3c;
+    }
+
+
+    html[data-theme="light"] .reject-button:hover {
+        background: rgba(220,53,69,.12);
+    }
+
+
+    html[data-theme="light"] .records-link {
+        background: rgba(12,144,150,.08);
+        border-color: rgba(12,144,150,.20);
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .records-link:hover {
+        background: rgba(12,144,150,.14);
+        color: #0a7c81;
+    }
+
+
+    html[data-theme="light"] .review-alert.success {
+        background: rgba(43,166,126,.10);
+        border-color: rgba(43,166,126,.25);
+        color: #14804a;
+    }
+
+
+    html[data-theme="light"] .review-alert.error {
+        background: rgba(220,53,69,.08);
+        border-color: rgba(220,53,69,.25);
+        color: #c12b3c;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 1000px) {
+
+        .review-layout {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+
+    @@media (max-width: 850px) {
+
+        .photo-review-page {
+            padding: 21px 17px 35px;
+        }
+
+        .photo-review-page .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .detail-grid,
+        .review-outcome {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-item.full {
+            grid-column: auto;
+        }
+
+    }
+
+</style>

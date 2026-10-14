@@ -1,0 +1,907 @@
+@model IEnumerable<BYPManagementSystem.Models.AttendancePhotoSubmission>
+
+@{
+    ViewData["Title"] = "Photo Review Queue";
+
+    var submissions =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.AttendancePhotoSubmission>();
+
+    var currentStatus =
+        (ViewBag.Status as string) ?? "Pending";
+
+    var pendingCount =
+        ViewBag.PendingCount as int? ?? 0;
+
+    var approvedCount =
+        ViewBag.ApprovedCount as int? ?? 0;
+
+    var rejectedCount =
+        ViewBag.RejectedCount as int? ?? 0;
+}
+
+
+<div class="photo-queue-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <a asp-controller="Attendance"
+               asp-action="Index"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Attendance
+
+            </a>
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-camera"></i>
+                </div>
+
+                <div>
+
+                    <span class="page-eyebrow">
+                        ATTENDANCE MONITORING
+                    </span>
+
+                    <h1>
+                        Photo Review Queue
+                    </h1>
+
+                    <p>
+                        Review attendance photos submitted by youth. Attendance is only
+                        recorded when a photo is approved.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            @if (pendingCount > 0)
+            {
+
+                <span class="pending-chip">
+
+                    <i class="bi bi-hourglass-split"></i>
+
+                    @pendingCount
+                    pending
+
+                </span>
+
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         FEEDBACK
+    ========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+
+        <div class="queue-alert success">
+
+            <i class="bi bi-check-circle-fill"></i>
+
+            <p>
+                @TempData["Success"]
+            </p>
+
+        </div>
+
+    }
+
+    @if (TempData["Error"] != null)
+    {
+
+        <div class="queue-alert error">
+
+            <i class="bi bi-exclamation-triangle-fill"></i>
+
+            <p>
+                @TempData["Error"]
+            </p>
+
+        </div>
+
+    }
+
+
+    <!-- =========================================================
+         FILTERS
+    ========================================================== -->
+
+    <div class="filter-bar">
+
+        <a asp-action="PhotoReviews"
+           asp-route-status="Pending"
+           class="filter-chip @(currentStatus == "Pending" ? "active" : "")">
+
+            <i class="bi bi-hourglass-split"></i>
+
+            Pending
+            (@pendingCount)
+
+        </a>
+
+        <a asp-action="PhotoReviews"
+           asp-route-status="Approved"
+           class="filter-chip @(currentStatus == "Approved" ? "active" : "")">
+
+            <i class="bi bi-check-circle"></i>
+
+            Approved
+            (@approvedCount)
+
+        </a>
+
+        <a asp-action="PhotoReviews"
+           asp-route-status="Rejected"
+           class="filter-chip @(currentStatus == "Rejected" ? "active" : "")">
+
+            <i class="bi bi-x-circle"></i>
+
+            Rejected
+            (@rejectedCount)
+
+        </a>
+
+        <a asp-action="PhotoReviews"
+           asp-route-status="All"
+           class="filter-chip @(currentStatus == "All" ? "active" : "")">
+
+            <i class="bi bi-list"></i>
+
+            All
+
+        </a>
+
+    </div>
+
+
+    <!-- =========================================================
+         QUEUE TABLE
+    ========================================================== -->
+
+    <section class="queue-card">
+
+        @if (submissions.Any())
+        {
+
+            <div class="queue-table-wrapper">
+
+                <table class="queue-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                SUBMITTED
+                            </th>
+
+                            <th>
+                                PROGRAM
+                            </th>
+
+                            <th>
+                                PARTICIPANT
+                            </th>
+
+                            <th>
+                                ATTENDANCE DATE
+                            </th>
+
+                            <th>
+                                STATUS
+                            </th>
+
+                            <th>
+                                ACTION
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var submission in submissions)
+                        {
+
+                            <tr>
+
+                                <!-- SUBMITTED -->
+
+                                <td>
+
+                                    <div class="queue-date">
+
+                                        <i class="bi bi-clock"></i>
+
+                                        @submission.SubmittedAt.ToLocalTime().ToString(
+                                            "MMM dd, yyyy HH:mm")
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- PROGRAM -->
+
+                                <td>
+
+                                    <strong class="queue-strong">
+
+                                        @(submission.Registration?.Program?.Name
+                                            ?? "Program")
+
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- PARTICIPANT -->
+
+                                <td>
+
+                                    <strong class="queue-strong">
+
+                                        @(submission.Registration?.YouthParticipant?.FullName
+                                            ?? "Youth Participant")
+
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- ATTENDANCE DATE -->
+
+                                <td>
+
+                                    <div class="queue-date">
+
+                                        <i class="bi bi-calendar3"></i>
+
+                                        @submission.AttendanceDate.ToString(
+                                            "MMM dd, yyyy")
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    @if (submission.Status == "Approved")
+                                    {
+
+                                        <span class="queue-status approved">
+
+                                            <span class="queue-dot"></span>
+
+                                            Approved
+
+                                        </span>
+
+                                    }
+                                    else if (submission.Status == "Rejected")
+                                    {
+
+                                        <span class="queue-status rejected">
+
+                                            <span class="queue-dot"></span>
+
+                                            Rejected
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="queue-status pending">
+
+                                            <span class="queue-dot"></span>
+
+                                            Pending
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ACTION -->
+
+                                <td>
+
+                                    <a asp-action="PhotoReview"
+                                       asp-route-id="@submission.Id"
+                                       class="queue-review-button">
+
+                                        <i class="bi bi-eye"></i>
+
+                                        @(submission.Status == "Pending"
+                                            ? "Review"
+                                            : "View")
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+        else
+        {
+
+            <div class="queue-empty">
+
+                <div class="queue-empty-icon">
+
+                    <i class="bi bi-camera"></i>
+
+                </div>
+
+                <h3>
+                    No photo submissions
+                </h3>
+
+                <p>
+                    There are no attendance photo submissions with this status
+                    yet.
+                </p>
+
+            </div>
+
+        }
+
+    </section>
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .photo-queue-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #C5DDE2;
+    }
+
+
+    .photo-queue-page .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 9px;
+        color: #769BA3;
+        font-size: .59rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+
+    .photo-queue-page .back-link:hover {
+        color: #69DDF2;
+    }
+
+
+    .photo-queue-page .page-header {
+        margin-bottom: 14px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+    .photo-queue-page .page-eyebrow {
+        display: block;
+        color: #69DDF2;
+        font-size: .56rem;
+        font-weight: 850;
+        letter-spacing: .1em;
+    }
+
+
+    .photo-queue-page .page-header h1 {
+        margin: 5px 0 4px;
+        color: #FFFFFF;
+        font-size: 1.55rem;
+        font-weight: 850;
+        letter-spacing: -.4px;
+    }
+
+
+    .photo-queue-page .page-header p {
+        margin: 0;
+        color: #769BA3;
+        font-size: .67rem;
+    }
+
+
+    .pending-chip {
+        min-height: 26px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        background: rgba(241,147,22,.10);
+        border: 1px solid rgba(241,147,22,.24);
+        color: #F1A33C;
+        font-size: .58rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       ALERTS
+    ========================================================== */
+
+    .queue-alert {
+        margin-bottom: 8px;
+        padding: 9px 11px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 8px;
+        font-size: .63rem;
+        font-weight: 700;
+    }
+
+
+    .queue-alert p {
+        margin: 0;
+    }
+
+
+    .queue-alert.success {
+        background: rgba(43,166,126,.12);
+        border: 1px solid rgba(105,240,174,.20);
+        color: #69F0AE;
+    }
+
+
+    .queue-alert.error {
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.20);
+        color: #F56D78;
+    }
+
+
+    /* =========================================================
+       FILTERS
+    ========================================================== */
+
+    .filter-bar {
+        margin-bottom: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+
+    .filter-chip {
+        min-height: 26px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        border: 1px solid rgba(183,215,229,.16);
+        background: rgba(255,255,255,.05);
+        color: #C5DDE2;
+        font-size: .58rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: .15s ease;
+    }
+
+
+    .filter-chip:hover {
+        background: rgba(105,199,232,.10);
+        color: #69DDF2;
+        text-decoration: none;
+    }
+
+
+    .filter-chip.active {
+        background: #0C9096;
+        border-color: #0C9096;
+        color: #FFFFFF;
+    }
+
+
+    /* =========================================================
+       CARD + TABLE
+    ========================================================== */
+
+    .queue-card {
+        padding: 10px;
+        border: 1px solid rgba(183,215,229,.14);
+        border-radius: 11px;
+        background: linear-gradient(135deg, rgba(5,45,46,.82), rgba(3,23,22,.94));
+        box-shadow: 0 6px 16px rgba(0,0,0,.08);
+    }
+
+
+    .queue-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 9px;
+        border: 1px solid rgba(105,199,232,.20);
+    }
+
+
+    .queue-table {
+        width: 100%;
+        min-width: 760px;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+
+    .queue-table thead {
+        background: linear-gradient(90deg, #69C7E8, #8DDCF2);
+    }
+
+
+    .queue-table th {
+        height: 32px;
+        padding: 0 9px;
+        text-align: left;
+        color: #06363B;
+        font-size: 7px;
+        font-weight: 800;
+        letter-spacing: .6px;
+        border-right: 1px solid rgba(5,45,46,.10);
+    }
+
+
+    .queue-table th:last-child {
+        border-right: 0;
+    }
+
+
+    .queue-table tbody tr {
+        height: 48px;
+        background: rgba(255,255,255,.035);
+        border-top: 1px solid rgba(183,215,229,.10);
+        transition: background .15s ease;
+    }
+
+
+    .queue-table tbody tr:nth-child(even) {
+        background: rgba(105,199,232,.035);
+    }
+
+
+    .queue-table tbody tr:hover {
+        background: rgba(105,199,232,.09);
+    }
+
+
+    .queue-table td {
+        padding: 7px 9px;
+        vertical-align: middle;
+        color: #C8DDE1;
+        font-size: 7px;
+        border-right: 1px solid rgba(183,215,229,.07);
+    }
+
+
+    .queue-table td:last-child {
+        border-right: 0;
+    }
+
+
+    .queue-strong {
+        color: #FFFFFF;
+        font-size: 8px;
+        font-weight: 700;
+    }
+
+
+    .queue-date {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #C3DADF;
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       STATUS
+    ========================================================== */
+
+    .queue-status {
+        min-height: 18px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 999px;
+        font-size: 6px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    .queue-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+
+    .queue-status.pending {
+        color: #F1A33C;
+        background: rgba(241,147,22,.10);
+        border: 1px solid rgba(241,147,22,.20);
+    }
+
+
+    .queue-status.approved {
+        color: #69F0AE;
+        background: rgba(43,166,126,.12);
+        border: 1px solid rgba(105,240,174,.17);
+    }
+
+
+    .queue-status.rejected {
+        color: #F56D78;
+        background: rgba(241,91,103,.10);
+        border: 1px solid rgba(241,91,103,.17);
+    }
+
+
+    .queue-review-button {
+        min-height: 24px;
+        padding: 0 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 6px;
+        background: rgba(105,199,232,.10);
+        border: 1px solid rgba(105,199,232,.20);
+        color: #69DDF2;
+        font-size: 6px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+
+    .queue-review-button:hover {
+        background: rgba(105,199,232,.18);
+        color: #8DDCF2;
+        text-decoration: none;
+    }
+
+
+    /* =========================================================
+       EMPTY
+    ========================================================== */
+
+    .queue-empty {
+        min-height: 130px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+
+    .queue-empty-icon {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(105,199,232,.08);
+        border: 1px solid rgba(105,199,232,.13);
+        color: #8DDCF2;
+        font-size: 15px;
+    }
+
+
+    .queue-empty h3 {
+        margin: 8px 0 3px;
+        color: #FFFFFF;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+
+    .queue-empty p {
+        max-width: 320px;
+        margin: 0;
+        color: #769BA3;
+        font-size: 7px;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       LIGHT MODE
+    ========================================================== */
+
+    html[data-theme="light"] .photo-queue-page {
+        color: #21344a;
+    }
+
+
+    html[data-theme="light"] .photo-queue-page .back-link {
+        color: #61758c;
+    }
+
+
+    html[data-theme="light"] .photo-queue-page .back-link:hover {
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .photo-queue-page .page-eyebrow {
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .photo-queue-page .page-header h1 {
+        color: #1f3650;
+    }
+
+
+    html[data-theme="light"] .photo-queue-page .page-header p {
+        color: #61758c;
+    }
+
+
+    html[data-theme="light"] .filter-chip {
+        background: #FFFFFF;
+        border-color: rgba(68,105,140,.16);
+        color: #48647c;
+    }
+
+
+    html[data-theme="light"] .filter-chip:hover {
+        background: rgba(12,144,150,.08);
+        color: #0c9096;
+    }
+
+
+    html[data-theme="light"] .filter-chip.active {
+        background: #0C9096;
+        border-color: #0C9096;
+        color: #FFFFFF;
+    }
+
+
+    html[data-theme="light"] .queue-card {
+        background: #FFFFFF;
+        border-color: rgba(68,105,140,.14);
+        box-shadow: 0 8px 24px rgba(36,78,113,.08);
+    }
+
+
+    html[data-theme="light"] .queue-table th {
+        background: #eef7fb;
+        color: #48647c;
+    }
+
+
+    html[data-theme="light"] .queue-table tbody tr {
+        background: rgba(22,132,141,.03);
+        border-top-color: rgba(68,105,140,.10);
+    }
+
+
+    html[data-theme="light"] .queue-table tbody tr:nth-child(even) {
+        background: rgba(12,144,150,.05);
+    }
+
+
+    html[data-theme="light"] .queue-table tbody tr:hover {
+        background: rgba(12,144,150,.09);
+    }
+
+
+    html[data-theme="light"] .queue-table td {
+        color: #1f3650;
+        border-right-color: rgba(68,105,140,.08);
+    }
+
+
+    html[data-theme="light"] .queue-strong {
+        color: #1f3650;
+    }
+
+
+    html[data-theme="light"] .queue-date {
+        color: #3c5067;
+    }
+
+
+    html[data-theme="light"] .queue-alert.success {
+        background: rgba(43,166,126,.10);
+        border-color: rgba(43,166,126,.25);
+        color: #14804a;
+    }
+
+
+    html[data-theme="light"] .queue-alert.error {
+        background: rgba(220,53,69,.08);
+        border-color: rgba(220,53,69,.25);
+        color: #c12b3c;
+    }
+
+
+    html[data-theme="light"] .queue-empty h3 {
+        color: #1f3650;
+    }
+
+
+    html[data-theme="light"] .queue-empty p {
+        color: #61758c;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 850px) {
+
+        .photo-queue-page {
+            padding: 21px 17px 35px;
+        }
+
+        .photo-queue-page .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+    }
+
+</style>

@@ -1,0 +1,1959 @@
+﻿@model BYPManagementSystem.Models.AttendanceRecord
+
+@{
+    ViewData["Title"] = "Edit Attendance";
+
+    var program =
+        ViewBag.Program as BYPManagementSystem.Models.YouthProgram;
+
+    var youth =
+        ViewBag.Youth as BYPManagementSystem.Models.YouthParticipant;
+
+    var youthName =
+        youth?.FullName ?? "Youth Participant";
+
+    var programName =
+        program?.Name ?? "Youth Program";
+}
+
+
+<div class="edit-attendance-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <a asp-controller="Attendance"
+               asp-action="Records"
+               asp-route-programId="@(program?.Id)"
+               asp-route-youthParticipantId="@(youth?.Id)"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Attendance Records
+
+            </a>
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+
+                <div>
+
+                    <span class="page-eyebrow">
+                        ATTENDANCE MANAGEMENT
+                    </span>
+
+                    <h1>
+                        Edit Attendance
+                    </h1>
+
+                    <p>
+                        Correct the attendance date, status, or notes for this record.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <a asp-controller="Attendance"
+               asp-action="Records"
+               asp-route-programId="@(program?.Id)"
+               asp-route-youthParticipantId="@(youth?.Id)"
+               class="header-button secondary">
+
+                <i class="bi bi-clipboard-check"></i>
+
+                Attendance Records
+
+            </a>
+
+
+            @if (program != null && youth != null)
+            {
+                <a asp-controller="Attendance"
+                   asp-action="Record"
+                   asp-route-programId="@program.Id"
+                   asp-route-youthParticipantId="@youth.Id"
+                   class="header-button primary">
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    New Attendance
+
+                </a>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         CONTEXT
+    ========================================================== -->
+
+    <section class="context-card">
+
+        <div class="context-person">
+
+            <div class="participant-avatar">
+
+                @{
+                    var firstInitial =
+                        !string.IsNullOrWhiteSpace(youth?.FirstName)
+                            ? youth.FirstName.Substring(0, 1).ToUpper()
+                            : "U";
+
+                    var lastInitial =
+                        !string.IsNullOrWhiteSpace(youth?.LastName)
+                            ? youth.LastName.Substring(0, 1).ToUpper()
+                            : "";
+                }
+
+                @firstInitial@lastInitial
+
+            </div>
+
+
+            <div class="context-information">
+
+                <span class="context-eyebrow">
+                    YOUTH PARTICIPANT
+                </span>
+
+                <h2>
+                    @youthName
+                </h2>
+
+                <div class="context-meta">
+
+                    <span>
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        @(youth?.Barangay ?? "No barangay")
+
+                    </span>
+
+
+                    <span>
+
+                        <i class="bi bi-telephone"></i>
+
+                        @(string.IsNullOrWhiteSpace(youth?.ContactNumber)
+                            ? "No contact number"
+                            : youth.ContactNumber)
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="context-divider"></div>
+
+
+        <div class="context-program">
+
+            <span class="context-eyebrow">
+                PROGRAM
+            </span>
+
+            <h3>
+                @programName
+            </h3>
+
+            <div class="context-meta">
+
+                <span>
+
+                    <i class="bi bi-clock"></i>
+
+                    @(program?.Schedule ?? "No schedule")
+
+                </span>
+
+
+                <span>
+
+                    <i class="bi bi-geo-alt"></i>
+
+                    @(program?.Barangay ?? "No barangay")
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================== -->
+
+    <div class="content-layout">
+
+
+        <!-- =====================================================
+             FORM
+        ====================================================== -->
+
+        <section class="form-card">
+
+            <div class="form-card-header">
+
+                <div>
+
+                    <span class="card-eyebrow">
+                        UPDATE RECORD
+                    </span>
+
+                    <h2>
+                        Attendance Information
+                    </h2>
+
+                    <p>
+                        Make the necessary correction and save the record.
+                    </p>
+
+                </div>
+
+
+                <div class="entry-icon">
+
+                    <i class="bi bi-pencil-square"></i>
+
+                </div>
+
+            </div>
+
+
+            <form asp-controller="Attendance"
+                  asp-action="Edit"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+
+                <input type="hidden"
+                       asp-for="Id" />
+
+
+                <input type="hidden"
+                       asp-for="RegistrationId" />
+
+
+                <!-- =============================================
+                     VALIDATION
+                ============================================== -->
+
+                <div asp-validation-summary="ModelOnly"
+                     class="validation-summary"></div>
+
+
+                <!-- =============================================
+                     DATE
+                ============================================== -->
+
+                <div class="form-group">
+
+                    <label asp-for="AttendanceDate"
+                           class="form-label">
+
+                        Attendance Date
+
+                        <span class="required">
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <div class="input-wrapper">
+
+                        <i class="bi bi-calendar3"></i>
+
+                        <input asp-for="AttendanceDate"
+                               type="date"
+                               class="form-input date-input" />
+
+                    </div>
+
+
+                    <span asp-validation-for="AttendanceDate"
+                          class="field-error"></span>
+
+
+                    <small class="field-help">
+
+                        Update the date when the attendance was recorded.
+
+                    </small>
+
+                </div>
+
+
+                <!-- =============================================
+                     STATUS
+                ============================================== -->
+
+                <div class="form-group">
+
+                    <label asp-for="Status"
+                           class="form-label">
+
+                        Attendance Status
+
+                        <span class="required">
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <select asp-for="Status"
+                            class="form-input status-select">
+
+                        <option value="Present">
+                            Present
+                        </option>
+
+                        <option value="Absent">
+                            Absent
+                        </option>
+
+                        <option value="Late">
+                            Late
+                        </option>
+
+                        <option value="Excused">
+                            Excused
+                        </option>
+
+                    </select>
+
+
+                    <span asp-validation-for="Status"
+                          class="field-error"></span>
+
+
+                    <small class="field-help">
+
+                        Select the corrected attendance status.
+
+                    </small>
+
+                </div>
+
+
+                <!-- =============================================
+                     STATUS GUIDE
+                ============================================== -->
+
+                <div class="status-guide">
+
+                    <div class="status-guide-title">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        Available Statuses
+
+                    </div>
+
+
+                    <div class="status-guide-grid">
+
+
+                        <div class="guide-item present">
+
+                            <div class="guide-icon">
+
+                                <i class="bi bi-check-circle"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    Present
+                                </strong>
+
+                                <span>
+                                    Participant attended.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="guide-item absent">
+
+                            <div class="guide-icon">
+
+                                <i class="bi bi-x-circle"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    Absent
+                                </strong>
+
+                                <span>
+                                    Participant did not attend.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="guide-item late">
+
+                            <div class="guide-icon">
+
+                                <i class="bi bi-clock"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    Late
+                                </strong>
+
+                                <span>
+                                    Participant arrived late.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="guide-item excused">
+
+                            <div class="guide-icon">
+
+                                <i class="bi bi-info-circle"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    Excused
+                                </strong>
+
+                                <span>
+                                    Absence was excused.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     NOTES
+                ============================================== -->
+
+                <div class="form-group">
+
+                    <label asp-for="Notes"
+                           class="form-label">
+
+                        Notes
+
+                        <span class="optional">
+                            Optional
+                        </span>
+
+                    </label>
+
+
+                    <textarea asp-for="Notes"
+                              class="form-textarea"
+                              rows="5"
+                              maxlength="500"
+                              placeholder="Enter updated attendance notes..."></textarea>
+
+
+                    <span asp-validation-for="Notes"
+                          class="field-error"></span>
+
+
+                    <small class="field-help">
+
+                        Update any remarks related to this attendance record.
+
+                    </small>
+
+                </div>
+
+
+                <!-- =============================================
+                     ACTIONS
+                ============================================== -->
+
+                <div class="form-actions">
+
+                    <a asp-controller="Attendance"
+                       asp-action="Records"
+                       asp-route-programId="@(program?.Id)"
+                       asp-route-youthParticipantId="@(youth?.Id)"
+                       class="cancel-button">
+
+                        <i class="bi bi-x-lg"></i>
+
+                        Cancel
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="save-button">
+
+                        <i class="bi bi-check-lg"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- =====================================================
+             SIDE INFORMATION
+        ====================================================== -->
+
+        <aside class="side-column">
+
+
+            <!-- CURRENT RECORD -->
+
+            <section class="side-card">
+
+                <div class="side-card-header">
+
+                    <span>
+                        CURRENT RECORD
+                    </span>
+
+                    <i class="bi bi-clipboard"></i>
+
+                </div>
+
+
+                <div class="current-record">
+
+                    <div class="record-id">
+
+                        <span>
+                            Record ID
+                        </span>
+
+                        <strong>
+                            #@Model.Id
+                        </strong>
+
+                    </div>
+
+
+                    <div class="record-status">
+
+                        <span>
+                            Current Status
+                        </span>
+
+
+                        @if (string.Equals(
+                            Model.Status,
+                            "Present",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="status-badge present">
+
+                                <i class="bi bi-check-circle-fill"></i>
+
+                                Present
+
+                            </span>
+                        }
+                        else if (string.Equals(
+                            Model.Status,
+                            "Absent",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="status-badge absent">
+
+                                <i class="bi bi-x-circle-fill"></i>
+
+                                Absent
+
+                            </span>
+                        }
+                        else if (string.Equals(
+                            Model.Status,
+                            "Late",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="status-badge late">
+
+                                <i class="bi bi-clock-fill"></i>
+
+                                Late
+
+                            </span>
+                        }
+                        else if (string.Equals(
+                            Model.Status,
+                            "Excused",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="status-badge excused">
+
+                                <i class="bi bi-info-circle-fill"></i>
+
+                                Excused
+
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="status-badge default">
+
+                                @Model.Status
+
+                            </span>
+                        }
+
+                    </div>
+
+
+                    <div class="record-date">
+
+                        <span>
+                            Recorded Date
+                        </span>
+
+                        <strong>
+                            @(Model.AttendanceDate.ToString("MMM dd, yyyy"))
+                        </strong>
+
+                    </div>
+
+
+                    <div class="record-created">
+
+                        <span>
+                            Created
+                        </span>
+
+                        <strong>
+                            @(Model.RecordedAt.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt"))
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- PARTICIPANT -->
+
+            <section class="side-card">
+
+                <div class="side-card-header">
+
+                    <span>
+                        PARTICIPANT
+                    </span>
+
+                    <i class="bi bi-person"></i>
+
+                </div>
+
+
+                <div class="side-person">
+
+                    <div class="side-avatar">
+
+                        @firstInitial@lastInitial
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            @youthName
+                        </strong>
+
+                        <span>
+                            @(youth?.Barangay ?? "No barangay")
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="side-details">
+
+                    <div>
+
+                        <span>
+                            Contact
+                        </span>
+
+                        <strong>
+                            @(string.IsNullOrWhiteSpace(youth?.ContactNumber)
+                                ? "Not provided"
+                                : youth.ContactNumber)
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Registration
+                        </span>
+
+                        <strong class="approved-text">
+                            Approved
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- PROGRAM -->
+
+            <section class="side-card">
+
+                <div class="side-card-header">
+
+                    <span>
+                        PROGRAM
+                    </span>
+
+                    <i class="bi bi-calendar-event"></i>
+
+                </div>
+
+
+                <h3 class="side-program-name">
+                    @programName
+                </h3>
+
+
+                <div class="side-detail-row">
+
+                    <i class="bi bi-clock"></i>
+
+                    <span>
+                        @(program?.Schedule ?? "No schedule")
+                    </span>
+
+                </div>
+
+
+                <div class="side-detail-row">
+
+                    <i class="bi bi-geo-alt"></i>
+
+                    <span>
+                        @(program?.Barangay ?? "No barangay")
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- NOTICE -->
+
+            <section class="notice-card">
+
+                <div class="notice-icon">
+
+                    <i class="bi bi-shield-check"></i>
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Authorized Correction
+                    </strong>
+
+                    <p>
+                        This page is available only to authorized
+                        attendance management users.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </aside>
+
+    </div>
+
+
+    <!-- =========================================================
+         BOTTOM ACTIONS
+    ========================================================== -->
+
+    <div class="bottom-actions">
+
+        <a asp-controller="Attendance"
+           asp-action="Records"
+           asp-route-programId="@(program?.Id)"
+           asp-route-youthParticipantId="@(youth?.Id)"
+           class="bottom-button secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Records
+
+        </a>
+
+
+        @if (program != null && youth != null)
+        {
+            <a asp-controller="Attendance"
+               asp-action="Record"
+               asp-route-programId="@program.Id"
+               asp-route-youthParticipantId="@youth.Id"
+               class="bottom-button primary">
+
+                <i class="bi bi-plus-lg"></i>
+
+                Record New Attendance
+
+            </a>
+        }
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+           PAGE
+        ========================================================== */
+
+    .edit-attendance-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+    }
+
+
+    /* =========================================================
+           HEADER
+        ========================================================== */
+
+    .page-header {
+        margin-bottom: 18px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 9px;
+        color: #64748b;
+        font-size: .59rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+
+        .back-link:hover {
+            color: #0d6efd;
+        }
+
+
+    .page-eyebrow {
+        display: block;
+        color: #0d6efd;
+        font-size: .56rem;
+        font-weight: 850;
+        letter-spacing: .1em;
+    }
+
+
+    .page-header h1 {
+        margin: 5px 0 4px;
+        color: #111827;
+        font-size: 1.7rem;
+        font-weight: 850;
+        letter-spacing: -.4px;
+    }
+
+
+    .page-header p {
+        margin: 0;
+        color: #64748b;
+        font-size: .67rem;
+    }
+
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+
+    .header-button {
+        min-height: 35px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border-radius: 7px;
+        font-size: .54rem;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+
+        .header-button.secondary {
+            border: 1px solid #dfe6ee;
+            background: #ffffff;
+            color: #64748b;
+        }
+
+
+            .header-button.secondary:hover {
+                background: #f8fafc;
+                color: #0d6efd;
+            }
+
+
+        .header-button.primary {
+            border: 1px solid #0d6efd;
+            background: #0d6efd;
+            color: #ffffff;
+        }
+
+
+            .header-button.primary:hover {
+                background: #0b5ed7;
+                color: #ffffff;
+            }
+
+
+    /* =========================================================
+           CONTEXT
+        ========================================================== */
+
+    .context-card {
+        margin-bottom: 15px;
+        padding: 14px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) 1px minmax(0, 1fr);
+        align-items: center;
+        gap: 15px;
+        border: 1px solid #dbeafe;
+        border-radius: 12px;
+        background: #f8fbff;
+    }
+
+
+    .context-person {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+
+    .participant-avatar {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #0d6efd;
+        font-size: .63rem;
+        font-weight: 850;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, .04);
+    }
+
+
+    .context-information {
+        min-width: 0;
+    }
+
+
+    .context-eyebrow {
+        display: block;
+        color: #0d6efd;
+        font-size: .48rem;
+        font-weight: 850;
+        letter-spacing: .08em;
+    }
+
+
+    .context-information h2 {
+        margin: 3px 0 5px;
+        overflow: hidden;
+        color: #334155;
+        font-size: .81rem;
+        font-weight: 800;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .context-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+    }
+
+
+        .context-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #64748b;
+            font-size: .49rem;
+        }
+
+
+        .context-meta i {
+            color: #0d6efd;
+        }
+
+
+    .context-divider {
+        width: 1px;
+        height: 55px;
+        background: #dbe4ed;
+    }
+
+
+    .context-program {
+        min-width: 0;
+    }
+
+
+        .context-program h3 {
+            margin: 4px 0 6px;
+            overflow: hidden;
+            color: #475569;
+            font-size: .73rem;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+
+    /* =========================================================
+           CONTENT
+        ========================================================== */
+
+    .content-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        align-items: start;
+        gap: 14px;
+    }
+
+
+    /* =========================================================
+           FORM CARD
+        ========================================================== */
+
+    .form-card {
+        padding: 19px;
+        border: 1px solid #e2e8f0;
+        border-radius: 13px;
+        background: #ffffff;
+        box-shadow: 0 7px 20px rgba(15, 23, 42, .03);
+    }
+
+
+    .form-card-header {
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+
+    .card-eyebrow {
+        display: block;
+        color: #0d6efd;
+        font-size: .51rem;
+        font-weight: 850;
+        letter-spacing: .08em;
+    }
+
+
+    .form-card-header h2 {
+        margin: 4px 0 3px;
+        color: #334155;
+        font-size: .94rem;
+        font-weight: 800;
+    }
+
+
+    .form-card-header p {
+        margin: 0;
+        color: #94a3b8;
+        font-size: .55rem;
+    }
+
+
+    .entry-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: #eff6ff;
+        color: #0d6efd;
+        font-size: .78rem;
+    }
+
+
+    /* =========================================================
+           FORM
+        ========================================================== */
+
+    .form-group {
+        margin-bottom: 17px;
+    }
+
+
+    .form-label {
+        display: block;
+        margin-bottom: 6px;
+        color: #475569;
+        font-size: .56rem;
+        font-weight: 800;
+    }
+
+
+    .required {
+        color: #dc2626;
+    }
+
+
+    .optional {
+        margin-left: 5px;
+        color: #94a3b8;
+        font-size: .47rem;
+        font-weight: 600;
+    }
+
+
+    .input-wrapper {
+        position: relative;
+    }
+
+
+        .input-wrapper > i {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            z-index: 1;
+            color: #94a3b8;
+            font-size: .64rem;
+            transform: translateY(-50%);
+        }
+
+
+    .form-input {
+        width: 100%;
+        height: 39px;
+        padding: 0 11px;
+        border: 1px solid #dfe6ee;
+        border-radius: 8px;
+        outline: none;
+        background: #ffffff;
+        color: #475569;
+        font-family: inherit;
+        font-size: .57rem;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+
+    .date-input {
+        padding-left: 31px;
+    }
+
+
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: #9bc1ef;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, .06);
+    }
+
+
+    .status-select {
+        cursor: pointer;
+    }
+
+
+    .form-textarea {
+        width: 100%;
+        padding: 10px 11px;
+        resize: vertical;
+        border: 1px solid #dfe6ee;
+        border-radius: 8px;
+        outline: none;
+        background: #ffffff;
+        color: #475569;
+        font-family: inherit;
+        font-size: .57rem;
+        line-height: 1.55;
+    }
+
+
+        .form-textarea::placeholder {
+            color: #a2abb7;
+        }
+
+
+    .field-help {
+        display: block;
+        margin-top: 5px;
+        color: #9aa5b2;
+        font-size: .47rem;
+        line-height: 1.45;
+    }
+
+
+    .field-error {
+        display: block;
+        margin-top: 4px;
+        color: #dc2626;
+        font-size: .49rem;
+    }
+
+
+    .validation-summary {
+        margin-bottom: 15px;
+        padding: 10px 11px;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: .53rem;
+    }
+
+
+        .validation-summary:empty {
+            display: none;
+        }
+
+
+        .validation-summary ul {
+            margin: 0;
+            padding-left: 17px;
+        }
+
+
+    /* =========================================================
+           STATUS GUIDE
+        ========================================================== */
+
+    .status-guide {
+        margin: 3px 0 19px;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        background: #f8fafc;
+    }
+
+
+    .status-guide-title {
+        margin-bottom: 9px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #526174;
+        font-size: .54rem;
+        font-weight: 800;
+    }
+
+
+        .status-guide-title i {
+            color: #0d6efd;
+        }
+
+
+    .status-guide-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+
+    .guide-item {
+        min-width: 0;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #e6ebf0;
+        border-radius: 8px;
+        background: #ffffff;
+    }
+
+
+    .guide-icon {
+        width: 27px;
+        height: 27px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        font-size: .58rem;
+    }
+
+
+    .guide-item.present .guide-icon {
+        background: #ecfdf5;
+        color: #16a34a;
+    }
+
+
+    .guide-item.absent .guide-icon {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+
+    .guide-item.late .guide-icon {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+
+    .guide-item.excused .guide-icon {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+
+    .guide-item strong {
+        display: block;
+        color: #526174;
+        font-size: .49rem;
+        font-weight: 800;
+    }
+
+
+    .guide-item span {
+        display: block;
+        margin-top: 2px;
+        color: #94a3b8;
+        font-size: .42rem;
+        line-height: 1.35;
+    }
+
+
+    /* =========================================================
+           ACTIONS
+        ========================================================== */
+
+    .form-actions {
+        margin-top: 20px;
+        padding-top: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 7px;
+        border-top: 1px solid #edf1f5;
+    }
+
+
+    .cancel-button,
+    .save-button {
+        min-height: 36px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border-radius: 7px;
+        font-family: inherit;
+        font-size: .55rem;
+        font-weight: 750;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+
+    .cancel-button {
+        border: 1px solid #dfe6ee;
+        background: #ffffff;
+        color: #64748b;
+    }
+
+
+        .cancel-button:hover {
+            background: #f8fafc;
+            color: #0d6efd;
+        }
+
+
+    .save-button {
+        border: 1px solid #0d6efd;
+        background: #0d6efd;
+        color: #ffffff;
+    }
+
+
+        .save-button:hover {
+            border-color: #0b5ed7;
+            background: #0b5ed7;
+        }
+
+
+    /* =========================================================
+           SIDE COLUMN
+        ========================================================== */
+
+    .side-column {
+        display: grid;
+        gap: 10px;
+    }
+
+
+    .side-card {
+        padding: 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 11px;
+        background: #ffffff;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, .025);
+    }
+
+
+    .side-card-header {
+        margin-bottom: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+
+        .side-card-header span {
+            color: #0d6efd;
+            font-size: .49rem;
+            font-weight: 850;
+            letter-spacing: .08em;
+        }
+
+
+        .side-card-header i {
+            color: #94a3b8;
+            font-size: .68rem;
+        }
+
+
+    /* =========================================================
+           CURRENT RECORD
+        ========================================================== */
+
+    .current-record {
+        display: grid;
+        gap: 9px;
+    }
+
+
+    .record-id,
+    .record-date,
+    .record-created {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+
+        .record-id span,
+        .record-date span,
+        .record-created span,
+        .record-status > span {
+            color: #94a3b8;
+            font-size: .46rem;
+        }
+
+
+        .record-id strong,
+        .record-date strong,
+        .record-created strong {
+            color: #526174;
+            font-size: .49rem;
+            font-weight: 750;
+            text-align: right;
+        }
+
+
+    .record-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+
+    .status-badge {
+        min-height: 22px;
+        padding: 0 7px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 999px;
+        font-size: .45rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+
+        .status-badge.present {
+            background: #ecfdf5;
+            color: #15803d;
+        }
+
+
+        .status-badge.absent {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+
+        .status-badge.late {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+
+        .status-badge.excused {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+
+        .status-badge.default {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+
+    /* =========================================================
+           PARTICIPANT
+        ========================================================== */
+
+    .side-person {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+
+    .side-avatar {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: #0d6efd;
+        font-size: .53rem;
+        font-weight: 850;
+    }
+
+
+    .side-person strong {
+        display: block;
+        color: #475569;
+        font-size: .57rem;
+        font-weight: 800;
+    }
+
+
+    .side-person span {
+        display: block;
+        margin-top: 2px;
+        color: #94a3b8;
+        font-size: .47rem;
+    }
+
+
+    .side-details {
+        margin-top: 11px;
+        padding-top: 10px;
+        display: grid;
+        gap: 7px;
+        border-top: 1px solid #edf1f5;
+    }
+
+
+        .side-details div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+
+        .side-details span {
+            color: #94a3b8;
+            font-size: .46rem;
+        }
+
+
+        .side-details strong {
+            color: #526174;
+            font-size: .49rem;
+            font-weight: 750;
+            text-align: right;
+        }
+
+
+    .approved-text {
+        color: #15803d !important;
+    }
+
+
+    /* =========================================================
+           PROGRAM
+        ========================================================== */
+
+    .side-program-name {
+        margin: 0 0 10px;
+        color: #475569;
+        font-size: .66rem;
+        font-weight: 800;
+        line-height: 1.4;
+    }
+
+
+    .side-detail-row {
+        margin-top: 7px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+
+        .side-detail-row i {
+            width: 18px;
+            color: #0d6efd;
+            font-size: .55rem;
+            text-align: center;
+        }
+
+
+        .side-detail-row span {
+            color: #64748b;
+            font-size: .49rem;
+        }
+
+
+    /* =========================================================
+           NOTICE
+        ========================================================== */
+
+    .notice-card {
+        padding: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+        background: #f8fbff;
+    }
+
+
+    .notice-icon {
+        width: 31px;
+        height: 31px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #0d6efd;
+        font-size: .62rem;
+    }
+
+
+    .notice-card strong {
+        display: block;
+        color: #475569;
+        font-size: .53rem;
+        font-weight: 800;
+    }
+
+
+    .notice-card p {
+        margin: 3px 0 0;
+        color: #94a3b8;
+        font-size: .46rem;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+           BOTTOM
+        ========================================================== */
+
+    .bottom-actions {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+
+    .bottom-button {
+        min-height: 36px;
+        padding: 0 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border-radius: 8px;
+        font-size: .55rem;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+
+        .bottom-button.secondary {
+            border: 1px solid #dfe6ee;
+            background: #ffffff;
+            color: #64748b;
+        }
+
+
+            .bottom-button.secondary:hover {
+                background: #f8fafc;
+                color: #0d6efd;
+            }
+
+
+        .bottom-button.primary {
+            border: 1px solid #0d6efd;
+            background: #0d6efd;
+            color: #ffffff;
+        }
+
+
+            .bottom-button.primary:hover {
+                border-color: #0b5ed7;
+                background: #0b5ed7;
+                color: #ffffff;
+            }
+
+
+    /* =========================================================
+           RESPONSIVE
+        ========================================================== */
+
+    @@media (max-width: 1050px) {
+
+        .content-layout {
+            grid-template-columns: minmax(0, 1fr) 280px;
+        }
+
+
+        .status-guide-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+
+    @@media (max-width: 850px) {
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+
+        .header-actions {
+            width: 100%;
+        }
+
+
+        .header-button {
+            flex: 1;
+        }
+
+
+        .context-card {
+            grid-template-columns: 1fr;
+        }
+
+
+        .context-divider {
+            width: 100%;
+            height: 1px;
+        }
+
+
+        .content-layout {
+            grid-template-columns: 1fr;
+        }
+
+
+        .side-column {
+            grid-template-columns: 1fr 1fr;
+        }
+
+
+        .notice-card {
+            grid-column: span 2;
+        }
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .edit-attendance-page {
+            padding: 21px 17px 35px;
+        }
+
+
+        .header-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+
+        .header-button {
+            width: 100%;
+        }
+
+
+        .status-guide-grid {
+            grid-template-columns: 1fr;
+        }
+
+
+        .side-column {
+            grid-template-columns: 1fr;
+        }
+
+
+        .notice-card {
+            grid-column: auto;
+        }
+
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+
+        .cancel-button,
+        .save-button {
+            width: 100%;
+        }
+
+
+        .bottom-actions {
+            flex-direction: column;
+        }
+
+
+        .bottom-button {
+            width: 100%;
+        }
+    }
+
+
+    @@media (max-width: 430px) {
+
+        .header-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

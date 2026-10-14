@@ -1,0 +1,458 @@
+@model IEnumerable<BYPManagementSystem.Controllers.CertificateEligibilityViewModel>
+
+@{
+    ViewData["Title"] = "Certificates";
+
+    var programs =
+        ViewBag.Programs as List<BYPManagementSystem.Models.YouthProgram>
+        ?? new List<BYPManagementSystem.Models.YouthProgram>();
+
+    var selectedProgramId =
+        ViewBag.SelectedProgramId as int?;
+
+    var currentFilter =
+        ViewBag.Filter as string ?? "All";
+
+    var eligibilityList =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Controllers.CertificateEligibilityViewModel>();
+
+    var hasProgramSelected = selectedProgramId.HasValue;
+}
+
+
+<div class="certificates-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-award"></i>
+                </div>
+
+                <div class="certificates-title">
+
+                    <span class="page-eyebrow">
+                        CERTIFICATES
+                    </span>
+
+                    <h1>
+                        Certificates
+                    </h1>
+
+                    <p>
+                        Issue completion certificates for youth participants
+                        who have finished a program.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         NO COMPLETED PROGRAMS - EMPTY STATE
+    ========================================================== -->
+
+    @if (!programs.Any())
+    {
+
+        <div class="empty-state">
+
+            <i class="bi bi-award"></i>
+
+            <h2>No Completed Programs</h2>
+
+            <p>
+                Certificates can only be issued for programs marked as
+                <strong>Completed</strong>.
+            </p>
+
+            <p>
+                Mark a program as Completed in
+                <a asp-controller="Programs"
+                   asp-action="Index">
+                    Programs
+                </a>
+                to enable certificate issuance.
+            </p>
+
+        </div>
+
+    }
+    else
+    {
+
+        <!-- =========================================================
+             PROGRAM SELECTOR
+        ========================================================== -->
+
+        <div class="filter-section">
+
+            <div class="filter-group">
+
+                <label for="programSelect">
+                    Select Program
+                </label>
+
+                <select id="programSelect"
+                        class="form-control"
+                        onchange="location.href='@Url.Action("Index", new { programId = "__ID__" })'.replace('__ID__', this.value)">
+
+                    <option value="">
+                        -- Choose a completed program --
+                    </option>
+
+                    @foreach (var program in programs)
+                    {
+                        <option value="@program.Id"
+                                selected="@(program.Id == selectedProgramId ? "selected" : null)">
+                            @program.Name
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            @if (hasProgramSelected)
+            {
+
+                <div class="filter-group">
+
+                    <label>
+                        Filter
+                    </label>
+
+                    <div class="filter-chips">
+
+                        <a asp-action="Index"
+                           asp-route-programId="@selectedProgramId"
+                           asp-route-filter="All"
+                           class="chip @(currentFilter == "All" ? "active" : "")">
+                            All
+                        </a>
+
+                        <a asp-action="Index"
+                           asp-route-programId="@selectedProgramId"
+                           asp-route-filter="Eligible"
+                           class="chip @(currentFilter == "Eligible" ? "active" : "")">
+                            Eligible
+                        </a>
+
+                        <a asp-action="Index"
+                           asp-route-programId="@selectedProgramId"
+                           asp-route-filter="Issued"
+                           class="chip @(currentFilter == "Issued" ? "active" : "")">
+                            Issued
+                        </a>
+
+                    </div>
+
+                </div>
+
+            }
+
+        </div>
+
+
+        <!-- =========================================================
+             NO PROGRAM SELECTED - PROMPT
+        ========================================================== -->
+
+        @if (!hasProgramSelected)
+        {
+
+            <div class="empty-state">
+
+                <i class="bi bi-list-check"></i>
+
+                <h2>Select a Program</h2>
+
+                <p>
+                    Choose a completed program above to view eligible participants
+                    and issue certificates.
+                </p>
+
+            </div>
+
+        }
+        else if (!eligibilityList.Any())
+        {
+
+            <!-- =========================================================
+                 NO PARTICIPANTS - EMPTY STATE
+            ========================================================== -->
+
+            <div class="empty-state">
+
+                <i class="bi bi-people"></i>
+
+                <h2>No Approved Participants</h2>
+
+                <p>
+                    This program has no approved registrations to certify.
+                </p>
+
+            </div>
+
+        }
+        else
+        {
+
+            <!-- =========================================================
+                 ELIGIBILITY LIST
+            ========================================================== -->
+
+            <div class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Participant
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                Attendance
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in eligibilityList)
+                        {
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @item.ParticipantName
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @(item.ParticipantEmail ?? "—")
+                                </td>
+
+                                <td>
+
+                                    @if (item.TotalAttendanceRecords > 0)
+                                    {
+                                        <span class="attendance-summary">
+                                            <i class="bi bi-check-circle"></i>
+                                            @item.PresentCount / @item.TotalAttendanceRecords present
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            No records
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.HasCertificate)
+                                    {
+                                        <span class="status-badge issued">
+                                            <i class="bi bi-award-fill"></i>
+                                            Issued
+                                        </span>
+
+                                        <div class="cert-number-small">
+                                            @item.CertificateNumber
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge eligible">
+                                            <i class="bi bi-clock"></i>
+                                            Eligible
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.HasCertificate)
+                                    {
+
+                                        <a asp-action="Details"
+                                           asp-route-id="@item.RegistrationId"
+                                           class="btn btn-sm btn-secondary">
+                                            <i class="bi bi-eye"></i>
+                                            View
+                                        </a>
+
+                                    }
+                                    else
+                                    {
+
+                                        <a asp-action="Issue"
+                                           asp-route-registrationId="@item.RegistrationId"
+                                           class="btn btn-sm btn-primary">
+                                            <i class="bi bi-award"></i>
+                                            Issue Certificate
+                                        </a>
+
+                                    }
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+
+    }
+
+</div>
+
+
+<style>
+    /* Page root (padding/container standardized to match every
+       other module — this page previously had no root styles,
+       so content sat flush against the viewport edges). */
+    .certificates-page {
+        width: 100%;
+        padding: 12px 18px 18px;
+        box-sizing: border-box;
+    }
+
+    .certificates-page .page-eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        color: #B7D7E5;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .certificates-page .filter-section {
+        background: var(--byp-surface);
+        border: 1px solid var(--byp-border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .certificates-page .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .certificates-page .filter-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--byp-text);
+    }
+
+    .certificates-page .filter-chips {
+        display: flex;
+        gap: 8px;
+    }
+
+    .certificates-page .chip {
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: var(--byp-bg-secondary);
+        color: var(--byp-text-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .certificates-page .chip:hover {
+        background: var(--byp-surface-secondary);
+        color: var(--byp-text);
+    }
+
+    .certificates-page .chip.active {
+        background: var(--byp-accent);
+        color: white;
+    }
+
+    .certificates-page .attendance-summary {
+        color: var(--byp-accent);
+        font-weight: 500;
+    }
+
+    .certificates-page .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .certificates-page .status-badge.issued {
+        background: rgba(32, 216, 216, 0.15);
+        color: #009FA3;
+    }
+
+    .certificates-page .status-badge.eligible {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+    }
+
+    .certificates-page .cert-number-small {
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: var(--byp-accent);
+        margin-top: 4px;
+    }
+
+    .certificates-page .text-muted {
+        color: var(--byp-text-muted);
+        font-style: italic;
+    }
+</style>

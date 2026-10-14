@@ -1,0 +1,2819 @@
+﻿@model IEnumerable<BYPManagementSystem.Models.YouthParticipant>
+
+@{
+    ViewData["Title"] = "Manage Participants";
+
+    var program =
+        ViewBag.Program
+        as BYPManagementSystem.Models.YouthProgram;
+
+    var approvedParticipantIds =
+        ViewBag.ApprovedParticipantIds
+        as HashSet<int>
+        ?? new HashSet<int>();
+
+    var participants =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.YouthParticipant>();
+
+    var approvedParticipants =
+        participants
+            .Where(p => approvedParticipantIds.Contains(p.Id))
+            .ToList();
+
+    var availableParticipants =
+        participants
+            .Where(p => !approvedParticipantIds.Contains(p.Id))
+            .ToList();
+
+    var programCapacity =
+        program?.Capacity ?? 0;
+
+    var approvedCount =
+        approvedParticipants.Count;
+
+    var remainingSlots =
+        Math.Max(programCapacity - approvedCount, 0);
+
+    var capacityPercent =
+        programCapacity > 0
+            ? Math.Min(
+                (double)approvedCount / programCapacity * 100,
+                100)
+            : 0;
+}
+
+
+<div class="manage-participants-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <a asp-controller="Programs"
+               asp-action="Details"
+               asp-route-id="@(program?.Id)"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Program
+
+            </a>
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div>
+
+                    <span class="page-eyebrow">
+                        PROGRAM PARTICIPANTS
+                    </span>
+
+                    <h1>
+                        Manage Participants
+                    </h1>
+
+                    <p>
+                        View the youth participants assigned to this program.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            @if (program != null)
+            {
+                <a asp-controller="Programs"
+                   asp-action="Details"
+                   asp-route-id="@program.Id"
+                   class="header-button secondary">
+
+                    <i class="bi bi-eye"></i>
+
+                    Program Details
+
+                </a>
+
+                <form asp-controller="Programs"
+                      asp-action="AssignMatchingYouth"
+                      asp-route-id="@program.Id"
+                      method="post"
+                      class="inline-assign-form">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="header-button secondary">
+
+                        <i class="bi bi-magic"></i>
+
+                        Assign Matching Youth
+
+                    </button>
+
+                </form>
+            }
+
+            <a asp-controller="Programs"
+               asp-action="Index"
+               class="header-button primary">
+
+                <i class="bi bi-grid"></i>
+
+                All Programs
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    @if (program == null)
+    {
+        <!-- =====================================================
+             PROGRAM NOT FOUND
+        ====================================================== -->
+
+        <div class="empty-state">
+
+            <div class="empty-icon error">
+
+                <i class="bi bi-exclamation-circle"></i>
+
+            </div>
+
+            <h2>
+                Program not found
+            </h2>
+
+            <p>
+                The selected youth program could not be found.
+            </p>
+
+            <a asp-controller="Programs"
+               asp-action="Index"
+               class="empty-button">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Programs
+
+            </a>
+
+        </div>
+    }
+    else
+    {
+        <!-- =====================================================
+             PROGRAM OVERVIEW
+        ====================================================== -->
+
+        <section class="program-overview">
+
+            <div class="program-icon">
+
+                <i class="bi bi-calendar-event"></i>
+
+            </div>
+
+
+            <div class="program-info">
+
+                <span class="program-label">
+                    SELECTED PROGRAM
+                </span>
+
+                <h2>
+                    @program.Name
+                </h2>
+
+                <div class="program-meta">
+
+                    <span>
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        @program.Barangay
+
+                    </span>
+
+                    <span>
+
+                        <i class="bi bi-clock"></i>
+
+                        @program.Schedule
+
+                    </span>
+
+                    <span>
+
+                        <i class="bi bi-people"></i>
+
+                        Capacity: @program.Capacity
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="program-status">
+
+                @if (string.Equals(
+                    program.Status,
+                    "Active",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    <span class="status-badge active">
+
+                        <span class="status-dot"></span>
+
+                        Active
+
+                    </span>
+                }
+                else
+                {
+                    <span class="status-badge inactive">
+
+                        <span class="status-dot"></span>
+
+                        @program.Status
+
+                    </span>
+                }
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             AUTOMATIC ASSIGNMENT NOTICE
+        ====================================================== -->
+
+        <section class="assignment-notice">
+
+            <div class="notice-icon">
+
+                <i class="bi bi-arrow-repeat"></i>
+
+            </div>
+
+
+            <div class="notice-content">
+
+                <strong>
+                    Automatic Barangay Assignment
+                </strong>
+
+                <p>
+                    Active youth participants whose barangay matches
+                    the program barangay are automatically submitted
+                    as registration requests (Pending). An Admin or
+                    authorized Staff member processes them in
+                    Registration, and approved participants are
+                    shown below.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SUMMARY CARDS
+        ====================================================== -->
+
+        <div class="summary-grid">
+
+
+            <!-- APPROVED -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon approved">
+
+                    <i class="bi bi-person-check"></i>
+
+                </div>
+
+                <div class="summary-content">
+
+                    <span>
+                        Approved Participants
+                    </span>
+
+                    <strong>
+                        @approvedCount
+                    </strong>
+
+                    <small>
+                        Currently assigned
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- AVAILABLE -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon available">
+
+                    <i class="bi bi-person-plus"></i>
+
+                </div>
+
+                <div class="summary-content">
+
+                    <span>
+                        Other Active Youth
+                    </span>
+
+                    <strong>
+                        @availableParticipants.Count
+                    </strong>
+
+                    <small>
+                        Not assigned to this program
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- REMAINING -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon remaining">
+
+                    <i class="bi bi-person-badge"></i>
+
+                </div>
+
+                <div class="summary-content">
+
+                    <span>
+                        Remaining Slots
+                    </span>
+
+                    <strong>
+                        @remainingSlots
+                    </strong>
+
+                    <small>
+                        Based on capacity
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOTAL ACTIVE YOUTH -->
+
+            <div class="summary-card">
+
+                <div class="summary-icon total">
+
+                    <i class="bi bi-people"></i>
+
+                </div>
+
+                <div class="summary-content">
+
+                    <span>
+                        Active Youth Records
+                    </span>
+
+                    <strong>
+                        @participants.Count
+                    </strong>
+
+                    <small>
+                        Total active youth
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             CAPACITY
+        ====================================================== -->
+
+        <section class="capacity-panel">
+
+            <div class="capacity-header">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        CAPACITY
+                    </span>
+
+                    <h3>
+                        Program Capacity
+                    </h3>
+
+                </div>
+
+
+                <strong>
+                    @approvedCount / @programCapacity
+                </strong>
+
+            </div>
+
+
+            <div class="capacity-track">
+
+                <div class="capacity-fill"
+                     style="width:@(capacityPercent.ToString("0.##"))%;">
+
+                </div>
+
+            </div>
+
+
+            <div class="capacity-footer">
+
+                <span>
+                    @approvedCount approved participant@(approvedCount == 1 ? "" : "s")
+                </span>
+
+
+                @if (remainingSlots > 0)
+                {
+                    <span class="capacity-available">
+
+                        @remainingSlots
+                        slot@(remainingSlots == 1 ? "" : "s")
+                        available
+
+                    </span>
+                }
+                else
+                {
+                    <span class="capacity-full">
+
+                        Program full
+
+                    </span>
+                }
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             APPROVED PARTICIPANTS
+        ====================================================== -->
+
+        <section class="participants-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        ASSIGNED YOUTH
+                    </span>
+
+                    <h2>
+                        Approved Participants
+                    </h2>
+
+                    <p>
+                        Youth currently approved for this program.
+                    </p>
+
+                </div>
+
+
+                <span class="panel-count">
+
+                    <i class="bi bi-people"></i>
+
+                    @approvedCount
+
+                </span>
+
+            </div>
+
+
+            @if (approvedParticipants.Any())
+            {
+                <div class="participant-grid">
+
+                    @foreach (var participant in approvedParticipants)
+                    {
+                        var firstInitial =
+                            !string.IsNullOrWhiteSpace(
+                                participant.FirstName)
+                                ? participant.FirstName
+                                    .Substring(0, 1)
+                                    .ToUpper()
+                                : "U";
+
+                        var lastInitial =
+                            !string.IsNullOrWhiteSpace(
+                                participant.LastName)
+                                ? participant.LastName
+                                    .Substring(0, 1)
+                                    .ToUpper()
+                                : "";
+
+
+                        <div class="participant-card approved-card">
+
+                            <div class="participant-avatar">
+
+                                @firstInitial@lastInitial
+
+                            </div>
+
+
+                            <div class="participant-info">
+
+                                <strong>
+                                    @participant.FullName
+                                </strong>
+
+                                <span>
+
+                                    <i class="bi bi-geo-alt"></i>
+
+                                    @participant.Barangay
+
+                                </span>
+
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                    participant.ContactNumber))
+                                {
+                                    <small>
+
+                                        <i class="bi bi-telephone"></i>
+
+                                        @participant.ContactNumber
+
+                                    </small>
+                                }
+
+                            </div>
+
+
+                            <div class="participant-right">
+
+                                <span class="approved-badge">
+
+                                    <span class="status-dot"></span>
+
+                                    Approved
+
+                                </span>
+
+
+                                <a asp-controller="Attendance"
+                                   asp-action="Record"
+                                   asp-route-programId="@program.Id"
+                                   asp-route-youthParticipantId="@participant.Id"
+                                   class="attendance-button">
+
+                                    <i class="bi bi-clipboard-check"></i>
+
+                                    Attendance
+
+                                </a>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="empty-panel">
+
+                    <div class="empty-small-icon">
+
+                        <i class="bi bi-person-x"></i>
+
+                    </div>
+
+                    <strong>
+                        No approved participants
+                    </strong>
+
+                    <span>
+                        No active youth participant has been assigned
+                        to this program yet.
+                    </span>
+
+                </div>
+            }
+
+        </section>
+
+
+        <!-- =====================================================
+             OTHER ACTIVE YOUTH
+        ====================================================== -->
+
+        <section class="participants-panel secondary-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        OTHER ACTIVE YOUTH
+                    </span>
+
+                    <h2>
+                        Active Youth Records
+                    </h2>
+
+                    <p>
+                        These youth are active records but are not currently
+                        assigned to this program.
+                    </p>
+
+                </div>
+
+
+                <span class="panel-count secondary-count">
+
+                    <i class="bi bi-people"></i>
+
+                    @availableParticipants.Count
+
+                </span>
+
+            </div>
+
+
+            @if (availableParticipants.Any())
+            {
+                <div class="available-table-wrapper">
+
+                    <table class="available-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Youth Participant
+                                </th>
+
+                                <th>
+                                    Barangay
+                                </th>
+
+                                <th>
+                                    Contact
+                                </th>
+
+                                <th>
+                                    Account
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach (var participant
+                                in availableParticipants)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <div class="table-person">
+
+                                            <div class="table-avatar">
+
+                                                @(
+                                                    !string.IsNullOrWhiteSpace(
+                                                        participant.FirstName)
+                                                    ? participant.FirstName
+                                                        .Substring(0, 1)
+                                                        .ToUpper()
+                                                    : "U"
+                                                )
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <strong>
+                                                    @participant.FullName
+                                                </strong>
+
+                                                <small>
+                                                    Participant #@participant.Id
+                                                </small>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="table-text">
+
+                                            @participant.Barangay
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="table-text">
+
+                                            @(
+                                                string.IsNullOrWhiteSpace(
+                                                    participant.ContactNumber)
+                                                ? "—"
+                                                : participant.ContactNumber
+                                            )
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                            participant.UserId))
+                                        {
+                                            <span class="account-badge linked">
+
+                                                <i class="bi bi-person-check"></i>
+
+                                                Linked
+
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="account-badge none">
+
+                                                <i class="bi bi-person"></i>
+
+                                                No Account
+
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @if (participant.IsActive)
+                                        {
+                                            <span class="active-label">
+
+                                                <span></span>
+
+                                                Active
+
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inactive-label">
+
+                                                <span></span>
+
+                                                Inactive
+
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="empty-panel compact">
+
+                    <div class="empty-small-icon">
+
+                        <i class="bi bi-check2-all"></i>
+
+                    </div>
+
+                    <strong>
+                        All active youth are assigned
+                    </strong>
+
+                    <span>
+                        There are no other active youth records currently
+                        available.
+                    </span>
+
+                </div>
+            }
+
+        </section>
+
+
+        <!-- =====================================================
+             WORKFLOW NOTE
+        ====================================================== -->
+
+        <section class="workflow-note">
+
+            <div class="workflow-icon">
+
+                <i class="bi bi-diagram-3"></i>
+
+            </div>
+
+
+            <div class="workflow-text">
+
+                <span class="section-eyebrow">
+                    PARTICIPANT → REGISTRATION → ATTENDANCE
+                </span>
+
+                <strong>
+                    Approved participants can proceed to Attendance.
+                </strong>
+
+                <p>
+                    Attendance is recorded only for an approved
+                    registration. The registration connects the selected
+                    youth participant with this program.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             BOTTOM ACTIONS
+        ====================================================== -->
+
+        <div class="bottom-actions">
+
+            <a asp-controller="Programs"
+               asp-action="Details"
+               asp-route-id="@program.Id"
+               class="bottom-button secondary">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Program
+
+            </a>
+
+
+            <a asp-controller="Attendance"
+               asp-action="Participants"
+               asp-route-id="@program.Id"
+               class="bottom-button primary">
+
+                <i class="bi bi-clipboard-check"></i>
+
+                Open Attendance
+
+            </a>
+
+        </div>
+
+    }
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .manage-participants-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================== */
+
+    .page-header {
+
+        margin-bottom: 19px;
+
+        display: flex;
+
+        align-items: flex-end;
+
+        justify-content: space-between;
+
+        gap: 20px;
+
+    }
+
+
+    .back-link {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        margin-bottom: 9px;
+
+        color: #64748b;
+
+        font-size: .59rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .back-link:hover {
+
+        color: #0d6efd;
+
+    }
+
+
+    .page-eyebrow,
+    .section-eyebrow {
+
+        display: block;
+
+        color: #0d6efd;
+
+        font-size: .56rem;
+
+        font-weight: 850;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .page-header h1 {
+
+        margin:
+            5px 0 4px;
+
+        color: #111827;
+
+        font-size: 1.7rem;
+
+        font-weight: 850;
+
+        letter-spacing: -.4px;
+
+    }
+
+
+    .page-header p {
+
+        margin: 0;
+
+        color: #64748b;
+
+        font-size: .68rem;
+
+    }
+
+
+    .header-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+    }
+
+
+    .header-button {
+
+        min-height: 34px;
+
+        padding:
+            0 10px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 5px;
+
+        border-radius: 7px;
+
+        font-size: .54rem;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+    }
+
+
+    .header-button.secondary {
+
+        border:
+            1px solid #dce5ee;
+
+        background: #ffffff;
+
+        color: #64748b;
+
+    }
+
+
+    .header-button.secondary:hover {
+
+        color: #0d6efd;
+
+        background: #f8fafc;
+
+    }
+
+
+    .header-button.primary {
+
+        border:
+            1px solid #0d6efd;
+
+        background: #0d6efd;
+
+        color: #ffffff;
+
+    }
+
+
+    .header-button.primary:hover {
+
+        border-color: #0b5ed7;
+
+        background: #0b5ed7;
+
+        color: #ffffff;
+
+    }
+
+
+    /* The Assign Matching Youth control is a real form + submit
+       button (POST + antiforgery). Reset native button styling so
+       it renders identically to the sibling anchor buttons. */
+    .inline-assign-form {
+
+        display: inline-flex;
+
+        margin: 0;
+
+    }
+
+
+    .inline-assign-form button.header-button {
+
+        font-family: inherit;
+
+        cursor: pointer;
+
+        appearance: none;
+
+        -webkit-appearance: none;
+
+    }
+
+
+    /* =========================================================
+       PROGRAM OVERVIEW
+    ========================================================== */
+
+    .program-overview {
+
+        padding:
+            17px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        border:
+            1px solid #dfe7ef;
+
+        border-radius: 13px;
+
+        background: #ffffff;
+
+        box-shadow:
+            0 7px 20px
+            rgba(15, 23, 42, .03);
+
+    }
+
+
+    .program-icon {
+
+        width: 48px;
+
+        height: 48px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 11px;
+
+        background: #eff6ff;
+
+        color: #0d6efd;
+
+        font-size: 1rem;
+
+    }
+
+
+    .program-info {
+
+        flex: 1;
+
+        min-width: 0;
+
+    }
+
+
+    .program-label {
+
+        display: block;
+
+        color: #94a3b8;
+
+        font-size: .48rem;
+
+        font-weight: 800;
+
+        letter-spacing: .08em;
+
+    }
+
+
+    .program-info h2 {
+
+        margin:
+            4px 0 6px;
+
+        overflow: hidden;
+
+        color: #334155;
+
+        font-size: .95rem;
+
+        font-weight: 800;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+    }
+
+
+    .program-meta {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .program-meta span {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        color: #7b8796;
+
+        font-size: .54rem;
+
+    }
+
+
+    .program-meta i {
+
+        color: #0d6efd;
+
+    }
+
+
+    .program-status {
+
+        flex-shrink: 0;
+
+        align-self: flex-start;
+
+    }
+
+
+    /* =========================================================
+       STATUS BADGES
+    ========================================================== */
+
+    .status-badge {
+
+        min-height: 23px;
+
+        padding:
+            0 8px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        border-radius: 999px;
+
+        font-size: .51rem;
+
+        font-weight: 750;
+
+    }
+
+
+    .status-badge.active {
+
+        background: #ecfdf5;
+
+        color: #15803d;
+
+    }
+
+
+    .status-badge.inactive {
+
+        background: #f1f5f9;
+
+        color: #64748b;
+
+    }
+
+
+    .status-dot {
+
+        width: 5px;
+
+        height: 5px;
+
+        border-radius: 50%;
+
+        background: currentColor;
+
+    }
+
+
+    /* =========================================================
+       NOTICE
+    ========================================================== */
+
+    .assignment-notice {
+
+        margin-top: 13px;
+
+        padding:
+            12px 14px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        border:
+            1px solid #dbeafe;
+
+        border-radius: 10px;
+
+        background: #f8fbff;
+
+    }
+
+
+    .notice-icon {
+
+        width: 34px;
+
+        height: 34px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 8px;
+
+        background: #ffffff;
+
+        color: #0d6efd;
+
+        font-size: .7rem;
+
+    }
+
+
+    .notice-content {
+
+        min-width: 0;
+
+    }
+
+
+    .notice-content strong {
+
+        display: block;
+
+        color: #334155;
+
+        font-size: .61rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .notice-content p {
+
+        margin:
+            3px 0 0;
+
+        color: #7b8796;
+
+        font-size: .55rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* =========================================================
+       SUMMARY
+    ========================================================== */
+
+    .summary-grid {
+
+        margin-top: 14px;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 10px;
+
+    }
+
+
+    .summary-card {
+
+        min-height: 88px;
+
+        padding:
+            13px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius: 11px;
+
+        background: #ffffff;
+
+    }
+
+
+    .summary-icon {
+
+        width: 38px;
+
+        height: 38px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 9px;
+
+        font-size: .78rem;
+
+    }
+
+
+    .summary-icon.approved {
+
+        background: #ecfdf5;
+
+        color: #16a34a;
+
+    }
+
+
+    .summary-icon.available {
+
+        background: #eff6ff;
+
+        color: #0d6efd;
+
+    }
+
+
+    .summary-icon.remaining {
+
+        background: #fff7ed;
+
+        color: #ea580c;
+
+    }
+
+
+    .summary-icon.total {
+
+        background: #f5f3ff;
+
+        color: #7c3aed;
+
+    }
+
+
+    .summary-content {
+
+        min-width: 0;
+
+    }
+
+
+    .summary-content span {
+
+        display: block;
+
+        color: #64748b;
+
+        font-size: .53rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .summary-content strong {
+
+        display: block;
+
+        margin-top: 3px;
+
+        color: #111827;
+
+        font-size: 1.12rem;
+
+        line-height: 1;
+
+    }
+
+
+    .summary-content small {
+
+        display: block;
+
+        margin-top: 4px;
+
+        color: #94a3b8;
+
+        font-size: .48rem;
+
+    }
+
+
+    /* =========================================================
+       CAPACITY
+    ========================================================== */
+
+    .capacity-panel {
+
+        margin-top: 14px;
+
+        padding:
+            16px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius: 12px;
+
+        background: #ffffff;
+
+    }
+
+
+    .capacity-header {
+
+        display: flex;
+
+        align-items: flex-end;
+
+        justify-content: space-between;
+
+        gap: 10px;
+
+    }
+
+
+    .capacity-header h3 {
+
+        margin:
+            3px 0 0;
+
+        color: #334155;
+
+        font-size: .77rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .capacity-header > strong {
+
+        color: #475569;
+
+        font-size: .7rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .capacity-track {
+
+        height: 8px;
+
+        margin-top: 11px;
+
+        overflow: hidden;
+
+        border-radius: 999px;
+
+        background: #eef2f6;
+
+    }
+
+
+    .capacity-fill {
+
+        height: 100%;
+
+        border-radius: inherit;
+
+        background: #0d6efd;
+
+        transition:
+            width .2s ease;
+
+    }
+
+
+    .capacity-footer {
+
+        margin-top: 6px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 10px;
+
+        color: #94a3b8;
+
+        font-size: .51rem;
+
+    }
+
+
+    .capacity-available {
+
+        color: #15803d;
+
+        font-weight: 750;
+
+    }
+
+
+    .capacity-full {
+
+        color: #be123c;
+
+        font-weight: 750;
+
+    }
+
+
+    /* =========================================================
+       PARTICIPANTS PANEL
+    ========================================================== */
+
+    .participants-panel {
+
+        margin-top: 14px;
+
+        padding:
+            18px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius: 13px;
+
+        background: #ffffff;
+
+        box-shadow:
+            0 7px 20px
+            rgba(15, 23, 42, .03);
+
+    }
+
+
+    .secondary-panel {
+
+        margin-top: 13px;
+
+    }
+
+
+    .panel-header {
+
+        margin-bottom: 14px;
+
+        display: flex;
+
+        align-items: flex-start;
+
+        justify-content: space-between;
+
+        gap: 12px;
+
+    }
+
+
+    .panel-header h2 {
+
+        margin:
+            4px 0 3px;
+
+        color: #1e293b;
+
+        font-size: .91rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .panel-header p {
+
+        margin: 0;
+
+        color: #94a3b8;
+
+        font-size: .57rem;
+
+    }
+
+
+    .panel-count {
+
+        min-width: 29px;
+
+        min-height: 29px;
+
+        padding:
+            0 7px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 4px;
+
+        border-radius: 8px;
+
+        background: #ecfdf5;
+
+        color: #15803d;
+
+        font-size: .53rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .secondary-count {
+
+        background: #eff6ff;
+
+        color: #0d6efd;
+
+    }
+
+
+    /* =========================================================
+       PARTICIPANT GRID
+    ========================================================== */
+
+    .participant-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 8px;
+
+    }
+
+
+    .participant-card {
+
+        min-height: 82px;
+
+        padding:
+            9px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        border:
+            1px solid #e5eaf0;
+
+        border-radius: 10px;
+
+        background: #f8fafc;
+
+    }
+
+
+    .approved-card {
+
+        border-color: #dcefe3;
+
+    }
+
+
+    .participant-avatar {
+
+        width: 39px;
+
+        height: 39px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: #eff6ff;
+
+        color: #0d6efd;
+
+        font-size: .56rem;
+
+        font-weight: 850;
+
+    }
+
+
+    .participant-info {
+
+        min-width: 0;
+
+        flex: 1;
+
+    }
+
+
+    .participant-info strong {
+
+        display: block;
+
+        overflow: hidden;
+
+        color: #475569;
+
+        font-size: .61rem;
+
+        font-weight: 800;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+    }
+
+
+    .participant-info span {
+
+        display: block;
+
+        margin-top: 3px;
+
+        overflow: hidden;
+
+        color: #94a3b8;
+
+        font-size: .51rem;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+    }
+
+
+    .participant-info span i {
+
+        color: #0d6efd;
+
+    }
+
+
+    .participant-info small {
+
+        display: block;
+
+        margin-top: 3px;
+
+        color: #a0a9b5;
+
+        font-size: .5rem;
+
+    }
+
+
+    .participant-info small i {
+
+        color: #0d6efd;
+
+    }
+
+
+    .participant-right {
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: flex-end;
+
+        gap: 7px;
+
+    }
+
+
+    .approved-badge {
+
+        min-height: 20px;
+
+        padding:
+            0 6px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        border-radius: 999px;
+
+        background: #ecfdf5;
+
+        color: #15803d;
+
+        font-size: .48rem;
+
+        font-weight: 750;
+
+    }
+
+
+    .attendance-button {
+
+        min-height: 27px;
+
+        padding:
+            0 7px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 4px;
+
+        border:
+            1px solid #bfdbfe;
+
+        border-radius: 6px;
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+        font-size: .5rem;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+    }
+
+
+    .attendance-button:hover {
+
+        background: #e5f0ff;
+
+        color: #0b5ed7;
+
+    }
+
+
+    /* =========================================================
+       AVAILABLE TABLE
+    ========================================================== */
+
+    .available-table-wrapper {
+
+        overflow-x: auto;
+
+        border:
+            1px solid #e7ebf0;
+
+        border-radius: 9px;
+
+    }
+
+
+    .available-table {
+
+        width: 100%;
+
+        min-width: 760px;
+
+        border-collapse: collapse;
+
+    }
+
+
+    .available-table th {
+
+        padding:
+            9px 10px;
+
+        border-bottom:
+            1px solid #e5eaf0;
+
+        background: #f8fafc;
+
+        color: #94a3b8;
+
+        font-size: .49rem;
+
+        font-weight: 800;
+
+        text-align: left;
+
+        text-transform: uppercase;
+
+        letter-spacing: .03em;
+
+    }
+
+
+    .available-table td {
+
+        padding:
+            9px 10px;
+
+        border-bottom:
+            1px solid #eef2f5;
+
+        color: #64748b;
+
+        font-size: .55rem;
+
+    }
+
+
+    .available-table tbody tr:last-child td {
+
+        border-bottom: 0;
+
+    }
+
+
+    .available-table tbody tr:hover {
+
+        background: #fbfcfe;
+
+    }
+
+
+    .table-person {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+    }
+
+
+    .table-avatar {
+
+        width: 31px;
+
+        height: 31px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 8px;
+
+        background: #f1f5f9;
+
+        color: #64748b;
+
+        font-size: .53rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .table-person strong {
+
+        display: block;
+
+        color: #475569;
+
+        font-size: .57rem;
+
+        font-weight: 750;
+
+    }
+
+
+    .table-person small {
+
+        display: block;
+
+        margin-top: 2px;
+
+        color: #a0a9b5;
+
+        font-size: .47rem;
+
+    }
+
+
+    .table-text {
+
+        color: #64748b;
+
+        font-size: .54rem;
+
+    }
+
+
+    .account-badge {
+
+        min-height: 21px;
+
+        padding:
+            0 6px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        border-radius: 999px;
+
+        font-size: .47rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .account-badge.linked {
+
+        background: #ecfdf5;
+
+        color: #15803d;
+
+    }
+
+
+    .account-badge.none {
+
+        background: #f1f5f9;
+
+        color: #64748b;
+
+    }
+
+
+    .active-label,
+    .inactive-label {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        font-size: .48rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .active-label {
+
+        color: #15803d;
+
+    }
+
+
+    .inactive-label {
+
+        color: #64748b;
+
+    }
+
+
+    .active-label span,
+    .inactive-label span {
+
+        width: 5px;
+
+        height: 5px;
+
+        border-radius: 50%;
+
+        background: currentColor;
+
+    }
+
+
+    /* =========================================================
+       EMPTY
+    ========================================================== */
+
+    .empty-state {
+
+        min-height: 280px;
+
+        padding:
+            25px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius: 13px;
+
+        background: #ffffff;
+
+        text-align: center;
+
+    }
+
+
+    .empty-icon,
+    .empty-small-icon {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 11px;
+
+        background: #f1f5f9;
+
+        color: #94a3b8;
+
+    }
+
+
+    .empty-icon {
+
+        width: 51px;
+
+        height: 51px;
+
+        margin-bottom: 10px;
+
+        font-size: 1rem;
+
+    }
+
+
+    .empty-icon.error {
+
+        background: #fff1f2;
+
+        color: #dc2626;
+
+    }
+
+
+    .empty-state h2 {
+
+        margin: 0;
+
+        color: #475569;
+
+        font-size: .82rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .empty-state p {
+
+        margin:
+            5px 0 13px;
+
+        color: #94a3b8;
+
+        font-size: .59rem;
+
+    }
+
+
+    .empty-button {
+
+        min-height: 34px;
+
+        padding:
+            0 11px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        border-radius: 7px;
+
+        background: #0d6efd;
+
+        color: #ffffff;
+
+        font-size: .55rem;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+    }
+
+
+    .empty-button:hover {
+
+        background: #0b5ed7;
+
+        color: #ffffff;
+
+    }
+
+
+    .empty-panel {
+
+        min-height: 170px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        justify-content: center;
+
+        text-align: center;
+
+    }
+
+
+    .empty-panel.compact {
+
+        min-height: 130px;
+
+    }
+
+
+    .empty-small-icon {
+
+        width: 43px;
+
+        height: 43px;
+
+        margin-bottom: 8px;
+
+        font-size: .82rem;
+
+    }
+
+
+    .empty-panel strong {
+
+        color: #475569;
+
+        font-size: .64rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .empty-panel span {
+
+        max-width: 350px;
+
+        margin-top: 4px;
+
+        color: #94a3b8;
+
+        font-size: .55rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* =========================================================
+       WORKFLOW NOTE
+    ========================================================== */
+
+    .workflow-note {
+
+        margin-top: 14px;
+
+        padding:
+            12px 14px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 9px;
+
+        border:
+            1px solid #e2e8f0;
+
+        border-radius: 10px;
+
+        background: #ffffff;
+
+    }
+
+
+    .workflow-icon {
+
+        width: 36px;
+
+        height: 36px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 8px;
+
+        background: #eff6ff;
+
+        color: #0d6efd;
+
+        font-size: .73rem;
+
+    }
+
+
+    .workflow-text {
+
+        flex: 1;
+
+        min-width: 0;
+
+    }
+
+
+    .workflow-text strong {
+
+        display: block;
+
+        margin-top: 3px;
+
+        color: #475569;
+
+        font-size: .59rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .workflow-text p {
+
+        margin:
+            3px 0 0;
+
+        color: #94a3b8;
+
+        font-size: .53rem;
+
+        line-height: 1.45;
+
+    }
+
+
+    /* =========================================================
+       BOTTOM
+    ========================================================== */
+
+    .bottom-actions {
+
+        margin-top: 15px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 8px;
+
+    }
+
+
+    .bottom-button {
+
+        min-height: 36px;
+
+        padding:
+            0 11px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 5px;
+
+        border-radius: 8px;
+
+        font-size: .56rem;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+    }
+
+
+    .bottom-button.secondary {
+
+        border:
+            1px solid #dfe6ee;
+
+        background: #ffffff;
+
+        color: #64748b;
+
+    }
+
+
+    .bottom-button.secondary:hover {
+
+        color: #0d6efd;
+
+        background: #f8fafc;
+
+    }
+
+
+    .bottom-button.primary {
+
+        border:
+            1px solid #0d6efd;
+
+        background: #0d6efd;
+
+        color: #ffffff;
+
+    }
+
+
+    .bottom-button.primary:hover {
+
+        border-color: #0b5ed7;
+
+        background: #0b5ed7;
+
+        color: #ffffff;
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 1050px) {
+
+        .summary-grid {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+        }
+
+    }
+
+
+    @@media (max-width: 850px) {
+
+        .page-header {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+        }
+
+
+        .header-actions {
+
+            width: 100%;
+
+        }
+
+
+        .header-button {
+
+            flex: 1;
+
+        }
+
+
+        .program-overview {
+
+            align-items: flex-start;
+
+            flex-wrap: wrap;
+
+        }
+
+
+        .program-status {
+
+            width: 100%;
+
+            margin-left: 60px;
+
+        }
+
+
+        .participant-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+    }
+
+
+    @@media (max-width: 600px) {
+
+        .manage-participants-page {
+
+            padding:
+                21px 17px 35px;
+
+        }
+
+
+        .summary-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .header-actions {
+
+            display: grid;
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .header-button {
+
+            width: 100%;
+
+        }
+
+
+        .program-meta {
+
+            flex-direction: column;
+
+            align-items: flex-start;
+
+            gap: 5px;
+
+        }
+
+
+        .participant-card {
+
+            align-items: flex-start;
+
+        }
+
+
+        .participant-right {
+
+            align-items: stretch;
+
+        }
+
+
+        .attendance-button {
+
+            justify-content: center;
+
+        }
+
+
+        .workflow-note {
+
+            align-items: flex-start;
+
+        }
+
+
+        .bottom-actions {
+
+            flex-direction: column;
+
+        }
+
+
+        .bottom-button {
+
+            width: 100%;
+
+        }
+
+    }
+
+</style>

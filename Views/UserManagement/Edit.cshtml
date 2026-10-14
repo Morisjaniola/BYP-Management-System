@@ -1,0 +1,1779 @@
+﻿@model BYPManagementSystem.Controllers.UserManagementController.UserEditViewModel
+
+@{
+    ViewData["Title"] = "Edit User";
+
+    var roles =
+        ViewBag.Roles as IEnumerable<string>
+        ?? Enumerable.Empty<string>();
+}
+
+
+<div class="edit-user-page">
+
+    <!-- ==========================================================
+         HEADER
+    =========================================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <a asp-controller="UserManagement"
+               asp-action="Index"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to User Management
+
+            </a>
+
+            <span class="page-eyebrow">
+                ADMINISTRATION
+            </span>
+
+            <h1>
+                Edit User
+            </h1>
+
+            <p>
+                Update account information, role, status,
+                and youth participant details.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         VALIDATION
+    =========================================================== -->
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert-box error">
+
+            <i class="bi bi-exclamation-circle-fill"></i>
+
+            <div>
+
+                <strong>
+                    Please check the information below.
+                </strong>
+
+                <div class="validation-list">
+
+                    @foreach (
+                        var error in
+                        ViewData.ModelState.Values
+                            .SelectMany(v => v.Errors)
+                    )
+                    {
+                        if (!string.IsNullOrWhiteSpace(
+                            error.ErrorMessage))
+                        {
+                            <div>
+                                @error.ErrorMessage
+                            </div>
+                        }
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         MAIN LAYOUT
+    =========================================================== -->
+
+    <div class="edit-user-layout">
+
+
+        <!-- ======================================================
+             FORM
+        ======================================================= -->
+
+        <section class="form-card">
+
+            <div class="card-header">
+
+                <div class="header-icon">
+
+                    <i class="bi bi-person-gear"></i>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        ACCOUNT MANAGEMENT
+                    </span>
+
+                    <h2>
+                        Edit Account
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <form asp-controller="UserManagement"
+                  asp-action="Edit"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="user-form">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="Id"
+                       type="hidden" />
+
+
+                <!-- ==================================================
+                     ACCOUNT
+                =================================================== -->
+
+                <div class="form-section">
+
+                    <div class="section-heading">
+
+                        <i class="bi bi-shield-lock"></i>
+
+                        <div>
+
+                            <strong>
+                                Account Information
+                            </strong>
+
+                            <span>
+                                Update the account's login and access settings.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+
+                        <!-- EMAIL -->
+
+                        <div class="form-group full">
+
+                            <label asp-for="Email">
+                                Email Address
+                            </label>
+
+                            <input asp-for="Email"
+                                   class="form-control"
+                                   autocomplete="email" />
+
+                            <span asp-validation-for="Email"
+                                  class="field-error">
+                            </span>
+
+                            <small>
+                                The email address is also used as the
+                                username for this account.
+                            </small>
+
+                        </div>
+
+
+                        <!-- ROLE -->
+
+                        <div class="form-group">
+
+                            <label asp-for="Role">
+                                Role
+                            </label>
+
+                            <select asp-for="Role"
+                                    class="form-control">
+
+                                @foreach (var roleName in roles)
+                                {
+                                    <option value="@roleName">
+
+                                        @roleName
+
+                                    </option>
+                                }
+
+                            </select>
+
+                            <span asp-validation-for="Role"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- ACCOUNT STATUS -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Account Status
+                            </label>
+
+                            <label class="switch-label">
+
+                                <input asp-for="IsActive"
+                                       type="checkbox"
+                                       class="status-checkbox" />
+
+                                <span class="switch-text">
+
+                                    <strong>
+                                        Account Active
+                                    </strong>
+
+                                    <small>
+                                        Allow this account to sign in.
+                                    </small>
+
+                                </span>
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- EMAIL CONFIRMED -->
+
+                        <div class="form-group full">
+
+                            <label class="checkbox-label">
+
+                                <input asp-for="EmailConfirmed"
+                                       type="checkbox" />
+
+                                <span>
+                                    Email address is confirmed
+                                </span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     YOUTH INFORMATION
+                =================================================== -->
+
+                <div class="form-section">
+
+                    <div class="section-heading">
+
+                        <i class="bi bi-person-vcard"></i>
+
+                        <div>
+
+                            <strong>
+                                Youth Participant Information
+                            </strong>
+
+                            <span>
+                                These fields apply when the account has
+                                the User / Youth role.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-note">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        <span>
+                            Updating these fields updates the linked
+                            Youth Participant record for a User account.
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group full">
+                            <label asp-for="ProfileImage">Replace Profile Picture</label>
+                            <input asp-for="ProfileImage" type="file" class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+                            <span asp-validation-for="ProfileImage" class="field-error"></span>
+                            <small>Optional. JPG, JPEG, PNG, or WEBP; maximum 5 MB.</small>
+                        </div>
+
+
+                        <!-- FIRST NAME -->
+
+                        <div class="form-group">
+
+                            <label asp-for="FirstName">
+                                First Name
+                            </label>
+
+                            <input asp-for="FirstName"
+                                   class="form-control"
+                                   autocomplete="given-name" />
+
+                            <span asp-validation-for="FirstName"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- LAST NAME -->
+
+                        <div class="form-group">
+
+                            <label asp-for="LastName">
+                                Last Name
+                            </label>
+
+                            <input asp-for="LastName"
+                                   class="form-control"
+                                   autocomplete="family-name" />
+
+                            <span asp-validation-for="LastName"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- BIRTH DATE -->
+
+                        <div class="form-group">
+
+                            <label asp-for="BirthDate">
+                                Birth Date
+                            </label>
+
+                            <input asp-for="BirthDate"
+                                   type="date"
+                                   class="form-control" />
+
+                            <span asp-validation-for="BirthDate"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- CONTACT -->
+
+                        <div class="form-group">
+
+                            <label asp-for="ContactNumber">
+                                Contact Number
+                            </label>
+
+                            <input asp-for="ContactNumber"
+                                   class="form-control"
+                                   autocomplete="tel" />
+
+                            <span asp-validation-for="ContactNumber"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- BARANGAY -->
+
+                        <div class="form-group full">
+
+                            <label asp-for="Barangay">
+                                Barangay
+                            </label>
+
+                            <input asp-for="Barangay"
+                                   class="form-control" />
+
+                            <span asp-validation-for="Barangay"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+
+                        <!-- ADDRESS -->
+
+                        <div class="form-group full">
+
+                            <label asp-for="Address">
+                                Complete Address
+                            </label>
+
+                            <textarea asp-for="Address"
+                                      class="form-control"
+                                      rows="3"></textarea>
+
+                            <span asp-validation-for="Address"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ACTIONS
+                =================================================== -->
+
+                <div class="form-actions">
+
+                    <a asp-controller="UserManagement"
+                       asp-action="Index"
+                       class="cancel-button">
+
+                        <i class="bi bi-x-circle"></i>
+
+                        Cancel
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="save-button">
+
+                        <i class="bi bi-check2-circle"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- ======================================================
+             SIDE PANEL
+        ======================================================= -->
+
+        <aside class="side-panel">
+
+
+            <!-- ACCOUNT STATUS -->
+
+            <div class="side-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-person-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            ACCOUNT
+                        </span>
+
+                        <h3>
+                            Current Settings
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        User ID
+                    </span>
+
+                    <strong class="break-text">
+                        @Model.Id
+                    </strong>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        Role
+                    </span>
+
+                    <strong>
+                        @Model.Role
+                    </strong>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        Status
+                    </span>
+
+                    <strong>
+
+                        @(Model.IsActive
+                            ? "Active"
+                            : "Inactive")
+
+                    </strong>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        Email
+                    </span>
+
+                    <strong class="break-text">
+                        @Model.Email
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- ROLE INFORMATION -->
+
+            <div class="side-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-shield"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            ACCESS
+                        </span>
+
+                        <h3>
+                            Role Permissions
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="role-list">
+
+                    <div class="role-item">
+
+                        <span class="role-dot admin"></span>
+
+                        <div>
+
+                            <strong>
+                                Admin
+                            </strong>
+
+                            <p>
+                                Full system administration.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="role-item">
+
+                        <span class="role-dot staff"></span>
+
+                        <div>
+
+                            <strong>
+                                Staff
+                            </strong>
+
+                            <p>
+                                Operational system functions.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="role-item">
+
+                        <span class="role-dot user"></span>
+
+                        <div>
+
+                            <strong>
+                                User / Youth
+                            </strong>
+
+                            <p>
+                                Personal youth portal functions.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PASSWORD -->
+
+            <div class="side-card password-card">
+
+                <div class="side-header">
+
+                    <div class="side-icon">
+
+                        <i class="bi bi-key"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            PASSWORD
+                        </span>
+
+                        <h3>
+                            Account Security
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <p>
+                    Password changes are handled separately through
+                    the protected password reset function.
+                </p>
+
+
+                <a asp-controller="UserManagement"
+                   asp-action="ResetPassword"
+                   asp-route-id="@Model.Id"
+                   class="password-link">
+
+                    <i class="bi bi-key"></i>
+
+                    Reset Password
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <!-- WARNING -->
+
+            <div class="side-card warning-card">
+
+                <div class="warning-header">
+
+                    <i class="bi bi-exclamation-triangle"></i>
+
+                    <strong>
+                        Important
+                    </strong>
+
+                </div>
+
+                <p>
+                    Changing the user's role changes the areas
+                    that the account is authorized to access.
+                </p>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ============================================================
+       PAGE
+    ============================================================ */
+
+    .edit-user-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+    }
+
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+
+    .page-header {
+
+        margin-bottom: 21px;
+
+    }
+
+
+    .back-link {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        margin-bottom: 10px;
+
+        color: #6f7a8b;
+
+        text-decoration: none;
+
+        font-size: .68rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .back-link:hover {
+
+        color: #1f2b46;
+
+        text-decoration: none;
+
+    }
+
+
+    .page-eyebrow {
+
+        display: block;
+
+        color: #7e8999;
+
+        font-size: .67rem;
+
+        font-weight: 700;
+
+        letter-spacing: .14em;
+
+    }
+
+
+    .page-header h1 {
+
+        margin: 5px 0 5px;
+
+        color: #202b3c;
+
+        font-size: 2rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .page-header p {
+
+        margin: 0;
+
+        color: #7b8595;
+
+        font-size: .84rem;
+
+    }
+
+
+    /* ============================================================
+       ALERT
+    ============================================================ */
+
+    .alert-box {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 10px;
+
+        padding: 13px 15px;
+
+        margin-bottom: 17px;
+
+        border-radius: 12px;
+
+    }
+
+
+    .alert-box.error {
+
+        background: #f8eeee;
+
+        border: 1px solid #efdede;
+
+        color: #945b5b;
+
+    }
+
+
+    .validation-list {
+
+        margin-top: 5px;
+
+        font-size: .65rem;
+
+        line-height: 1.6;
+
+    }
+
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+
+    .edit-user-layout {
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1.7fr)
+            minmax(265px, .75fr);
+
+        gap: 18px;
+
+        align-items: start;
+
+    }
+
+
+    .form-card,
+
+    .side-card {
+
+        background: white;
+
+        border: 1px solid #e5e9ef;
+
+        border-radius: 16px;
+
+        box-shadow:
+            0 6px 24px
+            rgba(31, 43, 70, .035);
+
+    }
+
+
+    .form-card {
+
+        overflow: hidden;
+
+    }
+
+
+    /* ============================================================
+       HEADER CARD
+    ============================================================ */
+
+    .card-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        padding: 18px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .header-icon {
+
+        width: 42px;
+
+        height: 42px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 11px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .card-header > div:last-child span {
+
+        display: block;
+
+        color: #8d96a4;
+
+        font-size: .6rem;
+
+        font-weight: 700;
+
+        letter-spacing: .11em;
+
+    }
+
+
+    .card-header h2 {
+
+        margin: 3px 0 0;
+
+        color: #293446;
+
+        font-size: .98rem;
+
+        font-weight: 800;
+
+    }
+
+
+    /* ============================================================
+       FORM
+    ============================================================ */
+
+    .user-form {
+
+        padding: 20px;
+
+    }
+
+
+    .form-section {
+
+        padding-bottom: 21px;
+
+        margin-bottom: 20px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .section-heading {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+        margin-bottom: 14px;
+
+    }
+
+
+    .section-heading > i {
+
+        margin-top: 2px;
+
+        color: #667386;
+
+        font-size: .8rem;
+
+    }
+
+
+    .section-heading > div {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .section-heading strong {
+
+        color: #354153;
+
+        font-size: .75rem;
+
+    }
+
+
+    .section-heading span {
+
+        margin-top: 2px;
+
+        color: #919aa8;
+
+        font-size: .61rem;
+
+    }
+
+
+    .info-note {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 8px;
+
+        padding: 10px 11px;
+
+        margin-bottom: 14px;
+
+        border-radius: 9px;
+
+        background: #f3f5f8;
+
+        color: #6d7889;
+
+        font-size: .62rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    .form-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 14px;
+
+    }
+
+
+    .form-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .form-group.full {
+
+        grid-column: 1 / -1;
+
+    }
+
+
+    .form-group label {
+
+        margin-bottom: 6px;
+
+        color: #4c5768;
+
+        font-size: .67rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .form-control {
+
+        width: 100%;
+
+        min-height: 41px;
+
+        padding: 8px 10px;
+
+        border: 1px solid #dfe4ec;
+
+        border-radius: 9px;
+
+        background: white;
+
+        color: #293446;
+
+        font-size: .71rem;
+
+        outline: none;
+
+        box-shadow: none;
+
+    }
+
+
+    textarea.form-control {
+
+        min-height: 82px;
+
+        resize: vertical;
+
+    }
+
+
+    .form-control:focus {
+
+        border-color: #b9c2ce;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(31, 43, 70, .05);
+
+    }
+
+
+    .field-error {
+
+        margin-top: 4px;
+
+        color: #a05f5f;
+
+        font-size: .6rem;
+
+    }
+
+
+    .form-group small {
+
+        margin-top: 5px;
+
+        color: #9aa2ae;
+
+        font-size: .59rem;
+
+        line-height: 1.4;
+
+    }
+
+
+    /* ============================================================
+       CHECKBOX
+    ============================================================ */
+
+    .checkbox-label {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        margin: 0 !important;
+
+        cursor: pointer;
+
+    }
+
+
+    .checkbox-label input {
+
+        width: 15px;
+
+        height: 15px;
+
+        accent-color: #1f2b46;
+
+    }
+
+
+    /* ============================================================
+       ACTIVE SWITCH AREA
+    ============================================================ */
+
+    .switch-label {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 9px 10px;
+
+        margin: 0 !important;
+
+        border: 1px solid #e4e8ee;
+
+        border-radius: 9px;
+
+        cursor: pointer;
+
+    }
+
+
+    .status-checkbox {
+
+        width: 16px;
+
+        height: 16px;
+
+        accent-color: #1f2b46;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .switch-text {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .switch-text strong {
+
+        color: #465163;
+
+        font-size: .68rem;
+
+    }
+
+
+    .switch-text small {
+
+        margin: 2px 0 0;
+
+        color: #929aa7;
+
+        font-size: .58rem;
+
+    }
+
+
+    /* ============================================================
+       ACTIONS
+    ============================================================ */
+
+    .form-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 9px;
+
+    }
+
+
+    .cancel-button,
+
+    .save-button {
+
+        min-height: 40px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 7px;
+
+        padding: 0 14px;
+
+        border-radius: 10px;
+
+        font-size: .7rem;
+
+        font-weight: 700;
+
+        text-decoration: none;
+
+    }
+
+
+    .cancel-button {
+
+        background: #f2f4f7;
+
+        color: #697386;
+
+    }
+
+
+    .save-button {
+
+        border: 0;
+
+        background: #1f2b46;
+
+        color: white;
+
+        cursor: pointer;
+
+    }
+
+
+    .cancel-button:hover {
+
+        color: #344054;
+
+        text-decoration: none;
+
+    }
+
+
+    .save-button:hover {
+
+        background: #172137;
+
+    }
+
+
+    /* ============================================================
+       SIDE PANEL
+    ============================================================ */
+
+    .side-panel {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 15px;
+
+    }
+
+
+    .side-card {
+
+        padding: 17px;
+
+    }
+
+
+    .side-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        margin-bottom: 14px;
+
+    }
+
+
+    .side-icon {
+
+        width: 38px;
+
+        height: 38px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 10px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .side-header span {
+
+        display: block;
+
+        color: #9098a5;
+
+        font-size: .58rem;
+
+        font-weight: 700;
+
+        letter-spacing: .1em;
+
+    }
+
+
+    .side-header h3 {
+
+        margin: 3px 0 0;
+
+        color: #2c3748;
+
+        font-size: .81rem;
+
+        font-weight: 800;
+
+    }
+
+
+    /* ============================================================
+       STATUS ROWS
+    ============================================================ */
+
+    .status-row {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        justify-content: space-between;
+
+        gap: 15px;
+
+        padding: 10px 0;
+
+        border-top: 1px solid #f0f2f5;
+
+    }
+
+
+    .status-row span {
+
+        color: #808a99;
+
+        font-size: .64rem;
+
+    }
+
+
+    .status-row strong {
+
+        color: #354153;
+
+        font-size: .63rem;
+
+        text-align: right;
+
+        word-break: break-word;
+
+    }
+
+
+    .break-text {
+
+        max-width: 150px;
+
+    }
+
+
+    /* ============================================================
+       ROLE LIST
+    ============================================================ */
+
+    .role-list {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 12px;
+
+    }
+
+
+    .role-item {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+    }
+
+
+    .role-dot {
+
+        width: 9px;
+
+        height: 9px;
+
+        margin-top: 4px;
+
+        border-radius: 50%;
+
+        flex-shrink: 0;
+
+        background: #858f9e;
+
+    }
+
+
+    .role-dot.admin {
+
+        background: #687389;
+
+    }
+
+
+    .role-dot.staff {
+
+        background: #7f8999;
+
+    }
+
+
+    .role-dot.user {
+
+        background: #708888;
+
+    }
+
+
+    .role-item strong {
+
+        display: block;
+
+        color: #4b5667;
+
+        font-size: .66rem;
+
+    }
+
+
+    .role-item p {
+
+        margin: 3px 0 0;
+
+        color: #8992a0;
+
+        font-size: .59rem;
+
+        line-height: 1.4;
+
+    }
+
+
+    /* ============================================================
+       PASSWORD
+    ============================================================ */
+
+    .password-card > p {
+
+        margin: 0 0 11px;
+
+        color: #818a99;
+
+        font-size: .62rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    .password-link {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        min-height: 36px;
+
+        padding: 0 10px;
+
+        border-radius: 9px;
+
+        background: #f3f1f5;
+
+        color: #6b6174;
+
+        text-decoration: none;
+
+        font-size: .63rem;
+
+        font-weight: 700;
+
+    }
+
+
+    .password-link:hover {
+
+        color: #4f4757;
+
+        text-decoration: none;
+
+        background: #eeebf0;
+
+    }
+
+
+    .password-link > i:last-child {
+
+        margin-left: auto;
+
+    }
+
+
+    /* ============================================================
+       WARNING
+    ============================================================ */
+
+    .warning-card {
+
+        background: #fbfaf7;
+
+        border-color: #eee8dc;
+
+    }
+
+
+    .warning-header {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        color: #7d6c4e;
+
+        font-size: .67rem;
+
+    }
+
+
+    .warning-card p {
+
+        margin: 7px 0 0;
+
+        color: #8b7b60;
+
+        font-size: .6rem;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+
+    @@media (max-width: 950px) {
+
+        .edit-user-layout {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .side-panel {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            align-items: start;
+
+        }
+
+
+        .warning-card {
+
+            grid-column: 1 / -1;
+
+        }
+
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .form-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .form-group.full {
+
+            grid-column: auto;
+
+        }
+
+
+        .side-panel {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .warning-card {
+
+            grid-column: auto;
+
+        }
+
+
+        .page-header h1 {
+
+            font-size: 1.65rem;
+
+        }
+
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial"
+        );
+    }
+
+}

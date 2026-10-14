@@ -1,0 +1,2169 @@
+@model IEnumerable<BYPManagementSystem.Models.ProgramRegistration>
+
+@{
+    ViewData["Title"] = "Registration Management";
+
+    var registrations = Model?.ToList()
+        ?? new List<BYPManagementSystem.Models.ProgramRegistration>();
+
+    var totalRegistrations = registrations.Count;
+    var pendingRegistrations = registrations.Count(r => r.Status == "Pending");
+    var approvedRegistrations = registrations.Count(r => r.Status == "Approved");
+    var rejectedRegistrations = registrations.Count(r => r.Status == "Rejected");
+}
+
+
+<div class="registration-page">
+
+    <!-- =========================================================
+         ALERTS (TempData success / error messages)
+    ========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-box success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-box error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
+
+    <div class="registration-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+
+                <div class="header-icon">
+
+                    <i class="bi bi-person-check-fill"></i>
+
+                </div>
+
+                <div class="registration-title">
+
+                    <span class="page-eyebrow">
+                        REGISTRATION MANAGEMENT
+                    </span>
+
+                    <h1>
+                        Registration Requests
+                    </h1>
+
+                    <p>
+                        View and manage program registrations.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =========================================================
+         SUMMARY CARDS
+    ========================================================== -->
+
+    <div class="registration-summary">
+
+
+        <!-- TOTAL -->
+
+        <div class="summary-card total-card">
+
+            <div class="summary-icon total-icon">
+
+                <i class="bi bi-person-lines-fill"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Total Registrations
+                </span>
+
+                <strong>
+                    @totalRegistrations
+                </strong>
+
+                <small>
+                    All registration records
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- PENDING -->
+
+        <div class="summary-card pending-card">
+
+            <div class="summary-icon pending-icon">
+
+                <i class="bi bi-hourglass-split"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Pending
+                </span>
+
+                <strong>
+                    @pendingRegistrations
+                </strong>
+
+                <small>
+                    Awaiting processing
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- APPROVED -->
+
+        <div class="summary-card approved-card">
+
+            <div class="summary-icon approved-icon">
+
+                <i class="bi bi-check-circle-fill"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Approved
+                </span>
+
+                <strong>
+                    @approvedRegistrations
+                </strong>
+
+                <small>
+                    Approved participants
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- REJECTED -->
+
+        <div class="summary-card rejected-card">
+
+            <div class="summary-icon rejected-icon">
+
+                <i class="bi bi-x-circle-fill"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Rejected
+                </span>
+
+                <strong>
+                    @rejectedRegistrations
+                </strong>
+
+                <small>
+                    Rejected requests
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         SEARCH / FILTER
+    ========================================================== -->
+
+    <section class="filter-panel">
+
+        <form asp-controller="Registration"
+              asp-action="Index"
+              method="get">
+
+            <div class="filter-grid">
+
+
+                <!-- SEARCH -->
+
+                <div class="filter-search">
+
+                    <label>
+                        Search Registration
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="bi bi-search"></i>
+
+                        <input type="text"
+                               name="search"
+                               value="@ViewBag.Search"
+                               placeholder="Search youth participant, email or program..." />
+
+                    </div>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="filter-status">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select name="status">
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        @if (ViewBag.Status == "Pending")
+                        {
+                            <option value="Pending" selected>
+                                Pending
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="Pending">
+                                Pending
+                            </option>
+                        }
+
+
+                        @if (ViewBag.Status == "Approved")
+                        {
+                            <option value="Approved" selected>
+                                Approved
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="Approved">
+                                Approved
+                            </option>
+                        }
+
+
+                        @if (ViewBag.Status == "Rejected")
+                        {
+                            <option value="Rejected" selected>
+                                Rejected
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="Rejected">
+                                Rejected
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- SEARCH BUTTON -->
+
+                <button type="submit"
+                        class="search-button">
+
+                    <i class="bi bi-search"></i>
+
+                    Search
+
+                </button>
+
+
+                <!-- RESET -->
+
+            <a asp-controller="Registration"
+               asp-action="Index"
+               class="reset-button">
+
+                    <i class="bi bi-arrow-clockwise"></i>
+
+                    Reset
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =========================================================
+         REGISTRATION TABLE
+    ========================================================== -->
+
+    <section class="table-panel">
+
+
+        <!-- TABLE HEADER -->
+
+        <div class="table-header">
+
+            <div class="table-title">
+
+                <span>
+                    REGISTRATION RECORDS
+                </span>
+
+                <h2>
+                    Registration List
+                </h2>
+
+                <p>
+                    Review registration requests and participant status.
+                </p>
+
+            </div>
+
+
+            <div class="record-count">
+
+                <i class="bi bi-list-columns-reverse"></i>
+
+                @totalRegistrations records
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLE -->
+
+        <div class="table-wrapper">
+
+            <table class="registration-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            PROGRAM
+                        </th>
+
+                        <th>
+                            YOUTH PARTICIPANT
+                        </th>
+
+                        <th>
+                            REGISTERED
+                        </th>
+
+                        <th>
+                            STATUS
+                        </th>
+
+                        <th class="actions-column">
+                            ACTIONS
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (!registrations.Any())
+                    {
+
+                        <tr>
+
+                            <td colspan="5">
+
+                                <div class="empty-table">
+
+                                    <div class="empty-icon">
+
+                                        <i class="bi bi-inbox"></i>
+
+                                    </div>
+
+                                    <strong>
+                                        No registrations found
+                                    </strong>
+
+                                    <span>
+                                        There are currently no registration requests.
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    }
+                    else
+                    {
+
+                        foreach (var registration in registrations)
+                        {
+
+                            <tr>
+
+
+                                <!-- =====================================
+                                     PROGRAM
+                                ====================================== -->
+
+                                <td>
+
+                                    <div class="program-cell">
+
+                                        <div class="program-icon">
+
+                                            <i class="bi bi-calendar-event-fill"></i>
+
+                                        </div>
+
+
+                                        <div class="program-details">
+
+                                            <strong>
+                                                @(registration.Program?.Name ?? "-")
+                                            </strong>
+
+                                            <span>
+                                                Youth Program
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =====================================
+                                     YOUTH PARTICIPANT
+                                ====================================== -->
+
+                                <td>
+
+                                    <div class="participant-cell">
+
+                                        <div class="participant-avatar">
+
+                                            @{
+                                                var participantName =
+                                                    registration.YouthParticipant?.FullName
+                                                    ?? registration.UserEmail
+                                                    ?? "U";
+
+                                                var firstLetter =
+                                                    participantName.Length > 0
+                                                        ? participantName.Substring(0, 1).ToUpper()
+                                                        : "U";
+                                            }
+
+                                            @firstLetter
+
+                                        </div>
+
+
+                                        <div class="participant-details">
+
+                                            <strong>
+                                                @(registration.YouthParticipant?.FullName
+                                                    ?? registration.UserEmail
+                                                    ?? "-")
+                                            </strong>
+
+                                            <span>
+                                                @(registration.UserEmail ?? "No email")
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =====================================
+                                     REGISTERED DATE
+                                ====================================== -->
+
+                                <td>
+
+                                    <div class="date-cell">
+
+                                        <i class="bi bi-calendar3"></i>
+
+                                        <span>
+                                            @(registration.RegisteredAt.ToLocalTime().ToString("MMM dd, yyyy"))
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- =====================================
+                                     STATUS
+                                ====================================== -->
+
+                                <td>
+
+                                    @if (registration.Status == "Approved")
+                                    {
+                                        <span class="status-badge approved">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            Approved
+
+                                        </span>
+                                    }
+                                    else if (registration.Status == "Pending")
+                                    {
+                                        <span class="status-badge pending">
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            Pending
+
+                                        </span>
+                                    }
+                                    else if (registration.Status == "Rejected")
+                                    {
+                                        <span class="status-badge rejected">
+
+                                            <i class="bi bi-x-circle-fill"></i>
+
+                                            Rejected
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge other">
+                                            @registration.Status
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- =====================================
+                                     ACTIONS
+                                ====================================== -->
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+
+                                        <!-- APPROVE -->
+
+                                        @if (registration.Status != "Approved")
+                                        {
+
+                                            <form asp-action="UpdateStatus"
+                                                  method="post">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="id"
+                                                       value="@registration.Id" />
+
+                                                <input type="hidden"
+                                                       name="status"
+                                                       value="Approved" />
+
+                                                <button type="submit"
+                                                        class="action-button approve"
+                                                        title="Approve"
+                                                        onclick="return confirm('Approve this registration?');">
+
+                                                    <i class="bi bi-check-lg"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        }
+
+
+                                        <!-- REJECT -->
+
+                                        @if (registration.Status != "Rejected")
+                                        {
+
+                                            <form asp-action="UpdateStatus"
+                                                  method="post">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="id"
+                                                       value="@registration.Id" />
+
+                                                <input type="hidden"
+                                                       name="status"
+                                                       value="Rejected" />
+
+                                                <button type="submit"
+                                                        class="action-button reject"
+                                                        title="Reject"
+                                                        onclick="return confirm('Reject this registration?');">
+
+                                                    <i class="bi bi-x-lg"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        }
+
+
+                                        <!-- ATTENDANCE -->
+
+                                        @if (registration.Status == "Approved")
+                                        {
+
+                                            <a asp-controller="Attendance"
+                                               asp-action="Participants"
+                                               asp-route-id="@registration.ProgramId"
+                                               class="action-button attendance"
+                                               title="Attendance">
+
+                                                <i class="bi bi-clipboard-check"></i>
+
+                                            </a>
+
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<style>
+
+/* ============================================================
+   REGISTRATION PAGE
+   DESKTOP ONLY
+   ============================================================ */
+
+.registration-page {
+
+    width: 100%;
+
+    padding: 12px 18px 18px;
+
+    color: #FFFFFF;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.registration-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.registration-title {
+
+    min-width: 0;
+
+}
+
+
+.page-eyebrow {
+
+    display: block;
+
+    color: #B7D7E5;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+}
+
+
+.registration-header h1 {
+
+    margin: 3px 0 2px;
+
+    color: #FFFFFF;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    line-height: 1.1;
+
+}
+
+
+.registration-header p {
+
+    margin: 0;
+
+    color: #9FC1D0;
+
+    font-size: 8px;
+
+}
+
+
+.header-button {
+
+    min-height: 30px;
+
+    padding: 0 10px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    border:
+        1px solid
+        rgba(183,215,229,.28);
+
+    border-radius: 7px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0C9096,
+            #0A6C71
+        );
+
+    color: #FFFFFF;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 4px 12px
+        rgba(12,144,150,.18);
+
+}
+
+
+.header-button:hover {
+
+    color: #FFFFFF;
+
+    background:
+        linear-gradient(
+            135deg,
+            #12AAB0,
+            #0C9096
+        );
+
+}
+
+
+/* ============================================================
+   SUMMARY CARDS
+   ============================================================ */
+
+.registration-summary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.summary-card {
+
+    position: relative;
+
+    padding: 10px 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(183,215,229,.20);
+
+    border-radius: 10px;
+
+    backdrop-filter:
+        blur(14px);
+
+    box-shadow:
+        0 6px 18px
+        rgba(0,0,0,.12);
+
+}
+
+
+.total-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(104,157,184,.25),
+            rgba(5,45,46,.55)
+        );
+
+}
+
+
+.pending-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(229,133,62,.20),
+            rgba(5,45,46,.55)
+        );
+
+}
+
+
+.approved-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(38,166,154,.21),
+            rgba(5,45,46,.55)
+        );
+
+}
+
+
+.rejected-card {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(220,80,90,.17),
+            rgba(5,45,46,.55)
+        );
+
+}
+
+
+.summary-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+
+}
+
+
+.total-icon {
+
+    background:
+        rgba(104,157,184,.18);
+
+    color:
+        #B7D7E5;
+
+}
+
+
+.pending-icon {
+
+    background:
+        rgba(229,133,62,.18);
+
+    color:
+        #FFC58D;
+
+}
+
+
+.approved-icon {
+
+    background:
+        rgba(38,166,154,.18);
+
+    color:
+        #8DE5D8;
+
+}
+
+
+.rejected-icon {
+
+    background:
+        rgba(220,80,90,.18);
+
+    color:
+        #FF9DA5;
+
+}
+
+
+.summary-content {
+
+    min-width: 0;
+
+}
+
+
+.summary-content span {
+
+    display: block;
+
+    color:
+        #B7D7E5;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+}
+
+
+.summary-content strong {
+
+    display: block;
+
+    margin-top: 1px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 16px;
+
+    font-weight: 800;
+
+    line-height: 1;
+
+}
+
+
+.summary-content small {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color:
+        #789EAC;
+
+    font-size: 6px;
+
+}
+
+
+/* ============================================================
+   FILTER PANEL
+   ============================================================ */
+
+.filter-panel {
+
+    margin-bottom: 8px;
+
+    padding: 10px;
+
+    border:
+        1px solid
+        rgba(183,215,229,.18);
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12,144,150,.12),
+            rgba(5,45,46,.43)
+        );
+
+    backdrop-filter:
+        blur(14px);
+
+}
+
+
+.filter-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        150px
+        70px
+        60px;
+
+    gap: 6px;
+
+    align-items: end;
+
+}
+
+
+.filter-grid label {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color:
+        #B7D7E5;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+}
+
+
+.input-wrapper {
+
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding:
+        0 8px;
+
+    border:
+        1px solid
+        rgba(183,215,229,.20);
+
+    border-radius: 6px;
+
+    background:
+        rgba(104,157,184,.08);
+
+}
+
+
+.input-wrapper i {
+
+    color:
+        #689DB8;
+
+    font-size: 11px;
+
+}
+
+
+.input-wrapper input {
+
+    width: 100%;
+
+    height: 100%;
+
+    padding: 0;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color:
+        #FFFFFF;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 9px;
+
+}
+
+
+.input-wrapper input::placeholder {
+
+    color:
+        #6F98A7;
+
+}
+
+
+.filter-status select {
+
+    width: 100%;
+
+    height: 30px;
+
+    padding:
+        0 8px;
+
+    border:
+        1px solid
+        rgba(183,215,229,.20);
+
+    border-radius: 6px;
+
+    outline: none;
+
+    background:
+        #052D2E;
+
+    color:
+        #FFFFFF;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 7px;
+
+}
+
+
+.filter-status select option {
+
+    background:
+        #052D2E;
+
+    color:
+        #FFFFFF;
+
+}
+
+
+.search-button,
+.reset-button {
+
+    height: 30px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 4px;
+
+    border-radius: 6px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 7px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+}
+
+
+.search-button {
+
+    border:
+        1px solid
+        #0C9096;
+
+    background:
+        #0C9096;
+
+    color:
+        #FFFFFF;
+
+    cursor: pointer;
+
+}
+
+
+.search-button:hover {
+
+    background:
+        #0A6C71;
+
+    color:
+        #FFFFFF;
+
+}
+
+
+.reset-button {
+
+    border:
+        1px solid
+        rgba(183,215,229,.20);
+
+    background:
+        rgba(104,157,184,.08);
+
+    color:
+        #B7D7E5;
+
+}
+
+
+.reset-button:hover {
+
+    background:
+        rgba(104,157,184,.16);
+
+    color:
+        #FFFFFF;
+
+}
+
+
+/* ============================================================
+   TABLE PANEL
+   ============================================================ */
+
+.table-panel {
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(183,215,229,.20);
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12,144,150,.12),
+            rgba(5,45,46,.44),
+            rgba(3,22,21,.60)
+        );
+
+    backdrop-filter:
+        blur(14px);
+
+    box-shadow:
+        0 6px 20px
+        rgba(0,0,0,.12);
+
+}
+
+
+/* ============================================================
+   TABLE HEADER
+   ============================================================ */
+
+.table-header {
+
+    min-height: 44px;
+
+    padding:
+        10px 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 8px;
+
+    border-bottom:
+        1px solid
+        rgba(183,215,229,.13);
+
+}
+
+
+.table-title > span {
+
+    color:
+        #B7D7E5;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: .11em;
+
+}
+
+
+.table-title h2 {
+
+    margin:
+        2px 0;
+
+    color:
+        #FFFFFF;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+}
+
+
+.table-title p {
+
+    margin: 0;
+
+    color:
+        #789EAC;
+
+    font-size: 7px;
+
+}
+
+
+.record-count {
+
+    min-height: 22px;
+
+    padding:
+        0 7px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    border:
+        1px solid
+        rgba(183,215,229,.17);
+
+    border-radius: 5px;
+
+    background:
+        rgba(104,157,184,.08);
+
+    color:
+        #B7D7E5;
+
+    font-size: 6px;
+
+}
+
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+.registration-table {
+
+    width: 100%;
+
+    min-width: 950px;
+
+    border-collapse: collapse;
+
+    table-layout: fixed;
+
+}
+
+
+/* ============================================================
+   TABLE COLUMNS
+   ============================================================ */
+
+.registration-table th:nth-child(1) {
+    width: 25%;
+}
+
+
+.registration-table th:nth-child(2) {
+    width: 25%;
+}
+
+
+.registration-table th:nth-child(3) {
+    width: 17%;
+}
+
+
+.registration-table th:nth-child(4) {
+    width: 13%;
+}
+
+
+.registration-table th:nth-child(5) {
+    width: 20%;
+}
+
+
+/* ============================================================
+   TABLE HEADER
+   ============================================================ */
+
+.registration-table th {
+
+    height: 32px;
+
+    padding:
+        0 10px;
+
+    border-bottom:
+        1px solid
+        rgba(183,215,229,.17);
+
+    background:
+        rgba(104,157,184,.08);
+
+    color:
+        #9FC1D0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 7px;
+
+    font-weight: 800;
+
+    letter-spacing: .06em;
+
+    text-align: left;
+
+}
+
+
+.registration-table th:last-child {
+
+    text-align: center;
+
+}
+
+
+/* ============================================================
+   TABLE BODY
+   ============================================================ */
+
+.registration-table td {
+
+    min-height: 52px;
+
+    padding:
+        7px 10px;
+
+    border-bottom:
+        1px solid
+        rgba(183,215,229,.09);
+
+    color:
+        #D3E5EC;
+
+    font-size: 7px;
+
+    vertical-align: middle;
+
+}
+
+
+.registration-table tbody tr {
+
+    transition:
+        background .15s ease;
+
+}
+
+
+.registration-table tbody tr:hover {
+
+    background:
+        rgba(12,144,150,.08);
+
+}
+
+
+.registration-table tbody tr:last-child td {
+
+    border-bottom:
+        none;
+
+}
+
+
+/* ============================================================
+   PROGRAM
+   ============================================================ */
+
+.program-cell {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.program-icon {
+
+    width: 26px;
+
+    height: 26px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background:
+        rgba(104,157,184,.14);
+
+    color:
+        #B7D7E5;
+
+    font-size: 10px;
+
+}
+
+
+.program-details {
+
+    min-width: 0;
+
+}
+
+
+.program-details strong {
+
+    display: block;
+
+    overflow: hidden;
+
+    color:
+        #FFFFFF;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+
+}
+
+.program-details span {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color:
+        #6F98A7;
+
+    font-size: 6px;
+
+}
+
+
+/* ============================================================
+   PARTICIPANT
+   ============================================================ */
+
+.participant-cell {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.participant-avatar {
+
+    width: 26px;
+
+    height: 26px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border:
+        1px solid
+        rgba(183,215,229,.20);
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12,144,150,.35),
+            rgba(104,157,184,.25)
+        );
+
+    color:
+        #FFFFFF;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+}
+
+
+.participant-details {
+
+    min-width: 0;
+
+}
+
+
+.participant-details strong {
+
+    display: block;
+
+    overflow: hidden;
+
+    color:
+        #FFFFFF;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.participant-details span {
+
+    display: block;
+
+    margin-top: 2px;
+
+    overflow: hidden;
+
+    color:
+        #6F98A7;
+
+    font-size: 6px;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+/* ============================================================
+   REGISTERED DATE
+   ============================================================ */
+
+.date-cell {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color:
+        #B7D7E5;
+
+}
+
+
+.date-cell i {
+
+    color:
+        #689DB8;
+
+    font-size: 10px;
+
+}
+
+
+.date-cell span {
+
+    font-size: 7px;
+
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.status-badge {
+
+    min-height: 18px;
+
+    padding:
+        0 6px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 3px;
+
+    border-radius: 999px;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+}
+
+
+.status-badge.approved {
+
+    border:
+        1px solid
+        rgba(38,166,154,.25);
+
+    background:
+        rgba(38,166,154,.15);
+
+    color:
+        #8DE5D8;
+
+}
+
+
+.status-badge.pending {
+
+    border:
+        1px solid
+        rgba(229,133,62,.25);
+
+    background:
+        rgba(229,133,62,.15);
+
+    color:
+        #FFC58D;
+
+}
+
+
+.status-badge.rejected {
+
+    border:
+        1px solid
+        rgba(220,80,90,.25);
+
+    background:
+        rgba(220,80,90,.15);
+
+    color:
+        #FF9DA5;
+
+}
+
+
+.status-badge.other {
+
+    border:
+        1px solid
+        rgba(104,157,184,.20);
+
+    background:
+        rgba(104,157,184,.12);
+
+    color:
+        #B7D7E5;
+
+}
+
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.actions-column {
+
+    text-align: center !important;
+
+}
+
+
+.action-buttons {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+}
+
+
+.action-buttons form {
+
+    margin: 0;
+
+    padding: 0;
+
+}
+
+
+.action-button {
+
+    width: 25px;
+
+    height: 25px;
+
+    padding: 0;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 6px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 8px;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        .13s ease;
+
+}
+
+
+.action-button.approve {
+
+    border:
+        1px solid
+        rgba(38,166,154,.35);
+
+    background:
+        rgba(38,166,154,.10);
+
+    color:
+        #8DE5D8;
+
+}
+
+
+.action-button.approve:hover {
+
+    background:
+        rgba(38,166,154,.25);
+
+    color:
+        #FFFFFF;
+
+}
+
+
+.action-button.reject {
+
+    border:
+        1px solid
+        rgba(220,80,90,.35);
+
+    background:
+        rgba(220,80,90,.08);
+
+    color:
+        #FF9DA5;
+
+}
+
+
+.action-button.reject:hover {
+
+    background:
+        rgba(220,80,90,.22);
+
+    color:
+        #FFFFFF;
+
+}
+
+
+.action-button.attendance {
+
+    border:
+        1px solid
+        rgba(104,157,184,.35);
+
+    background:
+        rgba(104,157,184,.10);
+
+    color:
+        #B7D7E5;
+
+}
+
+
+.action-button.attendance:hover {
+
+    background:
+        rgba(104,157,184,.24);
+
+    color:
+        #FFFFFF;
+
+}
+
+
+/* ============================================================
+   EMPTY TABLE
+   ============================================================ */
+
+.empty-table {
+
+    min-height: 90px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+}
+
+
+.empty-icon {
+
+    width: 36px;
+
+    height: 36px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 8px;
+
+    background:
+        rgba(104,157,184,.10);
+
+    color:
+        #689DB8;
+
+    font-size: 14px;
+
+}
+
+
+.empty-table strong {
+
+    margin-top: 4px;
+
+    color:
+        #FFFFFF;
+
+    font-size: 10px;
+
+}
+
+
+.empty-table span {
+
+    color:
+        #789EAC;
+
+    font-size: 7px;
+
+}
+
+
+/* =========================================================
+   ALERTS (TempData messages)
+========================================================= */
+
+.alert-box {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 12px 14px;
+
+    margin-bottom: 15px;
+
+    border-radius: 7px;
+
+    font-size: .73rem;
+
+}
+
+
+.alert-box.success {
+
+    background: #edf5ef;
+
+    border: 1px solid #dcebdd;
+
+    color: #52735b;
+
+}
+
+
+.alert-box.error {
+
+    background: #f8eeee;
+
+    border: 1px solid #efdede;
+
+    color: #955c5c;
+
+}
+
+</style>
+
+

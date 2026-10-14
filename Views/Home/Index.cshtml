@@ -1,0 +1,1865 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="home-page">
+
+    <!-- =========================================================
+         HERO
+    ========================================================== -->
+
+    <section class="hero-section">
+
+        <div class="hero-content">
+
+            <span class="hero-eyebrow">
+                BARANGAY YOUTH
+            </span>
+
+            <h1>
+                Program Management System
+            </h1>
+
+            <p>
+                A role-based system for managing youth participants,
+                programs, registrations, attendance, and reports.
+            </p>
+
+            <div class="hero-actions">
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Admin"
+                           asp-action="Dashboard"
+                           class="hero-button primary">
+
+                            <i class="bi bi-grid"></i>
+                            Go to Dashboard
+
+                        </a>
+                    }
+                    else if (User.IsInRole("Staff"))
+                    {
+                        <a asp-controller="Staff"
+                           asp-action="Dashboard"
+                           class="hero-button primary">
+
+                            <i class="bi bi-grid"></i>
+                            Go to Dashboard
+
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Youth"
+                           asp-action="Dashboard"
+                           class="hero-button primary">
+
+                            <i class="bi bi-grid"></i>
+                            Go to Dashboard
+
+                        </a>
+                    }
+                }
+                else
+                {
+                    <a asp-controller="Account"
+                       asp-action="Login"
+                       class="hero-button primary">
+
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Sign In
+
+                    </a>
+
+                    <a asp-controller="Account"
+                       asp-action="Register"
+                       class="hero-button secondary">
+
+                        <i class="bi bi-person-plus"></i>
+                        Create Account
+
+                    </a>
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- HERO VISUAL -->
+
+        <div class="hero-visual">
+
+            <div class="visual-main-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+
+
+            <div class="floating-card card-one">
+
+                <i class="bi bi-calendar-event"></i>
+
+                <div>
+                    <strong>
+                        Programs
+                    </strong>
+
+                    <span>
+                        Youth activities
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="floating-card card-two">
+
+                <i class="bi bi-person-check"></i>
+
+                <div>
+                    <strong>
+                        Registration
+                    </strong>
+
+                    <span>
+                        Track participation
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="floating-card card-three">
+
+                <i class="bi bi-clipboard-check"></i>
+
+                <div>
+                    <strong>
+                        Attendance
+                    </strong>
+
+                    <span>
+                        Monitor records
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         SYSTEM AREAS
+    ========================================================== -->
+
+    <section class="home-panel">
+
+        <div class="section-header">
+
+            <span>
+                SYSTEM AREAS
+            </span>
+
+            <h2>
+                What the system manages
+            </h2>
+
+            <p>
+                The main functional areas of the Barangay Youth
+                Program Management System.
+            </p>
+
+        </div>
+
+
+        <div class="feature-grid">
+
+
+            <!-- =================================================
+                 YOUTH PARTICIPANTS
+            ================================================== -->
+
+            <a asp-controller="YouthParticipants"
+               asp-action="Index"
+               class="feature-card">
+
+                <div class="feature-icon youth">
+                    <i class="bi bi-people"></i>
+                </div>
+
+                <h3>
+                    Youth Participants
+                </h3>
+
+                <p>
+                    Maintain youth participant records and
+                    permitted profile information.
+                </p>
+
+                <div class="feature-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <!-- =================================================
+                 PROGRAMS
+            ================================================== -->
+
+            <a asp-controller="Programs"
+               asp-action="Index"
+               class="feature-card">
+
+                <div class="feature-icon programs">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+
+                <h3>
+                    Programs
+                </h3>
+
+                <p>
+                    Create and manage youth programs,
+                    schedules, activities, and status.
+                </p>
+
+                <div class="feature-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <!-- =================================================
+                 REGISTRATION
+            ================================================== -->
+
+            <a asp-controller="Registration"
+               asp-action="Index"
+               class="feature-card">
+
+                <div class="feature-icon registration">
+                    <i class="bi bi-person-check"></i>
+                </div>
+
+                <h3>
+                    Registration
+                </h3>
+
+                <p>
+                    Submit, process, approve, and monitor
+                    program registrations.
+                </p>
+
+                <div class="feature-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <!-- =================================================
+                 ATTENDANCE
+            ================================================== -->
+
+            <a asp-controller="Attendance"
+               asp-action="Index"
+               class="feature-card">
+
+                <div class="feature-icon attendance">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+
+                <h3>
+                    Attendance
+                </h3>
+
+                <p>
+                    Record and monitor youth participation
+                    in program activities.
+                </p>
+
+                <div class="feature-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <!-- =================================================
+                 REPORTS
+            ================================================== -->
+
+            <a asp-controller="Reports"
+               asp-action="Index"
+               class="feature-card">
+
+                <div class="feature-icon reports">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+
+                <h3>
+                    Reports
+                </h3>
+
+                <p>
+                    Provide role-appropriate participant,
+                    program, registration, and attendance information.
+                </p>
+
+                <div class="feature-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+
+            <!-- =================================================
+                 PROFILE
+            ================================================== -->
+
+            <a asp-controller="Profile"
+               asp-action="Index"
+               class="feature-card">
+
+                <div class="feature-icon profile">
+                    <i class="bi bi-person-vcard"></i>
+                </div>
+
+                <h3>
+                    Profile
+                </h3>
+
+                <p>
+                    Access your authenticated account and
+                    profile information.
+                </p>
+
+                <div class="feature-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ROLE ACCESS
+    ========================================================== -->
+
+    <section class="home-panel">
+
+        <div class="section-header">
+
+            <span>
+                ROLE ACCESS
+            </span>
+
+            <h2>
+                Role-based system access
+            </h2>
+
+            <p>
+                Available system functions depend on the
+                signed-in account role.
+            </p>
+
+        </div>
+
+
+        <div class="role-grid">
+
+
+            <!-- ADMIN -->
+
+            <div class="role-card">
+
+                <div class="role-icon admin">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+
+                <div class="role-content">
+
+                    <h3>
+                        Admin
+                    </h3>
+
+                    <p>
+                        Full administrative access to system
+                        records, management modules, reports,
+                        users, and roles.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- STAFF -->
+
+            <div class="role-card">
+
+                <div class="role-icon staff">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+
+                <div class="role-content">
+
+                    <h3>
+                        Staff
+                    </h3>
+
+                    <p>
+                        Operational access for youth participants,
+                        programs, registrations, attendance, and reports.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- USER -->
+
+            <div class="role-card">
+
+                <div class="role-icon user">
+                    <i class="bi bi-person-heart"></i>
+                </div>
+
+                <div class="role-content">
+
+                    <h3>
+                        User / Youth
+                    </h3>
+
+                    <p>
+                        Personal access for available programs,
+                        registrations, attendance, and profile information.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         BASIC WORKFLOW
+    ========================================================== -->
+
+    <section class="workflow-section">
+
+        <div class="section-header center">
+
+            <span>
+                BASIC WORKFLOW
+            </span>
+
+            <h2>
+                From registration to attendance
+            </h2>
+
+            <p>
+                The system connects youth participation from
+                registration through attendance monitoring.
+            </p>
+
+        </div>
+
+
+        <div class="workflow-row">
+
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">
+                    1
+                </div>
+
+                <i class="bi bi-person-plus workflow-icon"></i>
+
+                <strong>
+                    Register
+                </strong>
+
+                <span>
+                    Create an account
+                </span>
+
+            </div>
+
+
+            <i class="bi bi-arrow-right workflow-arrow"></i>
+
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">
+                    2
+                </div>
+
+                <i class="bi bi-calendar-event workflow-icon"></i>
+
+                <strong>
+                    Browse Programs
+                </strong>
+
+                <span>
+                    View youth activities
+                </span>
+
+            </div>
+
+
+            <i class="bi bi-arrow-right workflow-arrow"></i>
+
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">
+                    3
+                </div>
+
+                <i class="bi bi-person-check workflow-icon"></i>
+
+                <strong>
+                    Registration
+                </strong>
+
+                <span>
+                    Submit participation
+                </span>
+
+            </div>
+
+
+            <i class="bi bi-arrow-right workflow-arrow"></i>
+
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">
+                    4
+                </div>
+
+                <i class="bi bi-check-circle workflow-icon"></i>
+
+                <strong>
+                    Approval
+                </strong>
+
+                <span>
+                    Process the request
+                </span>
+
+            </div>
+
+
+            <i class="bi bi-arrow-right workflow-arrow"></i>
+
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">
+                    5
+                </div>
+
+                <i class="bi bi-clipboard-check workflow-icon"></i>
+
+                <strong>
+                    Attendance
+                </strong>
+
+                <span>
+                    Record participation
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         CTA
+    ========================================================== -->
+
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <section class="cta-section">
+
+            <div>
+
+                <span>
+                    READY TO START?
+                </span>
+
+                <h2>
+                    Access the Youth Program Management System
+                </h2>
+
+                <p>
+                    Sign in to your account or create a new User / Youth account.
+                </p>
+
+            </div>
+
+
+            <div class="cta-actions">
+
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="cta-button primary">
+
+                    Sign In
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+
+                <a asp-controller="Account"
+                   asp-action="Register"
+                   class="cta-button secondary">
+
+                    Register
+
+                </a>
+
+            </div>
+
+        </section>
+    }
+
+</div>
+
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================== */
+
+    .home-page {
+
+        width: 100%;
+
+        max-width: 1350px;
+
+        margin: 0 auto;
+
+        padding: 25px 30px 45px;
+
+        font-family: Arial, Helvetica, sans-serif;
+
+    }
+
+
+    /* =========================================================
+       HERO
+    ========================================================== */
+
+    .hero-section {
+
+        min-height: 355px;
+
+        margin-bottom: 15px;
+
+        padding: 35px;
+
+        position: relative;
+
+        overflow: hidden;
+
+        display: grid;
+
+        grid-template-columns: 1.3fr .7fr;
+
+        align-items: center;
+
+        gap: 20px;
+
+        border: 1px solid #dbe5f0;
+
+        border-radius: 17px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #f8fbff 0%,
+                #ffffff 58%,
+                #f5f9ff 100%
+            );
+
+        box-shadow:
+            0 12px 30px
+            rgba(15, 23, 42, .04);
+
+    }
+
+
+    .hero-section::after {
+
+        content: "";
+
+        position: absolute;
+
+        width: 270px;
+
+        height: 270px;
+
+        right: -100px;
+
+        bottom: -120px;
+
+        border-radius: 50%;
+
+        background:
+            rgba(13, 110, 253, .055);
+
+    }
+
+
+    .hero-content {
+
+        position: relative;
+
+        z-index: 2;
+
+    }
+
+
+    .hero-eyebrow {
+
+        display: block;
+
+        color: #0d6efd;
+
+        font-size: .55rem;
+
+        font-weight: 850;
+
+        letter-spacing: .13em;
+
+    }
+
+
+    .hero-content h1 {
+
+        max-width: 620px;
+
+        margin: 7px 0 9px;
+
+        color: #111827;
+
+        font-size: 2rem;
+
+        line-height: 1.15;
+
+        font-weight: 850;
+
+        letter-spacing: -.7px;
+
+    }
+
+
+    .hero-content p {
+
+        max-width: 600px;
+
+        margin: 0;
+
+        color: #64748b;
+
+        font-size: .69rem;
+
+        line-height: 1.6;
+
+    }
+
+
+    .hero-actions {
+
+        margin-top: 20px;
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 7px;
+
+    }
+
+
+    .hero-button {
+
+        min-height: 39px;
+
+        padding: 0 12px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 6px;
+
+        border-radius: 8px;
+
+        font-size: .56rem;
+
+        font-weight: 800;
+
+        text-decoration: none;
+
+        transition:
+            transform .15s ease,
+            background .15s ease;
+
+    }
+
+
+    .hero-button.primary {
+
+        border: 1px solid #0d6efd;
+
+        background: #0d6efd;
+
+        color: #ffffff;
+
+    }
+
+
+    .hero-button.primary:hover {
+
+        background: #0b5ed7;
+
+        color: #ffffff;
+
+        transform: translateY(-1px);
+
+    }
+
+
+    .hero-button.secondary {
+
+        border: 1px solid #d9e1ea;
+
+        background: #ffffff;
+
+        color: #64748b;
+
+    }
+
+
+    .hero-button.secondary:hover {
+
+        background: #f8fafc;
+
+        color: #0d6efd;
+
+    }
+
+
+    /* =========================================================
+       HERO VISUAL
+    ========================================================== */
+
+    .hero-visual {
+
+        min-height: 250px;
+
+        position: relative;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+    }
+
+
+    .visual-main-icon {
+
+        width: 125px;
+
+        height: 125px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 35px;
+
+        background: #0d6efd;
+
+        color: #ffffff;
+
+        font-size: 3rem;
+
+        box-shadow:
+            0 20px 40px
+            rgba(13, 110, 253, .20);
+
+    }
+
+
+    .floating-card {
+
+        position: absolute;
+
+        min-width: 135px;
+
+        padding: 9px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        border: 1px solid #e3eaf2;
+
+        border-radius: 9px;
+
+        background: #ffffff;
+
+        box-shadow:
+            0 10px 24px
+            rgba(15, 23, 42, .07);
+
+    }
+
+
+    .floating-card > i {
+
+        width: 28px;
+
+        height: 28px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 7px;
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+        font-size: .62rem;
+
+    }
+
+
+    .floating-card strong {
+
+        display: block;
+
+        color: #475569;
+
+        font-size: .51rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .floating-card span {
+
+        display: block;
+
+        margin-top: 2px;
+
+        color: #94a3b8;
+
+        font-size: .43rem;
+
+    }
+
+
+    .card-one {
+
+        top: 25px;
+
+        right: 8px;
+
+    }
+
+
+    .card-two {
+
+        bottom: 42px;
+
+        left: 2px;
+
+    }
+
+
+    .card-three {
+
+        bottom: 4px;
+
+        right: 20px;
+
+    }
+
+
+    /* =========================================================
+       PANELS
+    ========================================================== */
+
+    .home-panel {
+
+        margin-bottom: 14px;
+
+        padding: 18px;
+
+        border: 1px solid #e2e8f0;
+
+        border-radius: 12px;
+
+        background: #ffffff;
+
+        box-shadow:
+            0 7px 20px
+            rgba(15, 23, 42, .025);
+
+    }
+
+
+    .section-header {
+
+        margin-bottom: 15px;
+
+    }
+
+
+    .section-header span {
+
+        display: block;
+
+        color: #0d6efd;
+
+        font-size: .5rem;
+
+        font-weight: 850;
+
+        letter-spacing: .08em;
+
+    }
+
+
+    .section-header h2 {
+
+        margin: 4px 0 3px;
+
+        color: #334155;
+
+        font-size: .95rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .section-header p {
+
+        margin: 0;
+
+        color: #94a3b8;
+
+        font-size: .54rem;
+
+    }
+
+
+    /* =========================================================
+       FEATURE GRID
+    ========================================================== */
+
+    .feature-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 9px;
+
+    }
+
+
+    .feature-card {
+
+        position: relative;
+
+        min-height: 130px;
+
+        padding: 13px;
+
+        display: block;
+
+        text-decoration: none;
+
+        border: 1px solid #e7ebf0;
+
+        border-radius: 9px;
+
+        background: #fbfcfe;
+
+        transition:
+            transform .15s ease,
+            box-shadow .15s ease,
+            border-color .15s ease;
+
+    }
+
+
+    .feature-card:hover {
+
+        text-decoration: none;
+
+        transform: translateY(-2px);
+
+        border-color: #d5e3f5;
+
+        box-shadow:
+            0 8px 18px
+            rgba(15, 23, 42, .06);
+
+    }
+
+
+    .feature-icon {
+
+        width: 34px;
+
+        height: 34px;
+
+        margin-bottom: 9px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 8px;
+
+        font-size: .67rem;
+
+    }
+
+
+    .feature-icon.youth {
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+    }
+
+
+    .feature-icon.programs {
+
+        background: #f5f3ff;
+
+        color: #7c3aed;
+
+    }
+
+
+    .feature-icon.registration {
+
+        background: #fff7ed;
+
+        color: #ea580c;
+
+    }
+
+
+    .feature-icon.attendance {
+
+        background: #ecfdf5;
+
+        color: #16a34a;
+
+    }
+
+
+    .feature-icon.reports {
+
+        background: #eef2ff;
+
+        color: #4f46e5;
+
+    }
+
+
+    .feature-icon.profile {
+
+        background: #f0fdfa;
+
+        color: #0f766e;
+
+    }
+
+
+    .feature-card h3 {
+
+        margin: 0 0 5px;
+
+        color: #475569;
+
+        font-size: .59rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .feature-card p {
+
+        margin: 0;
+
+        padding-right: 25px;
+
+        color: #94a3b8;
+
+        font-size: .48rem;
+
+        line-height: 1.55;
+
+    }
+
+
+    .feature-arrow {
+
+        position: absolute;
+
+        right: 12px;
+
+        bottom: 12px;
+
+        width: 23px;
+
+        height: 23px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: #f1f5f9;
+
+        color: #64748b;
+
+        font-size: .5rem;
+
+    }
+
+
+    .feature-card:hover .feature-arrow {
+
+        background: #eff6ff;
+
+        color: #0d6efd;
+
+    }
+
+
+    /* =========================================================
+       ROLE ACCESS
+    ========================================================== */
+
+    .role-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 9px;
+
+    }
+
+
+    .role-card {
+
+        min-height: 108px;
+
+        padding: 13px;
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 9px;
+
+        border: 1px solid #e7ebf0;
+
+        border-radius: 9px;
+
+        background: #fbfcfe;
+
+    }
+
+
+    .role-icon {
+
+        width: 36px;
+
+        height: 36px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 8px;
+
+        font-size: .68rem;
+
+    }
+
+
+    .role-icon.admin {
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+    }
+
+
+    .role-icon.staff {
+
+        background: #f5f3ff;
+
+        color: #7c3aed;
+
+    }
+
+
+    .role-icon.user {
+
+        background: #ecfdf5;
+
+        color: #16a34a;
+
+    }
+
+
+    .role-content {
+
+        min-width: 0;
+
+    }
+
+
+    .role-content h3 {
+
+        margin: 1px 0 4px;
+
+        color: #475569;
+
+        font-size: .6rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .role-content p {
+
+        margin: 0;
+
+        color: #94a3b8;
+
+        font-size: .47rem;
+
+        line-height: 1.55;
+
+    }
+
+
+    /* =========================================================
+       WORKFLOW
+    ========================================================== */
+
+    .workflow-section {
+
+        margin-bottom: 14px;
+
+        padding: 22px 18px;
+
+        border: 1px solid #e2e8f0;
+
+        border-radius: 12px;
+
+        background: #ffffff;
+
+    }
+
+
+    .section-header.center {
+
+        text-align: center;
+
+    }
+
+
+    .workflow-row {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 6px;
+
+        overflow-x: auto;
+
+        padding-bottom: 2px;
+
+    }
+
+
+    .workflow-item {
+
+        min-width: 145px;
+
+        padding: 11px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        border: 1px solid #e7ebf0;
+
+        border-radius: 9px;
+
+        background: #fbfcfe;
+
+        text-align: center;
+
+    }
+
+
+    .workflow-number {
+
+        width: 24px;
+
+        height: 24px;
+
+        margin-bottom: 6px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 7px;
+
+        background: #eff6ff;
+
+        color: #2563eb;
+
+        font-size: .46rem;
+
+        font-weight: 850;
+
+    }
+
+
+    .workflow-icon {
+
+        margin-bottom: 5px;
+
+        color: #64748b;
+
+        font-size: .78rem;
+
+    }
+
+
+    .workflow-item strong {
+
+        color: #475569;
+
+        font-size: .5rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .workflow-item span {
+
+        margin-top: 3px;
+
+        color: #94a3b8;
+
+        font-size: .43rem;
+
+    }
+
+
+    .workflow-arrow {
+
+        flex-shrink: 0;
+
+        color: #cbd5e1;
+
+        font-size: .57rem;
+
+    }
+
+
+    /* =========================================================
+       CTA
+    ========================================================== */
+
+    .cta-section {
+
+        padding: 20px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 15px;
+
+        border: 1px solid #dbe5f0;
+
+        border-radius: 12px;
+
+        background: #f8fbff;
+
+    }
+
+
+    .cta-section > div:first-child > span {
+
+        display: block;
+
+        color: #0d6efd;
+
+        font-size: .49rem;
+
+        font-weight: 850;
+
+        letter-spacing: .08em;
+
+    }
+
+
+    .cta-section h2 {
+
+        margin: 4px 0 3px;
+
+        color: #334155;
+
+        font-size: .82rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .cta-section p {
+
+        margin: 0;
+
+        color: #94a3b8;
+
+        font-size: .5rem;
+
+    }
+
+
+    .cta-actions {
+
+        display: flex;
+
+        gap: 7px;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .cta-button {
+
+        min-height: 35px;
+
+        padding: 0 10px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 5px;
+
+        border-radius: 7px;
+
+        font-size: .52rem;
+
+        font-weight: 750;
+
+        text-decoration: none;
+
+    }
+
+
+    .cta-button.primary {
+
+        background: #0d6efd;
+
+        border: 1px solid #0d6efd;
+
+        color: #ffffff;
+
+    }
+
+
+    .cta-button.primary:hover {
+
+        background: #0b5ed7;
+
+        color: #ffffff;
+
+    }
+
+
+    .cta-button.secondary {
+
+        background: #ffffff;
+
+        border: 1px solid #d9e1ea;
+
+        color: #64748b;
+
+    }
+
+
+    .cta-button.secondary:hover {
+
+        color: #0d6efd;
+
+        background: #f8fafc;
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================== */
+
+    @@media (max-width: 1050px) {
+
+        .hero-section {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .hero-visual {
+
+            min-height: 210px;
+
+        }
+
+
+        .feature-grid {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+        }
+
+
+        .role-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+    }
+
+
+    @@media (max-width: 750px) {
+
+        .home-page {
+
+            padding: 21px 17px 35px;
+
+        }
+
+
+        .hero-section {
+
+            padding: 25px 20px;
+
+        }
+
+
+        .hero-content h1 {
+
+            font-size: 1.55rem;
+
+        }
+
+
+        .hero-actions {
+
+            width: 100%;
+
+        }
+
+
+        .hero-button {
+
+            flex: 1;
+
+        }
+
+
+        .feature-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .cta-section {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+        }
+
+
+        .cta-actions {
+
+            width: 100%;
+
+        }
+
+
+        .cta-button {
+
+            flex: 1;
+
+        }
+
+    }
+
+
+    @@media (max-width: 500px) {
+
+        .hero-visual {
+
+            transform: scale(.9);
+
+        }
+
+
+        .floating-card {
+
+            min-width: 120px;
+
+        }
+
+
+        .card-one {
+
+            right: -5px;
+
+        }
+
+
+        .card-two {
+
+            left: -5px;
+
+        }
+
+
+        .card-three {
+
+            right: 5px;
+
+        }
+
+
+        .hero-actions {
+
+            flex-direction: column;
+
+        }
+
+
+        .hero-button {
+
+            width: 100%;
+
+            flex: none;
+
+        }
+
+
+        .cta-actions {
+
+            flex-direction: column;
+
+        }
+
+
+        .cta-button {
+
+            width: 100%;
+
+            flex: none;
+
+        }
+
+    }
+
+</style>

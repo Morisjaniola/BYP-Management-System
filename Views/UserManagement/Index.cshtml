@@ -1,0 +1,2692 @@
+@model IEnumerable<BYPManagementSystem.Controllers.UserManagementController.UserManagementRowViewModel>
+
+@{
+    ViewData["Title"] = "User Management";
+
+    var users =
+        Model?.ToList()
+        ?? new List<BYPManagementSystem.Controllers.UserManagementController.UserManagementRowViewModel>();
+
+    var search =
+        ViewBag.Search as string
+        ?? "";
+
+    var selectedRole =
+        ViewBag.Role as string
+        ?? "";
+
+    var selectedStatus =
+        ViewBag.Status as string
+        ?? "";
+
+    var roles =
+        ViewBag.Roles as IEnumerable<string>
+        ?? Enumerable.Empty<string>();
+
+    var currentUserId =
+        User.FindFirst(
+            System.Security.Claims.ClaimTypes.NameIdentifier
+        )?.Value;
+
+    var totalUsers =
+        users.Count;
+
+    var activeUsers =
+        users.Count(u => u.IsActive);
+
+    var inactiveUsers =
+        users.Count(u => !u.IsActive);
+
+    var adminUsers =
+        users.Count(u => u.Role == "Admin");
+
+    var staffUsers =
+        users.Count(u => u.Role == "Staff");
+
+    var youthUsers =
+        users.Count(u => u.Role == "User");
+}
+
+
+<div class="user-management-page">
+
+    <!-- ==========================================================
+         HEADER
+    =========================================================== -->
+
+    <div class="page-header">
+
+        <div class="header-title-content">
+
+            <div class="header-title-row">
+                <div class="header-icon">
+
+                    <i class="bi bi-person-gear"></i>
+
+                </div>
+                <div>
+
+                    <span class="page-eyebrow">
+                        ADMINISTRATION
+                    </span>
+
+                    <h1>
+                        User Management
+                    </h1>
+
+                    <p>
+                        Manage system accounts, roles, account status,
+                        and authorized users.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <a asp-controller="RoleManagement"
+               asp-action="Index"
+               class="header-button secondary">
+
+                <i class="bi bi-shield-lock"></i>
+
+                Role Management
+
+            </a>
+
+
+            <a asp-controller="UserManagement"
+               asp-action="Create"
+               class="header-button primary">
+
+                <i class="bi bi-person-plus"></i>
+
+                <span class="create-user-text">
+                    Create User
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         ALERTS
+    =========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-box success">
+
+            <i class="bi bi-check-circle-fill"></i>
+
+            <span>
+                @TempData["Success"]
+            </span>
+
+        </div>
+    }
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-box error">
+
+            <i class="bi bi-exclamation-circle-fill"></i>
+
+            <span>
+                @TempData["Error"]
+            </span>
+
+        </div>
+    }
+
+
+    <!-- ==========================================================
+         SUMMARY
+    =========================================================== -->
+
+    <div class="summary-grid">
+
+        <!-- TOTAL -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon total">
+
+                <i class="bi bi-people"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Total Users
+                </span>
+
+                <strong>
+                    @totalUsers
+                </strong>
+
+                <small>
+                    Accounts shown
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon active">
+
+                <i class="bi bi-person-check"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Active
+                </span>
+
+                <strong>
+                    @activeUsers
+                </strong>
+
+                <small>
+                    Active accounts
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVE -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon inactive">
+
+                <i class="bi bi-person-x"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Inactive
+                </span>
+
+                <strong>
+                    @inactiveUsers
+                </strong>
+
+                <small>
+                    Deactivated accounts
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ADMIN -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon admin">
+
+                <i class="bi bi-shield-check"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Admin
+                </span>
+
+                <strong>
+                    @adminUsers
+                </strong>
+
+                <small>
+                    Administrator accounts
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- STAFF -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon staff">
+
+                <i class="bi bi-person-badge"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    Staff
+                </span>
+
+                <strong>
+                    @staffUsers
+                </strong>
+
+                <small>
+                    Staff accounts
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- USER -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon user">
+
+                <i class="bi bi-person"></i>
+
+            </div>
+
+            <div class="summary-content">
+
+                <span>
+                    User / Youth
+                </span>
+
+                <strong>
+                    @youthUsers
+                </strong>
+
+                <small>
+                    Youth accounts
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         FILTERS
+    =========================================================== -->
+
+    <section class="filter-card">
+
+        <div class="filter-header">
+
+            <div>
+
+                <span>
+                    ACCOUNT DIRECTORY
+                </span>
+
+                <h2>
+                    Search and Filter Users
+                </h2>
+
+            </div>
+
+
+            <a asp-controller="UserManagement"
+               asp-action="Index"
+               class="reset-link">
+
+                <i class="bi bi-arrow-clockwise"></i>
+
+                Reset
+
+            </a>
+
+        </div>
+
+
+        <form asp-controller="UserManagement"
+              asp-action="Index"
+              method="get"
+              class="filter-form">
+
+            <div class="filter-field search-field">
+
+                <label>
+                    Search
+                </label>
+
+                <div class="input-with-icon">
+
+                    <i class="bi bi-search"></i>
+
+                    <input type="text"
+                           name="search"
+                           value="@search"
+                           placeholder="Search email or username..." />
+
+                </div>
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label>
+                    Role
+                </label>
+
+                <select name="role">
+
+                    <option value="">
+                        All Roles
+                    </option>
+
+                    @foreach (var roleName in roles)
+                    {
+                        <option value="@roleName"
+                                selected="@(selectedRole == roleName ? "selected" : null)">
+
+                            @roleName
+
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label>
+                    Status
+                </label>
+
+                <select name="status">
+
+                    <option value="">
+                        All Status
+                    </option>
+
+                    <option value="Active"
+                            selected="@(selectedStatus == "Active" ? "selected" : null)">
+
+                        Active
+
+                    </option>
+
+                    <option value="Inactive"
+                            selected="@(selectedStatus == "Inactive" ? "selected" : null)">
+
+                        Inactive
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-submit">
+
+                <button type="submit"
+                        class="search-button">
+
+                    <i class="bi bi-search"></i>
+
+                    Apply Filters
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- ==========================================================
+         USER TABLE
+    =========================================================== -->
+
+    <section class="users-card">
+
+        <div class="users-card-header">
+
+            <div>
+
+                <span>
+                    USERS
+                </span>
+
+                <h2>
+                    System Accounts
+                </h2>
+
+            </div>
+
+
+            <div class="record-count">
+
+                @users.Count
+
+                @(users.Count == 1 ? "account" : "accounts")
+
+            </div>
+
+        </div>
+
+
+        @if (users.Any())
+        {
+
+            <div class="table-wrapper">
+
+                <table class="users-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                USER
+                            </th>
+
+                            <th>
+                                ROLE
+                            </th>
+
+                            <th>
+                                STATUS
+                            </th>
+
+                            <th>
+                                EMAIL
+                            </th>
+
+                            <th>
+                                ACTIONS
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var user in users)
+                        {
+
+                            var roleClass =
+                                user.Role
+                                    .ToLowerInvariant()
+                                    .Replace(" ", "-");
+
+                            var statusClass =
+                                user.IsActive
+                                    ? "active"
+                                    : "inactive";
+
+
+                            <tr>
+
+                                <!-- USER -->
+
+                                <td>
+
+                                    <div class="user-cell">
+
+                                        <div class="user-avatar">
+
+                                            <i class="bi bi-person-fill"></i>
+
+                                        </div>
+
+
+                                        <div class="user-info">
+
+                                            <strong>
+                                                @(
+                                                    string.IsNullOrWhiteSpace(
+                                                        user.UserName)
+                                                    ? "Unnamed User"
+                                                    : user.UserName
+                                                )
+                                            </strong>
+
+                                            <span>
+                                                ID: @user.Id
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ROLE -->
+
+                                <td>
+
+                                    <span class="role-badge @roleClass">
+
+                                        @user.Role
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    @if (user.IsActive)
+                                    {
+
+                                        <span class="status-badge active">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            Active
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="status-badge inactive">
+
+                                            <i class="bi bi-x-circle-fill"></i>
+
+                                            Inactive
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- EMAIL -->
+
+                                <td>
+
+                                    <div class="email-cell">
+
+                                        <i class="bi bi-envelope"></i>
+
+                                        <span>
+                                            @user.Email
+                                        </span>
+
+                                    </div>
+
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <small class="confirmed-text">
+
+                                            <i class="bi bi-check-circle"></i>
+
+                                            Confirmed
+
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="unconfirmed-text">
+
+                                            <i class="bi bi-dash-circle"></i>
+
+                                            Not confirmed
+
+                                        </small>
+                                    }
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <a asp-controller="UserManagement"
+                                           asp-action="Edit"
+                                           asp-route-id="@user.Id"
+                                           class="action-button edit"
+                                           title="Edit User">
+
+                                            <i class="bi bi-pencil"></i>
+
+                                            Edit
+
+                                        </a>
+
+
+                                        @if (user.IsActive)
+                                        {
+
+                                            @if (user.Id != currentUserId)
+                                            {
+
+                                                <form asp-controller="UserManagement"
+                                                      asp-action="Deactivate"
+                                                      asp-route-id="@user.Id"
+                                                      method="post"
+                                                      onsubmit="return confirm('Deactivate this user account?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="action-button deactivate"
+                                                            title="Deactivate User">
+
+                                                        <i class="bi bi-person-dash"></i>
+
+                                                        Deactivate
+
+                                                    </button>
+
+                                                </form>
+
+                                            }
+                                            else
+                                            {
+
+                                                <span class="self-badge">
+
+                                                    <i class="bi bi-person-check"></i>
+
+                                                    Current Account
+
+                                                </span>
+
+                                            }
+
+                                        }
+                                        else
+                                        {
+
+                                            <form asp-controller="UserManagement"
+                                                  asp-action="Activate"
+                                                  asp-route-id="@user.Id"
+                                                  method="post"
+                                                  onsubmit="return confirm('Activate this user account?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="action-button activate"
+                                                        title="Activate User">
+
+                                                    <i class="bi bi-person-check"></i>
+
+                                                    Activate
+
+                                                </button>
+
+                                            </form>
+
+                                        }
+
+
+                                        <a asp-controller="UserManagement"
+                                           asp-action="ResetPassword"
+                                           asp-route-id="@user.Id"
+                                           class="action-button password"
+                                           title="Reset Password">
+
+                                            <i class="bi bi-key"></i>
+
+                                            Password
+
+                                        </a>
+
+
+                                        @if (user.Id != currentUserId)
+                                        {
+
+                                            <form asp-controller="UserManagement"
+                                                  asp-action="Delete"
+                                                  asp-route-id="@user.Id"
+                                                  method="post"
+                                                  class="delete-user-form">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="button"
+                                                        class="action-button delete delete-trigger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#deleteUserModal"
+                                                        data-email="@user.Email"
+                                                        title="Delete User">
+
+                                                    <i class="bi bi-trash"></i>
+
+                                                    Delete
+
+                                                </button>
+
+                                            </form>
+
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+        else
+        {
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="bi bi-person-x"></i>
+
+                </div>
+
+                <h3>
+                    No users found
+                </h3>
+
+                @if (!string.IsNullOrWhiteSpace(search) ||
+                     !string.IsNullOrWhiteSpace(selectedRole) ||
+                     !string.IsNullOrWhiteSpace(selectedStatus))
+                {
+
+                    <p>
+                        No user matched the current search or filters.
+                    </p>
+
+                    <a asp-controller="UserManagement"
+                       asp-action="Index"
+                       class="empty-button">
+
+                        <i class="bi bi-arrow-clockwise"></i>
+
+                        Clear Filters
+
+                    </a>
+
+                }
+                else
+                {
+
+                    <p>
+                        No system accounts are currently available.
+                    </p>
+
+                    <a asp-controller="UserManagement"
+                       asp-action="Create"
+                       class="empty-button">
+
+                        <i class="bi bi-person-plus"></i>
+
+                        Create First User
+
+                    </a>
+
+                }
+
+            </div>
+
+        }
+
+    </section>
+
+
+    <!-- ==========================================================
+         ADMIN NOTE
+    =========================================================== -->
+
+    <section class="admin-note">
+
+        <div class="admin-note-icon">
+
+            <i class="bi bi-shield-check"></i>
+
+        </div>
+
+
+        <div>
+
+            <strong>
+                Administrator Access
+            </strong>
+
+            <p>
+                User Management is restricted to Admin accounts.
+                Staff and User / Youth accounts cannot access this module.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         DELETE USER CONFIRMATION MODAL
+    =========================================================== -->
+
+    <div class="modal fade delete-user-modal"
+         id="deleteUserModal"
+         tabindex="-1"
+         aria-labelledby="deleteUserModalTitle"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content delete-modal-content">
+
+                <div class="delete-modal-icon">
+
+                    <i class="bi bi-trash"></i>
+
+                </div>
+
+
+                <div class="modal-body delete-modal-body">
+
+                    <h3 id="deleteUserModalTitle">
+                        Delete User
+                    </h3>
+
+                    <p>
+                        Are you sure you want to delete
+                        <strong id="deleteUserName">this user account</strong>?
+                    </p>
+
+                    <p class="delete-modal-warning">
+
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+
+                        This action cannot be undone.
+
+                    </p>
+
+                </div>
+
+
+                <div class="modal-footer delete-modal-footer">
+
+                    <button type="button"
+                            class="delete-modal-cancel"
+                            data-bs-dismiss="modal">
+
+                        <i class="bi bi-x-lg"></i>
+
+                        Cancel
+
+                    </button>
+
+
+                    <button type="button"
+                            id="confirmDeleteButton"
+                            class="delete-modal-confirm">
+
+                        <i class="bi bi-trash"></i>
+
+                        Delete
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ============================================================
+       PAGE
+    ============================================================ */
+
+    .user-management-page {
+
+        width: 100%;
+
+        padding: 12px 18px 18px;
+
+    }
+
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+
+    .page-header {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 14px;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .page-eyebrow {
+
+        display: block;
+
+        color: #7e8999;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+        letter-spacing: 1px;
+
+    }
+
+
+    .page-header h1 {
+
+        margin: 3px 0 2px;
+
+        color: #202b3c;
+
+        font-size: 20px;
+
+        font-weight: 700;
+
+    }
+
+
+    .page-header p {
+
+        margin: 0;
+
+        color: #7a8494;
+
+        font-size: 8px;
+
+    }
+
+
+    .header-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        flex-wrap: wrap;
+
+        justify-content: flex-end;
+
+    }
+
+
+    .header-button {
+
+        min-height: 30px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 4px;
+
+        padding: 0 10px;
+
+        border-radius: 7px;
+
+        text-decoration: none;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+    }
+
+
+    .header-button.primary {
+
+        background: #1f2b46;
+
+        color: white;
+
+    }
+
+
+    .header-button.secondary {
+
+        background: white;
+
+        border: 1px solid #dfe4ec;
+
+        color: #344054;
+
+    }
+
+
+    .header-button:hover {
+
+        text-decoration: none;
+
+        transform: translateY(-1px);
+
+    }
+
+
+    /* ============================================================
+       ALERT
+    ============================================================ */
+
+    .alert-box {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        padding: 12px 14px;
+
+        margin-bottom: 15px;
+
+        border-radius: 7px;
+
+        font-size: .73rem;
+
+    }
+
+
+    .alert-box.success {
+
+        background: #edf5ef;
+
+        border: 1px solid #dcebdd;
+
+        color: #52735b;
+
+    }
+
+
+    .alert-box.error {
+
+        background: #f8eeee;
+
+        border: 1px solid #efdede;
+
+        color: #955c5c;
+
+    }
+
+
+    /* ============================================================
+       SUMMARY
+    ============================================================ */
+
+    .summary-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 8px;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .summary-card {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 10px 11px;
+
+        background: white;
+
+        border: 1px solid #e5e9ef;
+
+        border-radius: 6px;
+
+        box-shadow: 0 4px 16px rgba(31, 43, 70, .03);
+
+    }
+
+
+    .summary-icon {
+
+        width: 34px;
+
+        height: 34px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 6px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+        font-size: 14px;
+
+    }
+
+
+    .summary-icon.active {
+
+        background: #edf5ef;
+
+        color: #52735b;
+
+    }
+
+
+    .summary-icon.inactive {
+
+        background: #f7eeee;
+
+        color: #985f5f;
+
+    }
+
+
+    .summary-icon.admin {
+
+        background: #eef0f6;
+
+        color: #5d6880;
+
+    }
+
+
+    .summary-icon.staff {
+
+        background: #f2f3f5;
+
+        color: #687386;
+
+    }
+
+
+    .summary-icon.user {
+
+        background: #eef4f4;
+
+        color: #5f7777;
+
+    }
+
+
+    .summary-content {
+
+        display: flex;
+
+        flex-direction: column;
+
+        min-width: 0;
+
+    }
+
+
+    .summary-content span {
+
+        color: #788293;
+
+        font-size: 6px;
+
+    }
+
+
+    .summary-content strong {
+
+        margin-top: 1px;
+
+        color: #263143;
+
+        font-size: 16px;
+
+        line-height: 1.1;
+
+    }
+
+
+    .summary-content small {
+
+        margin-top: 1px;
+
+        color: #9ca4b0;
+
+        font-size: 6px;
+
+        white-space: nowrap;
+
+    }
+
+
+    /* ============================================================
+       FILTER CARD
+    ============================================================ */
+
+    .filter-card,
+
+    .users-card,
+
+    .admin-note {
+
+        background: white;
+
+        border: 1px solid #e5e9ef;
+
+        border-radius: 11px;
+
+        box-shadow: 0 4px 16px rgba(31, 43, 70, .03);
+
+    }
+
+
+    .filter-card {
+
+        padding: 10px;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .filter-header {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 14px;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .filter-header > div span {
+
+        display: block;
+
+        color: #8c95a3;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+        letter-spacing: .08em;
+
+    }
+
+
+    .filter-header h2 {
+
+        margin: 2px 0 1px;
+
+        color: #293446;
+
+        font-size: 12px;
+
+        font-weight: 800;
+
+    }
+
+
+    .reset-link {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        color: #687386;
+
+        text-decoration: none;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+    }
+
+
+    .reset-link:hover {
+
+        color: #1f2b46;
+
+        text-decoration: none;
+
+    }
+
+
+    .filter-form {
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 2fr)
+            minmax(150px, .9fr)
+            minmax(150px, .9fr)
+            auto;
+
+        gap: 8px;
+
+        align-items: end;
+
+    }
+
+
+    .filter-field {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 4px;
+
+    }
+
+
+    .filter-field label {
+
+        color: #606b7b;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+    }
+
+
+    .input-with-icon {
+
+        position: relative;
+
+    }
+
+
+    .input-with-icon i {
+
+        position: absolute;
+
+        left: 11px;
+
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        color: #9aa2ae;
+
+        font-size: .75rem;
+
+        pointer-events: none;
+
+    }
+
+
+    .filter-field input,
+
+    .filter-field select {
+
+        width: 100%;
+
+        height: 30px;
+
+        padding: 0 6px;
+
+        border: 1px solid #dfe4ec;
+
+        border-radius: 6px;
+
+        color: #374151;
+
+        background: white;
+
+        font-size: 7px;
+
+        outline: none;
+
+    }
+
+
+    .search-field input {
+
+        padding-left: 26px;
+
+    }
+
+
+    .filter-field input:focus,
+
+    .filter-field select:focus {
+
+        border-color: #b7c0cd;
+
+        box-shadow: 0 0 0 3px rgba(31, 43, 70, .05);
+
+    }
+
+
+    .filter-submit {
+
+        display: flex;
+
+    }
+
+
+    .search-button {
+
+        height: 30px;
+
+        padding: 0 10px;
+
+        border: 0;
+
+        border-radius: 6px;
+
+        background: #1f2b46;
+
+        color: white;
+
+        font-size: 7px;
+
+        font-weight: 700;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        cursor: pointer;
+
+    }
+
+
+    /* ============================================================
+       USERS CARD
+    ============================================================ */
+
+    .users-card {
+
+        overflow: hidden;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .users-card-header {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 14px;
+
+        padding: 10px 12px;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .users-card-header > div:first-child span {
+
+        display: block;
+
+        color: #8b95a4;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+        letter-spacing: .08em;
+
+    }
+
+
+    .users-card-header h2 {
+
+        margin: 2px 0 1px;
+
+        color: #293446;
+
+        font-size: 12px;
+
+        font-weight: 800;
+
+    }
+
+
+    .record-count {
+
+        padding: 4px 7px;
+
+        border-radius: 5px;
+
+        background: #f2f4f7;
+
+        color: #687386;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+
+    }
+
+
+    .table-wrapper {
+
+        width: 100%;
+
+        overflow-x: auto;
+
+    }
+
+
+    .users-table {
+
+        width: 100%;
+
+        min-width: 950px;
+
+        border-collapse: collapse;
+
+    }
+
+
+    .users-table th {
+
+        padding: 8px 12px;
+
+        background: #fafbfc;
+
+        color: #9099a7;
+
+        font-size: 6px;
+
+        font-weight: 800;
+
+        letter-spacing: .08em;
+
+        text-align: left;
+
+        border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .users-table td {
+
+        padding: 9px 12px;
+
+        color: #4d5869;
+
+        font-size: 7px;
+
+        border-bottom: 1px solid #f0f2f5;
+
+        vertical-align: middle;
+
+    }
+
+
+    .users-table tbody tr:last-child td {
+
+        border-bottom: 0;
+
+    }
+
+
+    .users-table tbody tr:hover {
+
+        background: #fcfcfd;
+
+    }
+
+
+    /* ============================================================
+       USER CELL
+    ============================================================ */
+
+    .user-cell {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+    }
+
+
+    .user-avatar {
+
+        width: 34px;
+
+        height: 34px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 6px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .user-info {
+
+        display: flex;
+
+        flex-direction: column;
+
+        min-width: 0;
+
+    }
+
+
+    .user-info strong {
+
+        max-width: 160px;
+
+        color: #303b4c;
+
+        font-size: 8px;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+    }
+
+
+    .user-info span {
+
+        max-width: 160px;
+
+        margin-top: 1px;
+
+        color: #9aa2ae;
+
+        font-size: 6px;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+    }
+
+
+    /* ============================================================
+       ROLE
+    ============================================================ */
+
+    .role-badge {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 4px 7px;
+
+        border-radius: 5px;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+
+        background: #eef2f7;
+
+        color: #667085;
+
+    }
+
+
+    .role-badge.admin {
+
+        background: #eef0f6;
+
+        color: #5c6780;
+
+    }
+
+
+    .role-badge.staff {
+
+        background: #f1f3f5;
+
+        color: #687386;
+
+    }
+
+
+    .role-badge.user {
+
+        background: #edf4f4;
+
+        color: #5f7474;
+
+    }
+
+
+    /* ============================================================
+       STATUS
+    ============================================================ */
+
+    .status-badge {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        padding: 4px 7px;
+
+        border-radius: 5px;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+
+    }
+
+
+    .status-badge.active {
+
+        background: #edf5ef;
+
+        color: #52735b;
+
+    }
+
+
+    .status-badge.inactive {
+
+        background: #f7eeee;
+
+        color: #985f5f;
+
+    }
+
+
+    /* ============================================================
+       EMAIL
+    ============================================================ */
+
+    .email-cell {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        max-width: 220px;
+
+    }
+
+
+    .email-cell i {
+
+        color: #9aa2ae;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .email-cell span {
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+    }
+
+
+    .confirmed-text,
+
+    .unconfirmed-text {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        margin-top: 2px;
+
+        font-size: 6px;
+
+    }
+
+
+    .confirmed-text {
+
+        color: #63816b;
+
+    }
+
+
+    .unconfirmed-text {
+
+        color: #9a7d62;
+
+    }
+
+
+    /* ============================================================
+       ACTIONS
+    ============================================================ */
+
+    .action-buttons {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .action-buttons form {
+
+        margin: 0;
+
+    }
+
+
+    .action-button {
+
+        min-height: 26px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 4px;
+
+        padding: 0 6px;
+
+        border: 0;
+
+        border-radius: 6px;
+
+        text-decoration: none;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+        white-space: nowrap;
+
+    }
+
+
+    .action-button:hover {
+
+        text-decoration: none;
+
+        transform: translateY(-1px);
+
+    }
+
+
+    .action-button.edit {
+
+        background: #eef2f7;
+
+        color: #4e5d72;
+
+    }
+
+
+    .action-button.activate {
+
+        background: #edf5ef;
+
+        color: #52735b;
+
+    }
+
+
+    .action-button.deactivate {
+
+        background: #f7eeee;
+
+        color: #985f5f;
+
+    }    .action-button.password {
+
+        background: #f3f1f5;
+        color: #70677a;
+    }
+
+
+    .action-button.delete {
+
+        background: #f7eeee;
+        color: #b04a4a;
+    }
+
+
+    .action-button.delete:hover {
+
+        background: #f2e2e2;
+        color: #9c3d3d;
+    }    .self-badge {
+
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 26px;
+        padding: 0 6px;
+        border-radius: 6px;
+        background: #f2f4f7;
+        color: #7a8494;
+        font-size: 6px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    /* ============================================================
+       ACTIONS - DARK MODE (existing dark-teal design)
+    ============================================================ */
+
+    html[data-theme="dark"] .users-table .action-button {
+
+        background: rgba(80, 220, 220, .10);
+        color: #A7D2D2;
+        border: 1px solid rgba(80, 220, 220, .18);
+    }
+
+
+    html[data-theme="dark"] .users-table .action-button:hover {
+
+        background: rgba(80, 220, 220, .16);
+        color: #FFFFFF;
+    }
+
+
+    html[data-theme="dark"] .users-table .action-button.activate {
+
+        color: #6CECEC;
+    }
+
+
+    html[data-theme="dark"] .users-table .action-button.deactivate,
+    html[data-theme="dark"] .users-table .action-button.delete {
+
+        background: rgba(229, 77, 89, .14);
+        color: #FF9AA2;
+        border-color: rgba(229, 77, 89, .32);
+    }
+
+
+    html[data-theme="dark"] .users-table .action-button.deactivate:hover,
+    html[data-theme="dark"] .users-table .action-button.delete:hover {
+
+        background: rgba(229, 77, 89, .24);
+        color: #FFC2C7;
+    }
+
+
+    html[data-theme="dark"] .users-table .self-badge {
+
+        background: rgba(80, 220, 220, .10);
+        color: #A7D2D2;
+        border: 1px solid rgba(80, 220, 220, .18);
+    }
+
+
+    /* ============================================================
+       DELETE CONFIRMATION MODAL
+    ============================================================ */
+
+    .delete-modal-content {
+
+        padding: 4px;
+        border: 1px solid #e5e9ef;
+        border-radius: 11px;
+        box-shadow: 0 18px 50px rgba(31, 43, 70, .18);
+    }
+
+
+    .delete-modal-icon {
+
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 12px auto 0;
+        border-radius: 10px;
+        background: #f7eeee;
+        color: #b04a4a;
+        font-size: 16px;
+    }
+
+
+    .delete-modal-body {
+
+        padding: 8px 16px 3px;
+        text-align: center;
+    }
+
+
+    .delete-modal-body h3 {
+
+        margin: 0 0 4px;
+        color: #293446;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+
+    .delete-modal-body p {
+
+        margin: 0 0 4px;
+        color: #687386;
+        font-size: 7px;
+    }
+
+
+    .delete-modal-body p strong {
+
+        color: #303b4c;
+        font-weight: 700;
+        word-break: break-all;
+    }
+
+
+    .delete-modal-warning {
+
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 8px;
+        border-radius: 6px;
+        background: #f7eeee;
+        color: #9c3d3d;
+        font-size: 6px;
+        font-weight: 700;
+    }
+
+
+    .delete-modal-footer {
+
+        padding: 8px 16px 12px;
+        border-top: 0;
+    }
+
+
+    .delete-modal-cancel,
+    .delete-modal-confirm {
+
+        min-height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 6px;
+        font-size: 7px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+
+    .delete-modal-cancel {
+
+        background: #f2f4f7;
+        color: #687386;
+    }
+
+
+    .delete-modal-cancel:hover {
+
+        background: #e8ebf0;
+        color: #4d5869;
+    }
+
+
+    .delete-modal-confirm {
+
+        background: #d64545;
+        color: #FFFFFF;
+    }
+
+
+    .delete-modal-confirm:hover {
+
+        background: #c23a3a;
+        color: #FFFFFF;
+    }
+
+
+    /* ============================================================
+       DELETE MODAL - DARK MODE (existing dark-teal design)
+    ============================================================ */
+
+    html[data-theme="dark"] .delete-modal-content {
+
+        border-color: rgba(80, 220, 220, .18);
+    }
+
+
+    html[data-theme="dark"] .delete-modal-body h3 {
+
+        color: #FFFFFF;
+    }
+
+
+    html[data-theme="dark"] .delete-modal-body p {
+
+        color: #A7D2D2;
+    }
+
+
+    html[data-theme="dark"] .delete-modal-body p strong {
+
+        color: #FFFFFF;
+    }
+
+
+    html[data-theme="dark"] .delete-modal-icon,
+    html[data-theme="dark"] .delete-modal-warning {
+
+        background: rgba(229, 77, 89, .14);
+        color: #FF9AA2;
+    }
+
+
+    html[data-theme="dark"] .delete-modal-footer {
+
+        border-top: 0;
+    }
+
+
+    html[data-theme="dark"] .delete-modal-cancel {
+
+        background: #0A4848;
+        color: #A7D2D2;
+        border: 1px solid rgba(80, 220, 220, .18);
+    }
+
+
+    html[data-theme="dark"] .delete-modal-cancel:hover {
+
+        background: #0D5050;
+        color: #FFFFFF;
+    }
+
+
+    html[data-theme="dark"] .delete-modal-confirm {
+
+        background: #d64545;
+        color: #FFFFFF;
+    }
+
+
+    /* ============================================================
+       EMPTY
+    ============================================================ */
+
+    .empty-state {
+
+        padding: 36px 16px;
+
+        text-align: center;
+
+    }
+
+
+    .empty-icon {
+
+        width: 36px;
+
+        height: 36px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        margin: 0 auto 8px;
+
+        border-radius: 6px;
+
+        background: #f2f4f7;
+
+        color: #929ba8;
+
+        font-size: 16px;
+
+    }
+
+
+    .empty-state h3 {
+
+        margin: 0;
+
+        color: #303b4c;
+
+        font-size: 14px;
+
+        font-weight: 800;
+
+    }
+
+
+    .empty-state p {
+
+        max-width: 280px;
+
+        margin: 5px auto 10px;
+
+        color: #8791a0;
+
+        font-size: 7px;
+
+        line-height: 1.5;
+
+    }
+
+
+    .empty-button {
+
+        min-height: 26px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 4px;
+
+        padding: 0 9px;
+
+        border-radius: 6px;
+
+        background: #1f2b46;
+
+        color: white;
+
+        text-decoration: none;
+
+        font-size: 6px;
+
+        font-weight: 700;
+
+    }
+
+
+    .empty-button:hover {
+
+        color: white;
+
+        text-decoration: none;
+
+    }
+
+
+    /* ============================================================
+       ADMIN NOTE
+    ============================================================ */
+
+    .admin-note {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 8px;
+
+        padding: 10px 12px;
+
+    }
+
+
+    .admin-note-icon {
+
+        width: 30px;
+
+        height: 30px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        border-radius: 6px;
+
+        background: #eef2f7;
+
+        color: #1f2b46;
+
+    }
+
+
+    .admin-note strong {
+
+        display: block;
+
+        color: #394457;
+
+        font-size: 7px;
+
+    }
+
+
+    .admin-note p {
+
+        margin: 2px 0 1px;
+
+        color: #818b9a;
+
+        font-size: 6px;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+
+    @@media (max-width: 1200px) {
+
+        .summary-grid {
+
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+
+        }
+
+    }
+
+
+    @@media (max-width: 900px) {
+
+        .page-header {
+
+            align-items: flex-start;
+
+            flex-direction: column;
+
+        }
+
+
+        .header-actions {
+
+            justify-content: flex-start;
+
+        }
+
+
+        .filter-form {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+        }
+
+
+        .filter-submit {
+
+            align-self: stretch;
+
+        }
+
+
+        .search-button {
+
+            width: 100%;
+
+        }
+
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .user-management-page {
+
+            padding-left: 0; padding-right: 0;
+
+        }
+
+
+        .summary-grid {
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+        }
+
+
+        .filter-form {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .header-button {
+
+            flex: 1;
+
+        }
+
+    }
+
+
+    @@media (max-width: 450px) {
+
+        .summary-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .header-actions {
+
+            width: 100%;
+
+        }
+
+
+        .profile-button {
+
+            width: 100%;
+
+        }
+
+    }
+
+[data-theme="light"] .header-button.primary .create-user-text { color: #FFFFFF; }
+
+</style>
+
+
+<script>
+
+    // ============================================================
+    // DELETE USER CONFIRMATION
+    // Opens the shared confirmation modal and submits the
+    // selected row's delete form only after confirmation.
+    // ============================================================
+
+    (function () {
+
+        var pendingDeleteForm = null;
+
+        var modalElement =
+            document.getElementById('deleteUserModal');
+
+        var nameElement =
+            document.getElementById('deleteUserName');
+
+        var confirmButton =
+            document.getElementById('confirmDeleteButton');
+
+
+        document
+            .querySelectorAll('.delete-trigger')
+            .forEach(function (trigger) {
+
+                trigger.addEventListener('click', function () {
+
+                    pendingDeleteForm =
+                        trigger.closest('form');
+
+                    if (nameElement) {
+
+                        nameElement.textContent =
+                            trigger.getAttribute('data-email')
+                            || 'this user account';
+
+                    }
+
+                });
+
+            });
+
+
+        if (confirmButton) {
+
+            confirmButton.addEventListener('click', function () {
+
+                if (pendingDeleteForm) {
+
+                    pendingDeleteForm.submit();
+
+                }
+
+            });
+
+        }
+
+
+        if (modalElement) {
+
+            modalElement.addEventListener(
+                'hidden.bs.modal',
+                function () {
+
+                    pendingDeleteForm = null;
+
+                }
+            );
+
+        }
+
+    })();
+
+</script>
+
+
+
