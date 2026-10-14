@@ -16,6 +16,9 @@ wwwroot/uploads/
 *.sqlite
 *.sqlite3
 *.bak
+*.sql
+*.zip
+.idea/
 
 # Windows reserved-name artifact
 /nul

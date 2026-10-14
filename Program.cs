@@ -42,7 +42,7 @@ builder.Services
 
         options.Password.RequireNonAlphanumeric = false;
 
-        options.Password.RequiredLength = 6;
+        options.Password.RequiredLength = 8;
 
 
         // ----------------------------------------------------
@@ -244,8 +244,12 @@ using (var scope = app.Services.CreateScope())
         const string adminEmail =
             "admin@test.com";
 
-        const string adminPassword =
-            "Admin@12345";
+        // Password comes from local configuration only
+        // (User Secrets, environment variable, or local
+        // appsettings) — never from committed source code.
+        var adminPassword =
+            builder.Configuration[
+                "SeedAccounts:AdminPassword"];
 
 
         var adminUser =
@@ -256,37 +260,48 @@ using (var scope = app.Services.CreateScope())
 
         if (adminUser == null)
         {
-            adminUser =
-                new IdentityUser
-                {
-                    UserName = adminEmail,
-
-                    Email = adminEmail,
-
-                    EmailConfirmed = true
-                };
-
-
-            var adminCreateResult =
-                await userManager.CreateAsync(
-                    adminUser,
-                    adminPassword
-                );
-
-
-            if (!adminCreateResult.Succeeded)
+            if (string.IsNullOrWhiteSpace(
+                    adminPassword))
             {
-                var errors =
-                    string.Join(
-                        "; ",
-                        adminCreateResult.Errors.Select(
-                            e => e.Description
-                        )
+                Console.WriteLine(
+                    "WARNING: SeedAccounts:AdminPassword is not configured. Skipping development admin account creation. Set it with: dotnet user-secrets set \"SeedAccounts:AdminPassword\" <value>"
+                );
+            }
+
+            else
+            {
+                adminUser =
+                    new IdentityUser
+                    {
+                        UserName = adminEmail,
+
+                        Email = adminEmail,
+
+                        EmailConfirmed = true
+                    };
+
+
+                var adminCreateResult =
+                    await userManager.CreateAsync(
+                        adminUser,
+                        adminPassword
                     );
 
-                throw new InvalidOperationException(
-                    $"Failed to create development admin account: {errors}"
-                );
+
+                if (!adminCreateResult.Succeeded)
+                {
+                    var errors =
+                        string.Join(
+                            "; ",
+                            adminCreateResult.Errors.Select(
+                                e => e.Description
+                            )
+                        );
+
+                    throw new InvalidOperationException(
+                        $"Failed to create development admin account: {errors}"
+                    );
+                }
             }
         }
 
@@ -295,7 +310,9 @@ using (var scope = app.Services.CreateScope())
         // ENSURE ADMIN ROLE
         // ----------------------------------------------------
 
-        if (!await userManager.IsInRoleAsync(
+        if (adminUser != null &&
+
+            !await userManager.IsInRoleAsync(
                 adminUser,
                 "Admin"))
         {
@@ -330,8 +347,12 @@ using (var scope = app.Services.CreateScope())
         const string staffEmail =
             "staff@test.com";
 
-        const string staffPassword =
-            "Staff@12345";
+        // Password comes from local configuration only
+        // (User Secrets, environment variable, or local
+        // appsettings) — never from committed source code.
+        var staffPassword =
+            builder.Configuration[
+                "SeedAccounts:StaffPassword"];
 
 
         var staffUser =
@@ -342,37 +363,48 @@ using (var scope = app.Services.CreateScope())
 
         if (staffUser == null)
         {
-            staffUser =
-                new IdentityUser
-                {
-                    UserName = staffEmail,
-
-                    Email = staffEmail,
-
-                    EmailConfirmed = true
-                };
-
-
-            var staffCreateResult =
-                await userManager.CreateAsync(
-                    staffUser,
-                    staffPassword
-                );
-
-
-            if (!staffCreateResult.Succeeded)
+            if (string.IsNullOrWhiteSpace(
+                    staffPassword))
             {
-                var errors =
-                    string.Join(
-                        "; ",
-                        staffCreateResult.Errors.Select(
-                            e => e.Description
-                        )
+                Console.WriteLine(
+                    "WARNING: SeedAccounts:StaffPassword is not configured. Skipping development staff account creation. Set it with: dotnet user-secrets set \"SeedAccounts:StaffPassword\" <value>"
+                );
+            }
+
+            else
+            {
+                staffUser =
+                    new IdentityUser
+                    {
+                        UserName = staffEmail,
+
+                        Email = staffEmail,
+
+                        EmailConfirmed = true
+                    };
+
+
+                var staffCreateResult =
+                    await userManager.CreateAsync(
+                        staffUser,
+                        staffPassword
                     );
 
-                throw new InvalidOperationException(
-                    $"Failed to create development staff account: {errors}"
-                );
+
+                if (!staffCreateResult.Succeeded)
+                {
+                    var errors =
+                        string.Join(
+                            "; ",
+                            staffCreateResult.Errors.Select(
+                                e => e.Description
+                            )
+                    );
+
+                    throw new InvalidOperationException(
+                        $"Failed to create development staff account: {errors}"
+                    );
+                }
             }
         }
 
@@ -381,7 +413,9 @@ using (var scope = app.Services.CreateScope())
         // ENSURE STAFF ROLE
         // ----------------------------------------------------
 
-        if (!await userManager.IsInRoleAsync(
+        if (staffUser != null &&
+
+            !await userManager.IsInRoleAsync(
                 staffUser,
                 "Staff"))
         {

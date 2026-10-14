@@ -450,11 +450,15 @@
 
                                 <td>
 
-                                    @(string.IsNullOrWhiteSpace(
-                                        record.Notes)
-                                        ? Html.Raw("<span class=\"attendance-no-notes\">—</span>")
-                                        : Html.Raw("<span class=\"attendance-notes\">"
-                                            + record.Notes + "</span>"))
+                                    @if (string.IsNullOrWhiteSpace(
+                                        record.Notes))
+                                    {
+                                        <span class="attendance-no-notes">—</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="attendance-notes">@record.Notes</span>
+                                    }
 
                                 </td>
 
