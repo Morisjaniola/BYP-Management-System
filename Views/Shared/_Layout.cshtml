@@ -344,24 +344,10 @@
 
 
                 /* =====================================================
-                       SIDEBAR PROFILE AVATAR
-                    The uploaded profile picture replaces the person
-                    icon inside the Profile link. Sized explicitly so
-                    it can never stretch across the row.
+                       SIDEBAR LINK LABELS
+                    Labels keep a predictable width: they shrink inside
+                    the flex row instead of overflowing or clipping.
                     ====================================================== */
-
-                .sidebar-link .sidebar-profile-image {
-                    width: 45px;
-                    height: 45px;
-                    aspect-ratio: 1 / 1;
-                    object-fit: cover;
-                    border-radius: 50%;
-                    flex-shrink: 0;
-                }
-
-
-                /* Label keeps a predictable width: shrinks inside the
-                   flex row instead of overflowing or clipping. */
 
                 .sidebar-link span {
                     min-width: 0;
@@ -649,6 +635,21 @@
                     background: rgba(21,147,150,.22);
                     color: #6DEBE5;
                 }
+
+
+            /* Scoped to the top-right avatar only: fills the 45px
+               circular container, never stretches (aspect-ratio +
+               object-fit), independent of the sidebar icon. */
+
+            .topbar-avatar-image {
+                width: 100%;
+                height: 100%;
+                aspect-ratio: 1 / 1;
+                object-fit: cover;
+                border-radius: 50%;
+                flex-shrink: 0;
+                display: block;
+            }
 
 
             /* =====================================================
@@ -1054,19 +1055,16 @@
 
 
                         <!-- PROFILE -->
+                        @* Reference design: the sidebar Profile button always
+                           shows the generic circular person icon. The uploaded
+                           picture is rendered only in the top-right header
+                           avatar and on the Profile page. *@
 
                         <a asp-controller="Profile"
                            asp-action="Index"
                            class="sidebar-link @(isProfile ? "active" : "")">
 
-                            @if (!string.IsNullOrWhiteSpace(profileImagePath))
-                            {
-                                <img src="@profileImagePath" alt="Profile picture" class="sidebar-profile-image" />
-                            }
-                            else
-                            {
-                                <i class="bi bi-person-circle"></i>
-                            }
+                            <i class="bi bi-person-circle"></i>
 
                             <span>
                                 Profile
@@ -1476,12 +1474,25 @@
                         </div>
 
 
+                        @* Top-right account avatar: shows the authenticated
+                           user's saved picture (small circular crop), or the
+                           generic icon when no picture exists. *@
+
                         <a asp-controller="Profile"
                            asp-action="Index"
                            class="topbar-avatar"
                            title="My Profile">
 
-                            <i class="bi bi-person-circle"></i>
+                            @if (!string.IsNullOrWhiteSpace(profileImagePath))
+                            {
+                                <img src="@profileImagePath"
+                                     alt="Profile picture"
+                                     class="topbar-avatar-image" />
+                            }
+                            else
+                            {
+                                <i class="bi bi-person-circle"></i>
+                            }
 
                         </a>
 
