@@ -78,6 +78,17 @@ namespace BYPManagementSystem.Models
 
 
         // ==========================================================
+        // ATTENDANCE ACTION
+        // "TimeIn" | "TimeOut". Which attendance window this photo
+        // was submitted in. Legacy rows default to "TimeIn".
+        // ==========================================================
+
+        [Required]
+        [StringLength(20)]
+        public string Action { get; set; } = "TimeIn";
+
+
+        // ==========================================================
         // REVIEW
         // Status: Pending | Approved | Rejected
         // ==========================================================

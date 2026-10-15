@@ -112,6 +112,7 @@
                             notification.Type == "Approval" ? "approval" :
                             notification.Type == "Rejection" ? "rejection" :
                             notification.Type == "Attendance" ? "attendance" :
+                            notification.Type == "Announcement" ? "attendance" :
                             notification.Type == "Registration" ? "registration" :
                             "general")">
 
@@ -126,6 +127,10 @@
                             else if (notification.Type == "Attendance")
                             {
                                 <i class="bi bi-clipboard-check-fill"></i>
+                            }
+                            else if (notification.Type == "Announcement")
+                            {
+                                <i class="bi bi-megaphone-fill"></i>
                             }
                             else if (notification.Type == "Registration")
                             {
@@ -153,6 +158,7 @@
                                     notification.Type == "Approval" ? "approval" :
                                     notification.Type == "Rejection" ? "rejection" :
                                     notification.Type == "Attendance" ? "attendance" :
+                                    notification.Type == "Announcement" ? "attendance" :
                                     notification.Type == "Registration" ? "registration" :
                                     "general")">
 

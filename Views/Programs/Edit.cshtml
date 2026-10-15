@@ -350,6 +350,155 @@
 
 
             <!-- ==================================================
+                 ATTENDANCE WINDOWS
+                 Allowed submission windows in Philippine time.
+                 ================================================== -->
+
+            <div class="form-row schedule-picker-row">
+
+                <!-- TIME IN START -->
+
+                <div class="form-group">
+
+                    <label for="TimeInStart">
+                        Time In Window Start
+                    </label>
+
+                    <div class="field-wrapper">
+
+                        <i class="bi bi-box-arrow-in-right"></i>
+
+                        <input type="time"
+                               name="TimeInStart"
+                               id="TimeInStart"
+                               class="form-control"
+                               value="@Model.TimeInStart.ToString("HH:mm")" />
+
+                    </div>
+
+                    <span class="field-help">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        Morning Time In opens (Philippine time).
+
+                    </span>
+
+                    <span asp-validation-for="TimeInStart"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- TIME IN END -->
+
+                <div class="form-group">
+
+                    <label for="TimeInEnd">
+                        Time In Window End
+                    </label>
+
+                    <div class="field-wrapper">
+
+                        <i class="bi bi-hourglass-split"></i>
+
+                        <input type="time"
+                               name="TimeInEnd"
+                               id="TimeInEnd"
+                               class="form-control"
+                               value="@Model.TimeInEnd.ToString("HH:mm")" />
+
+                    </div>
+
+                    <span class="field-help">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        Morning Time In closes (inclusive).
+
+                    </span>
+
+                    <span asp-validation-for="TimeInEnd"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- TIME OUT START -->
+
+                <div class="form-group">
+
+                    <label for="TimeOutStart">
+                        Time Out Window Start
+                    </label>
+
+                    <div class="field-wrapper">
+
+                        <i class="bi bi-box-arrow-right"></i>
+
+                        <input type="time"
+                               name="TimeOutStart"
+                               id="TimeOutStart"
+                               class="form-control"
+                               value="@Model.TimeOutStart.ToString("HH:mm")" />
+
+                    </div>
+
+                    <span class="field-help">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        Morning Time Out opens (inclusive).
+
+                    </span>
+
+                    <span asp-validation-for="TimeOutStart"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- TIME OUT END -->
+
+                <div class="form-group">
+
+                    <label for="TimeOutEnd">
+                        Time Out Window End
+                    </label>
+
+                    <div class="field-wrapper">
+
+                        <i class="bi bi-hourglass-bottom"></i>
+
+                        <input type="time"
+                               name="TimeOutEnd"
+                               id="TimeOutEnd"
+                               class="form-control"
+                               value="@Model.TimeOutEnd.ToString("HH:mm")" />
+
+                    </div>
+
+                    <span class="field-help">
+
+                        <i class="bi bi-info-circle"></i>
+
+                        Morning Time Out closes (inclusive).
+
+                    </span>
+
+                    <span asp-validation-for="TimeOutEnd"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
                  BARANGAY
                  ================================================== -->
 

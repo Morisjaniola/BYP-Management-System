@@ -19,6 +19,13 @@
 
     var maxPhotoSizeMb =
         ViewBag.MaxPhotoSizeMb as double? ?? 5;
+
+    var nowManila =
+        ViewBag.NowManila as DateTime?
+        ?? AttendanceSchedule.NowManila();
+
+    var nowTime =
+        TimeOnly.FromDateTime(nowManila);
 }
 
 
@@ -151,6 +158,76 @@
         @if (eligibleRegistrations.Any())
         {
 
+            <!-- ==================================================
+                 ATTENDANCE WINDOWS
+                 Shows each program's configured Time In / Time Out
+                 windows and whether they are open right now
+                 (Philippine time). The server enforces the same
+                 windows on submit.
+            =================================================== -->
+
+            <div class="schedule-windows">
+
+                <div class="schedule-windows-title">
+
+                    <i class="bi bi-alarm"></i>
+
+                    Attendance Schedule (Philippine time) &mdash; now @nowManila.ToString("h:mm tt")
+
+                </div>
+
+                @foreach (var registration in eligibleRegistrations)
+                {
+                    var scheduleProgram = registration.Program;
+
+                    if (scheduleProgram == null)
+                    {
+                        continue;
+                    }
+
+                    var timeInOpen =
+                        AttendanceSchedule.IsWithin(
+                            nowTime,
+                            scheduleProgram.TimeInStart,
+                            scheduleProgram.TimeInEnd);
+
+                    var timeOutOpen =
+                        AttendanceSchedule.IsWithin(
+                            nowTime,
+                            scheduleProgram.TimeOutStart,
+                            scheduleProgram.TimeOutEnd);
+
+                    <div class="schedule-windows-row">
+
+                        <strong>
+                            @(scheduleProgram.Name ?? "Program")
+                        </strong>
+
+                        <span>
+
+                            <i class="bi bi-box-arrow-in-right"></i>
+
+                            Time In @AttendanceSchedule.FormatTime(scheduleProgram.TimeInStart) &ndash; @AttendanceSchedule.FormatTime(scheduleProgram.TimeInEnd)
+
+                            @(timeInOpen ? "(open now)" : "(closed now)")
+
+                        </span>
+
+                        <span>
+
+                            <i class="bi bi-box-arrow-right"></i>
+
+                            Time Out @AttendanceSchedule.FormatTime(scheduleProgram.TimeOutStart) &ndash; @AttendanceSchedule.FormatTime(scheduleProgram.TimeOutEnd)
+
+                            @(timeOutOpen ? "(open now)" : "(closed now)")
+
+                        </span>
+
+                    </div>
+                }
+
+            </div>
+
             <form asp-controller="Attendance"
                   asp-action="SubmitPhoto"
                   method="post"
@@ -180,6 +257,32 @@
                         }
 
                     </select>
+
+                </div>
+
+                <div class="upload-field">
+
+                    <label class="upload-label" for="attendanceAction">
+                        Action
+                    </label>
+
+                    <select name="action"
+                            id="attendanceAction"
+                            class="photo-select"
+                            required>
+                        <option value="TimeIn">
+                            Time In
+                        </option>
+                        <option value="TimeOut">
+                            Time Out
+                        </option>
+
+                    </select>
+
+                    <small class="upload-help">
+                        Each action is only accepted inside its scheduled window.
+                        A Time Out requires an approved Time In for the same day.
+                    </small>
 
                 </div>
 
@@ -301,6 +404,14 @@
                             </th>
 
                             <th>
+                                TIME IN
+                            </th>
+
+                            <th>
+                                TIME OUT
+                            </th>
+
+                            <th>
                                 NOTES
                             </th>
 
@@ -324,6 +435,9 @@
 
                             var isExcused =
                                 record.Status == "Excused";
+
+                            var isInProgress =
+                                record.Status == "InProgress";
 
 
                             <tr>
@@ -430,6 +544,18 @@
                                         </span>
 
                                     }
+                                    else if (isInProgress)
+                                    {
+
+                                        <span class="attendance-status status-other">
+
+                                            <span class="status-dot"></span>
+
+                                            In Progress
+
+                                        </span>
+
+                                    }
                                     else
                                     {
 
@@ -440,6 +566,58 @@
                                             @record.Status
 
                                         </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- TIME IN -->
+
+                                <td>
+
+                                    @if (record.TimeInAt.HasValue)
+                                    {
+
+                                        <div class="attendance-date">
+
+                                            <i class="bi bi-clock"></i>
+
+                                            @AttendanceSchedule.ToManila(record.TimeInAt.Value).ToString("hh:mm tt")
+
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="attendance-no-notes">&mdash;</span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- TIME OUT -->
+
+                                <td>
+
+                                    @if (record.TimeOutAt.HasValue)
+                                    {
+
+                                        <div class="attendance-date">
+
+                                            <i class="bi bi-clock"></i>
+
+                                            @AttendanceSchedule.ToManila(record.TimeOutAt.Value).ToString("hh:mm tt")
+
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="attendance-no-notes">&mdash;</span>
 
                                     }
 
@@ -577,6 +755,10 @@
                             </th>
 
                             <th>
+                                ACTION
+                            </th>
+
+                            <th>
                                 SUBMITTED
                             </th>
 
@@ -653,6 +835,21 @@
                                 </td>
 
 
+                                <!-- ACTION -->
+
+                                <td>
+
+                                    <span class="attendance-status @(AttendanceSchedule.IsTimeOutAction(submission.Action) ? "status-excused" : "status-present")">
+
+                                        <span class="status-dot"></span>
+
+                                        @AttendanceSchedule.ActionLabel(submission.Action)
+
+                                    </span>
+
+                                </td>
+
+
                                 <!-- SUBMITTED -->
 
                                 <td>
@@ -661,8 +858,8 @@
 
                                         <i class="bi bi-clock"></i>
 
-                                        @(submission.SubmittedAt.ToLocalTime().ToString(
-                                            "MMM dd, yyyy HH:mm"))
+                                        @AttendanceSchedule.ToManila(submission.SubmittedAt).ToString(
+                                            "MMM dd, yyyy h:mm tt")
 
                                     </div>
 
@@ -734,7 +931,9 @@
 
                                         <span class="attendance-notes">
 
-                                            Attendance recorded as Present.
+                                            @(AttendanceSchedule.IsTimeOutAction(submission.Action)
+                                                ? "Time Out recorded \u2014 session complete."
+                                                : "Time In recorded. Waiting for Time Out.")
 
                                         </span>
 
@@ -1505,13 +1704,81 @@
 
     .photo-upload-form {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr) auto;
         align-items: end;
         gap: 8px;
         padding: 8px;
         border-radius: 9px;
         background: rgba(255,255,255,.035);
         border: 1px solid rgba(183,215,229,.12);
+    }
+
+
+    /* ==========================================================
+       ATTENDANCE WINDOWS (SCHEDULE) BLOCK
+       ========================================================== */
+
+    .schedule-windows {
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(105,199,232,.07);
+        border: 1px solid rgba(105,199,232,.14);
+    }
+
+    .schedule-windows-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 5px;
+        color: #8DDCF2;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: .5px;
+    }
+
+    .schedule-windows-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 0;
+        border-top: 1px solid rgba(105,199,232,.10);
+        color: #AFC8CD;
+        font-size: 7px;
+    }
+
+    .schedule-windows-row:first-of-type {
+        border-top: 0;
+    }
+
+    .schedule-windows-row strong {
+        color: #FFFFFF;
+        font-size: 7px;
+    }
+
+    .schedule-windows-row span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    html[data-theme="light"] .schedule-windows {
+        background: rgba(12,144,150,.06);
+        border-color: rgba(12,144,150,.16);
+    }
+
+    html[data-theme="light"] .schedule-windows-title {
+        color: #0c9096;
+    }
+
+    html[data-theme="light"] .schedule-windows-row {
+        border-top-color: rgba(12,144,150,.14);
+        color: #61758c;
+    }
+
+    html[data-theme="light"] .schedule-windows-row strong {
+        color: #1f3650;
     }
 
     .upload-field {

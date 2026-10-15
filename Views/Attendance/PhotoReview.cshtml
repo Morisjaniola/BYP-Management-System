@@ -173,7 +173,7 @@
 
                     <i class="bi bi-clock"></i>
 
-                    @Model.SubmittedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                    @AttendanceSchedule.ToManila(Model.SubmittedAt).ToString("MMM dd, yyyy h:mm tt")
 
                 </span>
 
@@ -225,13 +225,30 @@
                     </div>
 
                     <div class="detail-item">
+                        <span>Attendance Action</span>
+                        <strong>@AttendanceSchedule.ActionLabel(Model.Action)</strong>
+                    </div>
+
+                    @if (program != null)
+                    {
+                        <div class="detail-item">
+                            <span>Allowed Window (Philippine time)</span>
+                            <strong>
+                                @AttendanceSchedule.FormatTime(AttendanceSchedule.WindowFor(program, Model.Action).Start)
+                                &ndash;
+                                @AttendanceSchedule.FormatTime(AttendanceSchedule.WindowFor(program, Model.Action).End)
+                            </strong>
+                        </div>
+                    }
+
+                    <div class="detail-item">
                         <span>Registration Status</span>
                         <strong>@(registration?.Status ?? "Unknown")</strong>
                     </div>
 
                     <div class="detail-item">
                         <span>Submitted</span>
-                        <strong>@Model.SubmittedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</strong>
+                        <strong>@AttendanceSchedule.ToManila(Model.SubmittedAt).ToString("MMM dd, yyyy h:mm tt")</strong>
                     </div>
 
                 </div>
@@ -250,8 +267,9 @@
                         <div class="detail-item">
                             <span>Reviewed At</span>
                             <strong>
-                                @(Model.ReviewedAt?.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
-                                    ?? "—")
+                                @(Model.ReviewedAt.HasValue
+                                    ? AttendanceSchedule.ToManila(Model.ReviewedAt.Value).ToString("MMM dd, yyyy h:mm tt")
+                                    : "\u2014")
                             </strong>
                         </div>
 
@@ -296,11 +314,21 @@
 
 
                     <p class="review-note">
-                        Approving records this participant as
-                        <strong>Present</strong> for
-                        @Model.AttendanceDate.ToString("MMM dd, yyyy").
-                        Existing attendance for the same date is updated instead
-                        of duplicated.
+                        Approving records the
+                        <strong>@AttendanceSchedule.ActionLabel(Model.Action)</strong>
+                        for
+                        @Model.AttendanceDate.ToString("MMM dd, yyyy")
+                        using the original submission time
+                        <strong>@AttendanceSchedule.ToManila(Model.SubmittedAt).ToString("h:mm tt")</strong>
+                        (Philippine time).
+                        @if (AttendanceSchedule.IsTimeOutAction(Model.Action))
+                        {
+                            <text>This completes the participant's attendance for the day.</text>
+                        }
+                        else
+                        {
+                            <text>Attendance stays In Progress until a Time Out is approved.</text>
+                        }
                     </p>
 
 
@@ -316,11 +344,11 @@
 
                         <button type="submit"
                                 class="approve-button"
-                                onclick="return confirm('Approve this photo and record attendance as Present?');">
+                                onclick="return confirm('Approve this submission and record it with the original submission time?');">
 
                             <i class="bi bi-check-lg"></i>
 
-                            Approve &amp; Record Present
+                            Approve &amp; Record @AttendanceSchedule.ActionLabel(Model.Action)
 
                         </button>
 

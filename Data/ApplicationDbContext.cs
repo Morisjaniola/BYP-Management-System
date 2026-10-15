@@ -35,6 +35,18 @@ namespace BYPManagementSystem.Data
         }
 
         // =========================================================
+        // ATTENDANCE ANNOUNCEMENT LOGS
+        // Idempotency markers for the scheduled attendance
+        // announcements (one per program, date, and kind).
+        // =========================================================
+
+        public DbSet<AttendanceAnnouncementLog> AttendanceAnnouncementLogs
+        {
+            get;
+            set;
+        }
+
+        // =========================================================
         // PROGRAM REGISTRATIONS
         // =========================================================
 
@@ -126,6 +138,41 @@ namespace BYPManagementSystem.Data
                 .HasDatabaseName(
                     "IX_ProgramRegistrations_ProgramId_YouthParticipantId_UserId"
                 );
+
+
+            // ----------------------------------------------------
+            // ATTENDANCE WINDOWS
+            // Database defaults mirror the model defaults so rows
+            // that existed before this feature receive the
+            // standard barangay morning schedule
+            // (7:00-8:30 AM time in, 10:30-11:30 AM time out).
+            // ----------------------------------------------------
+
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.TimeInStart)
+                .HasDefaultValue(new TimeOnly(7, 0));
+
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.TimeInEnd)
+                .HasDefaultValue(new TimeOnly(8, 30));
+
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.TimeOutStart)
+                .HasDefaultValue(new TimeOnly(10, 30));
+
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.TimeOutEnd)
+                .HasDefaultValue(new TimeOnly(11, 30));
+
+
+            // ----------------------------------------------------
+            // SUBMISSION ACTION
+            // Legacy photo submissions default to "TimeIn".
+            // ----------------------------------------------------
+
+            modelBuilder.Entity<AttendancePhotoSubmission>()
+                .Property(s => s.Action)
+                .HasDefaultValue("TimeIn");
         }
     }
 }

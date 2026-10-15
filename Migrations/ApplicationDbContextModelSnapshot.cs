@@ -22,6 +22,36 @@ namespace BYPManagementSystem.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("BYPManagementSystem.Models.AttendanceAnnouncementLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AttendanceDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<int>("ProgramId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramId", "AttendanceDate", "Kind")
+                        .IsUnique();
+
+                    b.ToTable("AttendanceAnnouncementLogs");
+                });
+
             modelBuilder.Entity("BYPManagementSystem.Models.AttendancePhotoSubmission", b =>
                 {
                     b.Property<int>("Id")
@@ -29,6 +59,13 @@ namespace BYPManagementSystem.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("TimeIn");
 
                     b.Property<DateTime>("AttendanceDate")
                         .HasColumnType("datetime(6)");
@@ -110,6 +147,12 @@ namespace BYPManagementSystem.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
+
+                    b.Property<DateTime?>("TimeInAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("TimeOutAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -202,9 +245,10 @@ namespace BYPManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProgramId");
-
                     b.HasIndex("YouthParticipantId");
+
+                    b.HasIndex("ProgramId", "YouthParticipantId", "UserId")
+                        .HasDatabaseName("IX_ProgramRegistrations_ProgramId_YouthParticipantId_UserId");
 
                     b.ToTable("ProgramRegistrations");
                 });
@@ -346,6 +390,26 @@ namespace BYPManagementSystem.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<TimeOnly>("TimeInEnd")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(8, 30, 0));
+
+                    b.Property<TimeOnly>("TimeInStart")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(7, 0, 0));
+
+                    b.Property<TimeOnly>("TimeOutEnd")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(11, 30, 0));
+
+                    b.Property<TimeOnly>("TimeOutStart")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(10, 30, 0));
 
                     b.HasKey("Id");
 

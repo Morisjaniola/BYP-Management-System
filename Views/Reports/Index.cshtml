@@ -37,6 +37,7 @@
 
     var aS_All = string.IsNullOrEmpty(attStatusVal) || attStatusVal == "All";
     var aS_Present = attStatusVal == "Present";
+    var aS_InProgress = attStatusVal == "InProgress";
     var aS_Absent = attStatusVal == "Absent";
     var aS_Late = attStatusVal == "Late";
     var aS_Excused = attStatusVal == "Excused";
@@ -1173,6 +1174,7 @@
                 <select name="attStatus" class="report-filter-select">
                     <option value="All" selected="@(aS_All ? "selected" : null)">All Statuses</option>
                     <option value="Present" selected="@(aS_Present ? "selected" : null)">Present</option>
+                    <option value="InProgress" selected="@(aS_InProgress ? "selected" : null)">In Progress</option>
                     <option value="Absent" selected="@(aS_Absent ? "selected" : null)">Absent</option>
                     <option value="Late" selected="@(aS_Late ? "selected" : null)">Late</option>
                     <option value="Excused" selected="@(aS_Excused ? "selected" : null)">Excused</option>
@@ -1225,6 +1227,14 @@
                             </th>
 
                             <th>
+                                Time In
+                            </th>
+
+                            <th>
+                                Time Out
+                            </th>
+
+                            <th>
                                 Notes
                             </th>
 
@@ -1240,7 +1250,7 @@
                         {
                             <tr>
 
-                                <td colspan="6"
+                                <td colspan="8"
                                     class="empty-table">
 
                                     No attendance records found.
@@ -1318,12 +1328,36 @@
                                                 Excused
                                             </span>
                                         }
+                                        else if (attendance.Status == "InProgress")
+                                        {
+                                            <span class="table-status pending">
+                                                In Progress
+                                            </span>
+                                        }
                                         else
                                         {
                                             <span class="table-status inactive">
                                                 @attendance.Status
                                             </span>
                                         }
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.TimeInAt.HasValue
+                                            ? BYPManagementSystem.Services.AttendanceSchedule.ToManila(attendance.TimeInAt.Value).ToString("h:mm tt")
+                                            : "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.TimeOutAt.HasValue
+                                            ? BYPManagementSystem.Services.AttendanceSchedule.ToManila(attendance.TimeOutAt.Value).ToString("h:mm tt")
+                                            : "-")
 
                                     </td>
 
@@ -1691,6 +1725,14 @@
                             </th>
 
                             <th>
+                                Time In
+                            </th>
+
+                            <th>
+                                Time Out
+                            </th>
+
+                            <th>
                                 Notes
                             </th>
 
@@ -1706,7 +1748,7 @@
                         {
                             <tr>
 
-                                <td colspan="4"
+                                <td colspan="6"
                                     class="empty-table">
 
                                     You have no attendance records.
@@ -1766,12 +1808,36 @@
                                                 Excused
                                             </span>
                                         }
+                                        else if (attendance.Status == "InProgress")
+                                        {
+                                            <span class="table-status pending">
+                                                In Progress
+                                            </span>
+                                        }
                                         else
                                         {
                                             <span class="table-status inactive">
                                                 @attendance.Status
                                             </span>
                                         }
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.TimeInAt.HasValue
+                                            ? BYPManagementSystem.Services.AttendanceSchedule.ToManila(attendance.TimeInAt.Value).ToString("h:mm tt")
+                                            : "-")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @(attendance.TimeOutAt.HasValue
+                                            ? BYPManagementSystem.Services.AttendanceSchedule.ToManila(attendance.TimeOutAt.Value).ToString("h:mm tt")
+                                            : "-")
 
                                     </td>
 

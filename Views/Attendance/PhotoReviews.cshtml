@@ -211,6 +211,10 @@
                             </th>
 
                             <th>
+                                TYPE
+                            </th>
+
+                            <th>
                                 STATUS
                             </th>
 
@@ -237,8 +241,8 @@
 
                                         <i class="bi bi-clock"></i>
 
-                                        @submission.SubmittedAt.ToLocalTime().ToString(
-                                            "MMM dd, yyyy HH:mm")
+                                        @AttendanceSchedule.ToManila(submission.SubmittedAt).ToString(
+                                            "MMM dd, yyyy h:mm tt")
 
                                     </div>
 
@@ -270,6 +274,17 @@
 
                                     </strong>
 
+                                    @if (submission.Registration?.YouthParticipant != null)
+                                    {
+
+                                        <div class="queue-id">
+
+                                            ID #@submission.Registration.YouthParticipant.Id
+
+                                        </div>
+
+                                    }
+
                                 </td>
 
 
@@ -285,6 +300,21 @@
                                             "MMM dd, yyyy")
 
                                     </div>
+
+                                </td>
+
+
+                                <!-- TYPE -->
+
+                                <td>
+
+                                    <span class="queue-action-chip @(AttendanceSchedule.IsTimeOutAction(submission.Action) ? "time-out" : "time-in")">
+
+                                        <i class="bi @(AttendanceSchedule.IsTimeOutAction(submission.Action) ? "bi-box-arrow-right" : "bi-box-arrow-in-right")"></i>
+
+                                        @AttendanceSchedule.ActionLabel(submission.Action)
+
+                                    </span>
 
                                 </td>
 
@@ -392,6 +422,60 @@
 
 
 <style>
+
+    /* =========================================================
+       SUBMISSION TYPE + PARTICIPANT ID
+       Small additive styles for the Time In / Time Out chip and
+       the participant ID line shown under each name.
+    ========================================================== */
+
+    .queue-action-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 18px;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-size: 6px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .queue-action-chip.time-in {
+        color: #69F0AE;
+        background: rgba(43,166,126,.12);
+        border: 1px solid rgba(105,240,174,.17);
+    }
+
+    .queue-action-chip.time-out {
+        color: #8DDCF2;
+        background: rgba(105,199,232,.10);
+        border: 1px solid rgba(141,220,242,.15);
+    }
+
+    .queue-id {
+        margin-top: 2px;
+        color: #668B94;
+        font-size: 6px;
+        font-weight: 600;
+    }
+
+    html[data-theme="light"] .queue-action-chip.time-in {
+        color: #14804a;
+        background: rgba(43,166,126,.10);
+        border-color: rgba(43,166,126,.22);
+    }
+
+    html[data-theme="light"] .queue-action-chip.time-out {
+        color: #0a7c81;
+        background: rgba(12,144,150,.08);
+        border-color: rgba(12,144,150,.18);
+    }
+
+    html[data-theme="light"] .queue-id {
+        color: #8fa3b5;
+    }
+
 
     /* =========================================================
        PAGE

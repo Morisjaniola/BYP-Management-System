@@ -97,6 +97,14 @@
                     @(program?.Schedule ?? "No schedule")
                 </span>
 
+                @if (program != null)
+                {
+                    <span>
+                        <i class="bi bi-alarm"></i>
+                        @AttendanceSchedule.WindowsText(program)
+                    </span>
+                }
+
                 <span>
                     <i class="bi bi-geo-alt"></i>
                     @(program?.Barangay ?? "No barangay")

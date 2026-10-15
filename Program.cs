@@ -112,6 +112,17 @@ builder.Services.AddScoped<AttendancePhotoStorage>();
 
 
 // ============================================================
+// ATTENDANCE SCHEDULE ANNOUNCEMENTS
+// Background scheduler that sends the configured attendance
+// window announcements (Time In / Time Out open and closing
+// soon) to approved participants without requiring any browser
+// to stay open.
+// ============================================================
+
+builder.Services.AddHostedService<AttendanceAnnouncementService>();
+
+
+// ============================================================
 // BUILD APPLICATION
 // ============================================================
 

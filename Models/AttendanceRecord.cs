@@ -24,6 +24,20 @@ namespace BYPManagementSystem.Models
         [StringLength(30)]
         public string Status { get; set; } = "Present";
 
+
+        // ==========================================================
+        // APPROVED TIME IN / TIME OUT (UTC)
+        //
+        // Filled only from approved photo submissions, always
+        // using the original validated server-recorded submission
+        // time - never the later approval time, and never typed
+        // in manually. Null means not yet recorded.
+        // ==========================================================
+
+        public DateTime? TimeInAt { get; set; }
+
+        public DateTime? TimeOutAt { get; set; }
+
         [StringLength(500)]
         public string? Notes { get; set; }
 

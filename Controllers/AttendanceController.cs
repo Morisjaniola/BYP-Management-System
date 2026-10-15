@@ -1121,6 +1121,13 @@ namespace BYPManagementSystem.Controllers
                     1);
 
 
+            // Philippine "now" so the view can show which
+            // attendance windows are currently open.
+
+            ViewBag.NowManila =
+                AttendanceSchedule.NowManila();
+
+
             return View(records);
         }
 
@@ -1140,7 +1147,8 @@ namespace BYPManagementSystem.Controllers
         [RequestSizeLimit(10 * 1024 * 1024)]
         public async Task<IActionResult> SubmitPhoto(
             int registrationId,
-            IFormFile? photo)
+            IFormFile? photo,
+            string? action)
         {
             // ------------------------------------------------------
             // CURRENT USER - NEVER TRUSTED FROM THE REQUEST
@@ -1225,13 +1233,134 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
-            // ONE SUBMISSION PER REGISTRATION PER DATE
-            // Rejected submissions may be replaced.
+            // ATTENDANCE ACTION + WINDOW (PHILIPPINE TIME)
+            // The submission time is the server clock - never a
+            // browser-supplied timestamp. A submission is only
+            // accepted inside the configured window of the chosen
+            // action (inclusive bounds).
             // ------------------------------------------------------
 
-            var attendanceDate =
-                DateTime.Today;
+            var attendanceAction =
+                AttendanceSchedule.NormalizeAction(
+                    action);
 
+            var isTimeOut =
+                AttendanceSchedule.IsTimeOutAction(
+                    attendanceAction);
+
+
+            var program =
+                registration.Program;
+
+
+            if (program == null)
+            {
+                TempData["Error"] =
+                    "The program schedule could not be loaded. Please try again.";
+
+                return RedirectToAction(
+                    nameof(MyAttendance)
+                );
+            }
+
+
+            var manilaNow =
+                AttendanceSchedule.NowManila();
+
+            var attendanceDate =
+                manilaNow.Date;
+
+            var nowTime =
+                TimeOnly.FromDateTime(manilaNow);
+
+
+            var (windowStart, windowEnd) =
+                AttendanceSchedule.WindowFor(
+                    program,
+                    attendanceAction);
+
+
+            if (!AttendanceSchedule.IsWithin(
+                    nowTime,
+                    windowStart,
+                    windowEnd))
+            {
+                TempData["Error"] =
+                    AttendanceSchedule.ActionLabel(attendanceAction)
+                    + " can only be submitted between "
+                    + AttendanceSchedule.FormatTime(windowStart)
+                    + " and "
+                    + AttendanceSchedule.FormatTime(windowEnd)
+                    + " (Philippine time). It is currently "
+                    + AttendanceSchedule.FormatTime(nowTime)
+                    + ".";
+
+                return RedirectToAction(
+                    nameof(MyAttendance)
+                );
+            }
+
+
+            // ------------------------------------------------------
+            // VALID SEQUENCE
+            // A Time Out requires an approved Time In for the same
+            // day, and an approved Time In is never submitted
+            // twice.
+            // ------------------------------------------------------
+
+            var timeInRecorded =
+                await _context.AttendanceRecords
+                    .AnyAsync(a =>
+                        a.RegistrationId ==
+                            registration.Id &&
+                        a.AttendanceDate ==
+                            attendanceDate &&
+                        a.TimeInAt != null
+                    );
+
+
+            if (isTimeOut)
+            {
+                var approvedTimeIn =
+                    timeInRecorded ||
+                    await _context.AttendancePhotoSubmissions
+                        .AnyAsync(s =>
+                            s.RegistrationId ==
+                                registration.Id &&
+                            s.AttendanceDate ==
+                                attendanceDate &&
+                            s.Action ==
+                                "TimeIn" &&
+                            s.Status ==
+                                "Approved"
+                        );
+
+
+                if (!approvedTimeIn)
+                {
+                    TempData["Error"] =
+                        "A Time Out can only be submitted after your Time In has been approved for the same day.";
+
+                    return RedirectToAction(
+                        nameof(MyAttendance)
+                    );
+                }
+            }
+            else if (timeInRecorded)
+            {
+                TempData["Error"] =
+                    "Your Time In has already been recorded for today.";
+
+                return RedirectToAction(
+                    nameof(MyAttendance)
+                );
+            }
+
+
+            // ------------------------------------------------------
+            // ONE SUBMISSION PER REGISTRATION PER DATE PER ACTION
+            // Rejected submissions may be replaced.
+            // ------------------------------------------------------
 
             var alreadySubmitted =
                 await _context.AttendancePhotoSubmissions
@@ -1240,6 +1369,8 @@ namespace BYPManagementSystem.Controllers
                             registration.Id &&
                         s.AttendanceDate ==
                             attendanceDate &&
+                        s.Action ==
+                            attendanceAction &&
                         s.Status != "Rejected"
                     );
 
@@ -1247,7 +1378,9 @@ namespace BYPManagementSystem.Controllers
             if (alreadySubmitted)
             {
                 TempData["Error"] =
-                    "You have already submitted an attendance photo for this program today.";
+                    "You have already submitted a "
+                    + AttendanceSchedule.ActionLabel(attendanceAction)
+                    + " photo for this program today.";
 
                 return RedirectToAction(
                     nameof(MyAttendance)
@@ -1283,6 +1416,9 @@ namespace BYPManagementSystem.Controllers
 
                         AttendanceDate =
                             attendanceDate,
+
+                        Action =
+                            attendanceAction,
 
                         FileName =
                             saved.FileName,
@@ -1332,7 +1468,8 @@ namespace BYPManagementSystem.Controllers
 
 
             TempData["Success"] =
-                "Attendance photo submitted. It is now waiting for staff review.";
+                AttendanceSchedule.ActionLabel(attendanceAction)
+                + " photo submitted. It is now waiting for staff review.";
 
             return RedirectToAction(
                 nameof(MyAttendance)
@@ -1537,10 +1674,21 @@ namespace BYPManagementSystem.Controllers
         // ADMIN / STAFF
         // ==========================================================
         //
-        // Creates or updates the Present attendance record for
-        // the submission date. Existing attendance is never
-        // duplicated - the unique index on registration + date is
-        // respected by updating the existing row instead.
+        // Re-validates the pending submission against the
+        // configured window using the ORIGINAL server-recorded
+        // submission time, then records the attendance action
+        // with that submission time - never the later approval
+        // time.
+        //
+        // Time In  -> opens the day's attendance record
+        //             (Status "InProgress", TimeInAt set).
+        // Time Out -> completes it (Status "Present",
+        //             TimeOutAt set) and requires an approved
+        //             Time In for the same date.
+        //
+        // Existing attendance is never duplicated - the unique
+        // index on registration + date is respected by updating
+        // the existing row instead.
         // ==========================================================
 
         [Authorize(Roles = "Admin,Staff")]
@@ -1611,12 +1759,92 @@ namespace BYPManagementSystem.Controllers
                 submission.AttendanceDate.Date;
 
 
+            // ------------------------------------------------------
+            // ACTION + ORIGINAL SUBMISSION TIME (PHILIPPINE TIME)
+            // ------------------------------------------------------
+
+            var program =
+                submission.Registration.Program;
+
+
+            if (program == null)
+            {
+                TempData["Error"] =
+                    "The program schedule could not be loaded. Attendance was not recorded.";
+
+                return RedirectToAction(
+                    nameof(PhotoReviews),
+                    new
+                    {
+                        status = "Pending"
+                    }
+                );
+            }
+
+
+            var attendanceAction =
+                AttendanceSchedule.NormalizeAction(
+                    submission.Action);
+
+            var isTimeOut =
+                AttendanceSchedule.IsTimeOutAction(
+                    attendanceAction);
+
+
+            var submittedManila =
+                AttendanceSchedule.ToManila(
+                    submission.SubmittedAt);
+
+            var submittedTime =
+                TimeOnly.FromDateTime(submittedManila);
+
+
+            var (windowStart, windowEnd) =
+                AttendanceSchedule.WindowFor(
+                    program,
+                    attendanceAction);
+
+
+            if (!AttendanceSchedule.IsWithin(
+                    submittedTime,
+                    windowStart,
+                    windowEnd))
+            {
+                TempData["Error"] =
+                    "This "
+                    + AttendanceSchedule.ActionLabel(attendanceAction)
+                    + " was submitted at "
+                    + AttendanceSchedule.FormatTime(submittedTime)
+                    + ", outside the allowed window ("
+                    + AttendanceSchedule.FormatTime(windowStart)
+                    + " \u2013 "
+                    + AttendanceSchedule.FormatTime(windowEnd)
+                    + ", Philippine time). Attendance was not recorded.";
+
+                return RedirectToAction(
+                    nameof(PhotoReviews),
+                    new
+                    {
+                        status = "Pending"
+                    }
+                );
+            }
+
+
+            var recordedTimeText =
+                AttendanceSchedule.FormatTime(
+                    submittedTime);
+
+
             var attendanceNote =
-                "Attendance photo approved by "
+                AttendanceSchedule.ActionLabel(attendanceAction)
+                + " photo approved by "
                 + reviewerName
                 + " on "
                 + DateTime.UtcNow.ToString("MMM dd, yyyy")
-                + ".";
+                + "; original submission time "
+                + recordedTimeText
+                + " (Philippine time) recorded.";
 
 
             try
@@ -1635,8 +1863,109 @@ namespace BYPManagementSystem.Controllers
                         );
 
 
-                if (existingRecord != null)
+                if (!isTimeOut)
                 {
+                    // ----------------------------------------------
+                    // TIME IN - OPEN THE DAY'S ATTENDANCE
+                    // ----------------------------------------------
+
+                    if (existingRecord != null &&
+                        existingRecord.TimeInAt != null)
+                    {
+                        TempData["Error"] =
+                            "A Time In has already been recorded for this date.";
+
+                        return RedirectToAction(
+                            nameof(PhotoReviews),
+                            new
+                            {
+                                status = "Pending"
+                            }
+                        );
+                    }
+
+
+                    if (existingRecord != null)
+                    {
+                        existingRecord.Status =
+                            "InProgress";
+
+                        existingRecord.TimeInAt =
+                            submission.SubmittedAt;
+
+                        existingRecord.Notes =
+                            MergeAttendanceNote(
+                                existingRecord.Notes,
+                                attendanceNote);
+                    }
+                    else
+                    {
+                        _context.AttendanceRecords.Add(
+                            new AttendanceRecord
+                            {
+                                RegistrationId =
+                                    submission
+                                        .RegistrationId,
+
+                                AttendanceDate =
+                                    attendanceDate,
+
+                                Status =
+                                    "InProgress",
+
+                                TimeInAt =
+                                    submission
+                                        .SubmittedAt,
+
+                                Notes =
+                                    attendanceNote,
+
+                                RecordedAt =
+                                    DateTime.UtcNow
+                            });
+                    }
+                }
+                else
+                {
+                    // ----------------------------------------------
+                    // TIME OUT - COMPLETE THE DAY'S ATTENDANCE
+                    // Requires an approved Time In first.
+                    // ----------------------------------------------
+
+                    if (existingRecord == null ||
+                        existingRecord.TimeInAt == null)
+                    {
+                        TempData["Error"] =
+                            "A Time Out can only be recorded after an approved Time In for the same date.";
+
+                        return RedirectToAction(
+                            nameof(PhotoReviews),
+                            new
+                            {
+                                status = "Pending"
+                            }
+                        );
+                    }
+
+
+                    if (existingRecord.TimeOutAt != null)
+                    {
+                        TempData["Error"] =
+                            "A Time Out has already been recorded for this date.";
+
+                        return RedirectToAction(
+                            nameof(PhotoReviews),
+                            new
+                            {
+                                status = "Pending"
+                            }
+                        );
+                    }
+
+
+                    existingRecord.TimeOutAt =
+                        submission.SubmittedAt;
+
                     existingRecord.Status =
                         "Present";
 
@@ -1644,28 +1973,6 @@ namespace BYPManagementSystem.Controllers
                         MergeAttendanceNote(
                             existingRecord.Notes,
                             attendanceNote);
-                }
-                else
-                {
-                    _context.AttendanceRecords.Add(
-                        new AttendanceRecord
-                        {
-                            RegistrationId =
-                                submission
-                                    .RegistrationId,
-
-                            AttendanceDate =
-                                attendanceDate,
-
-                            Status =
-                                "Present",
-
-                            Notes =
-                                attendanceNote,
-
-                            RecordedAt =
-                                DateTime.UtcNow
-                        });
                 }
 
 
@@ -1692,11 +1999,19 @@ namespace BYPManagementSystem.Controllers
                 // notification only persists when the review does.
                 // --------------------------------------------------
 
+                var programName =
+                    program.Name;
+
+
                 var approvedNotification =
                     NotificationHelper.ForRegistration(
                         submission.Registration,
-                        "Attendance Photo Approved",
-                        $"Your attendance photo for \"{submission.Registration.Program?.Name ?? "the program"}\" on {attendanceDate:MMM dd, yyyy} has been approved. Your attendance is recorded as Present.",
+                        isTimeOut
+                            ? "Attendance Time Out Approved"
+                            : "Attendance Time In Approved",
+                        isTimeOut
+                            ? $"Your Time Out photo for \"{programName}\" on {attendanceDate:MMM dd, yyyy} has been approved. Your Time Out was recorded at {recordedTimeText} (Philippine time) and your attendance for this day is complete."
+                            : $"Your Time In photo for \"{programName}\" on {attendanceDate:MMM dd, yyyy} has been approved. Your Time In was recorded at {recordedTimeText} (Philippine time).",
                         "Attendance");
 
 
@@ -1729,7 +2044,13 @@ namespace BYPManagementSystem.Controllers
 
 
             TempData["Success"] =
-                "Photo approved and attendance recorded as Present.";
+                isTimeOut
+                    ? "Photo approved. Time Out recorded at the original submission time "
+                      + recordedTimeText
+                      + " (Philippine time)."
+                    : "Photo approved. Time In recorded at the original submission time "
+                      + recordedTimeText
+                      + " (Philippine time).";
 
             return RedirectToAction(
                 nameof(PhotoReviews),

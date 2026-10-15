@@ -3,6 +3,7 @@ using BYPManagementSystem.Models;
 using BYPManagementSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace BYPManagementSystem.Controllers
@@ -370,6 +371,18 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
+            // ATTENDANCE WINDOW VALIDATION
+            // Shared by Create and Edit: each window must be
+            // ordered, and the Time In window must end before the
+            // Time Out window starts.
+            // ------------------------------------------------------
+
+            ValidateAttendanceWindows(
+                program,
+                ModelState);
+
+
+            // ------------------------------------------------------
             // VALIDATION
             // ------------------------------------------------------
 
@@ -545,6 +558,18 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
+            // ATTENDANCE WINDOW VALIDATION
+            // Shared by Create and Edit: each window must be
+            // ordered, and the Time In window must end before the
+            // Time Out window starts.
+            // ------------------------------------------------------
+
+            ValidateAttendanceWindows(
+                program,
+                ModelState);
+
+
+            // ------------------------------------------------------
             // VALIDATION
             // ------------------------------------------------------
 
@@ -600,6 +625,18 @@ namespace BYPManagementSystem.Controllers
 
             existingProgram.ScheduleEnd =
                 program.ScheduleEnd;
+
+            existingProgram.TimeInStart =
+                program.TimeInStart;
+
+            existingProgram.TimeInEnd =
+                program.TimeInEnd;
+
+            existingProgram.TimeOutStart =
+                program.TimeOutStart;
+
+            existingProgram.TimeOutEnd =
+                program.TimeOutEnd;
 
             existingProgram.Status =
                 string.IsNullOrWhiteSpace(
@@ -1395,6 +1432,48 @@ namespace BYPManagementSystem.Controllers
 
 
             return string.Empty;
+        }
+
+
+        // ==========================================================
+        // ATTENDANCE WINDOW VALIDATION
+        // ==========================================================
+        //
+        // Each window must be ordered (start strictly before end)
+        // and the Time In window must end at or before the Time
+        // Out window starts, so the two windows can never
+        // overlap.
+        // ==========================================================
+
+        private static void ValidateAttendanceWindows(
+            YouthProgram program,
+            ModelStateDictionary modelState)
+        {
+            if (program.TimeInStart >= program.TimeInEnd)
+            {
+                modelState.AddModelError(
+                    nameof(program.TimeInEnd),
+                    "The Time In window end must be after its start."
+                );
+            }
+
+
+            if (program.TimeOutStart >= program.TimeOutEnd)
+            {
+                modelState.AddModelError(
+                    nameof(program.TimeOutEnd),
+                    "The Time Out window end must be after its start."
+                );
+            }
+
+
+            if (program.TimeInEnd > program.TimeOutStart)
+            {
+                modelState.AddModelError(
+                    nameof(program.TimeOutStart),
+                    "The Time Out window must start after the Time In window ends."
+                );
+            }
         }
 
 

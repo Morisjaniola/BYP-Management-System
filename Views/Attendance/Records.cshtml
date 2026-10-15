@@ -509,6 +509,14 @@
                             </th>
 
                             <th>
+                                Time In
+                            </th>
+
+                            <th>
+                                Time Out
+                            </th>
+
+                            <th>
                                 Notes
                             </th>
 
@@ -634,12 +642,77 @@
 
                                         </span>
                                     }
+                                    else if (string.Equals(
+                                        record.Status,
+                                        "InProgress",
+                                        StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge excused">
+
+                                            <i class="bi bi-arrow-repeat"></i>
+
+                                            In Progress
+
+                                        </span>
+                                    }
                                     else
                                     {
                                         <span class="status-badge default">
 
                                             @record.Status
 
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- TIME IN -->
+
+                                <td>
+
+                                    @if (record.TimeInAt.HasValue)
+                                    {
+                                        <div class="recorded-cell">
+
+                                            @AttendanceSchedule.ToManila(record.TimeInAt.Value).ToString("hh:mm tt")
+
+                                            <span>
+                                                Approved submission
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="no-notes">
+                                            &mdash;
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- TIME OUT -->
+
+                                <td>
+
+                                    @if (record.TimeOutAt.HasValue)
+                                    {
+                                        <div class="recorded-cell">
+
+                                            @AttendanceSchedule.ToManila(record.TimeOutAt.Value).ToString("hh:mm tt")
+
+                                            <span>
+                                                Approved submission
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="no-notes">
+                                            &mdash;
                                         </span>
                                     }
 
@@ -675,11 +748,11 @@
 
                                     <div class="recorded-cell">
 
-                                        @(record.RecordedAt.ToLocalTime().ToString("MMM dd, yyyy"))
+                                        @AttendanceSchedule.ToManila(record.RecordedAt).ToString("MMM dd, yyyy")
 
                                         <span>
 
-                                            @(record.RecordedAt.ToLocalTime().ToString("hh:mm tt"))
+                                            @AttendanceSchedule.ToManila(record.RecordedAt).ToString("h:mm tt")
 
                                         </span>
 

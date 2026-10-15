@@ -55,6 +55,39 @@ namespace BYPManagementSystem.Models
 
 
         // ==========================================================
+        // ATTENDANCE WINDOWS (MORNING SCHEDULE)
+        //
+        // Allowed submission windows in Philippine time
+        // (Asia/Manila). Defaults follow the barangay morning
+        // schedule: Time In 7:00 AM - 8:30 AM and Time Out
+        // 10:30 AM - 11:30 AM. Configurable per program.
+        // ==========================================================
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Time In Window Start")]
+        public TimeOnly TimeInStart { get; set; } =
+            new TimeOnly(7, 0);
+
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Time In Window End")]
+        public TimeOnly TimeInEnd { get; set; } =
+            new TimeOnly(8, 30);
+
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Time Out Window Start")]
+        public TimeOnly TimeOutStart { get; set; } =
+            new TimeOnly(10, 30);
+
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Time Out Window End")]
+        public TimeOnly TimeOutEnd { get; set; } =
+            new TimeOnly(11, 30);
+
+
+        // ==========================================================
         // STATUS
         // ==========================================================
 
