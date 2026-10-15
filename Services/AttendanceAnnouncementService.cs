@@ -142,6 +142,23 @@ namespace BYPManagementSystem.Services
 
             foreach (var program in programs)
             {
+                // --------------------------------------------------
+                // SCHEDULED FOR TODAY (PHILIPPINE DATE)
+                // Only programs whose actual structured schedule
+                // range covers today are considered, so a
+                // future-dated or already-ended program never
+                // announces its windows. Legacy programs without
+                // structured dates keep announcing daily.
+                // --------------------------------------------------
+
+                if (!AttendanceSchedule.IsScheduledOn(
+                        program,
+                        attendanceDate))
+                {
+                    continue;
+                }
+
+
                 foreach (var trigger in BuildTriggers(program))
                 {
                     if (nowTime < trigger.At)

@@ -258,7 +258,8 @@ namespace BYPManagementSystem.Services
 
         // ==========================================================
         // DELETE
-        // Used when a saved file must be rolled back.
+        // Used when a saved file must be rolled back, and when a
+        // permanently deleted record's file becomes safe to remove.
         // ==========================================================
 
         public void Delete(string? fileName)
@@ -269,6 +270,176 @@ namespace BYPManagementSystem.Services
             if (path != null && File.Exists(path))
             {
                 File.Delete(path);
+            }
+        }
+
+
+        // ==========================================================
+        // PENDING CLEANUP QUEUE (PERMANENT DELETE)
+        // ==========================================================
+        //
+        // After a delete transaction has committed, removing the
+        // stored photo file can still fail (file locked, transient
+        // permissions problem). The bare file name is queued in a
+        // small text file inside the storage folder and retried on
+        // the next cleanup pass, so a failed removal stays
+        // recoverable instead of silently leaking.
+        //
+        // Safety properties:
+        // - Only validated bare file names are stored - never
+        //   full paths supplied by anyone.
+        // - Every retry resolves the name through GetFullPath
+        //   again, so a tampered queue line can never escape the
+        //   storage folder.
+        // - The queue file itself can never be enqueued, and a
+        //   line that fails validation is dropped without ever
+        //   being touched on disk.
+        // ==========================================================
+
+        private static readonly object PendingQueueLock = new object();
+
+
+        private string PendingQueuePath =>
+            Path.Combine(
+                RootPath,
+                "cleanup-pending.txt");
+
+
+        // ==========================================================
+        // ENQUEUE A FILE NAME FOR A LATER DELETE RETRY
+        // Best effort: failures here never break the caller,
+        // because the database deletion has already committed.
+        // ==========================================================
+
+        public void EnqueuePendingDelete(string? fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return;
+            }
+
+
+            var safeName =
+                Path.GetFileName(fileName);
+
+            if (string.IsNullOrWhiteSpace(safeName) ||
+                safeName != fileName ||
+                string.Equals(
+                    safeName,
+                    "cleanup-pending.txt",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+
+            try
+            {
+                Directory.CreateDirectory(RootPath);
+
+                lock (PendingQueueLock)
+                {
+                    File.AppendAllText(
+                        PendingQueuePath,
+                        safeName + Environment.NewLine);
+                }
+            }
+            catch
+            {
+                // Queueing is best effort. The caller already
+                // logged the original deletion failure.
+            }
+        }
+
+
+        // ==========================================================
+        // RETRY ALL QUEUED FILE DELETIONS
+        // Returns how many names are still pending (0 = clean),
+        // or -1 when the queue itself could not be processed.
+        // Safe to call on every delete operation: names that no
+        // longer exist, or that fail validation, are dropped.
+        // ==========================================================
+
+        public int RetryPendingDeletes()
+        {
+            lock (PendingQueueLock)
+            {
+                try
+                {
+                    if (!File.Exists(PendingQueuePath))
+                    {
+                        return 0;
+                    }
+
+
+                    var remaining =
+                        new List<string>();
+
+                    foreach (var raw in
+                        File.ReadAllLines(PendingQueuePath))
+                    {
+                        var name =
+                            (raw ?? string.Empty).Trim();
+
+                        if (name.Length == 0)
+                        {
+                            continue;
+                        }
+
+
+                        var path =
+                            GetFullPath(name);
+
+                        if (path == null)
+                        {
+                            // Unsafe or malformed line: drop it
+                            // without touching the disk.
+
+                            continue;
+                        }
+
+
+                        try
+                        {
+                            if (File.Exists(path))
+                            {
+                                File.Delete(path);
+                            }
+
+
+                            if (File.Exists(path))
+                            {
+                                remaining.Add(name);
+                            }
+                        }
+                        catch
+                        {
+                            // Still failing: keep it queued for
+                            // the next retry.
+
+                            remaining.Add(name);
+                        }
+                    }
+
+
+                    if (remaining.Count == 0)
+                    {
+                        File.Delete(PendingQueuePath);
+                    }
+                    else
+                    {
+                        File.WriteAllLines(
+                            PendingQueuePath,
+                            remaining);
+                    }
+
+
+                    return remaining.Count;
+                }
+                catch
+                {
+                    return -1;
+                }
             }
         }
 

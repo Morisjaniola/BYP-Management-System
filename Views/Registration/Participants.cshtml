@@ -626,7 +626,7 @@
                                               asp-route-id="@participant.Id"
                                               method="post"
                                               style="display:inline;"
-                                              onsubmit="return confirm('Are you sure you want to delete this participant?');">
+                                              onsubmit="return confirm('Delete Participant Permanently?\n\nThis action permanently deletes @((participant.FirstName + " " + participant.LastName).Replace("'", "\\'")) together with the participant\'s registrations, attendance records, photo submissions, and certificates. This action cannot be undone. The linked login account is preserved.\n\nClick OK to delete permanently, or Cancel to keep it.');">
                                             @Html.AntiForgeryToken()
                                             <button type="submit"
                                                     class="table-action delete"

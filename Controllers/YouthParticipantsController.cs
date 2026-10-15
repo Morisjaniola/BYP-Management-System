@@ -4,6 +4,7 @@ using BYPManagementSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BYPManagementSystem.Controllers
 {
@@ -11,11 +12,17 @@ namespace BYPManagementSystem.Controllers
     public class YouthParticipantsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly AttendancePhotoStorage _photoStorage;
+        private readonly ILogger<YouthParticipantsController> _logger;
 
         public YouthParticipantsController(
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            AttendancePhotoStorage photoStorage,
+            ILogger<YouthParticipantsController> logger)
         {
             _context = context;
+            _photoStorage = photoStorage;
+            _logger = logger;
         }
 
 
@@ -521,19 +528,41 @@ namespace BYPManagementSystem.Controllers
 
 
         // ==========================================================
-        // DELETE PARTICIPANT
-        // ADMIN ONLY
+        // DELETE YOUTH PARTICIPANT PERMANENTLY
         // ==========================================================
         //
-        // Delete order:
+        // Admin only, POST + antiforgery only.
         //
-        // Attendance
-        //      ↓
-        // Program Registrations
-        //      ↓
+        // Removes an obsolete participant together with the
+        // records that belong exclusively to that participant:
+        //
         // Youth Participant
+        //   ↑
+        // Registrations (participant scoped)
+        //   ↑
+        // Attendance records    ─┐
+        // Photo submissions     ─┤ by registration
+        // Certificates          ─┘
         //
-        // This prevents orphaned dependent records.
+        // IDENTITY ACCOUNTS ARE PRESERVED. A YouthParticipant row
+        // only stores a reference (UserId) to the ASP.NET Identity
+        // user; deleting the participant never deletes the login
+        // account, so the person can still sign in and unrelated
+        // account data (roles, profile, notifications) is safe.
+        //
+        // Notification rows are account-scoped history in the
+        // user's inbox and are preserved with the account.
+        // Announcement logs are program-scoped and belong to the
+        // program, not the participant.
+        //
+        // Everything runs in ONE transaction after locking the
+        // participant row (SELECT ... FOR UPDATE), so concurrent
+        // delete/edit requests serialize and a failure can never
+        // leave a partially deleted participant. Stored photo
+        // files are removed only AFTER the commit, only when no
+        // surviving submission still references the file, and
+        // only through AttendancePhotoStorage, which confines the
+        // resolved path to the configured photo folder.
         // ==========================================================
 
         [Authorize(Roles = "Admin")]
@@ -542,83 +571,280 @@ namespace BYPManagementSystem.Controllers
         public async Task<IActionResult> Delete(
             int id)
         {
-            var participant =
-                await _context.YouthParticipants
-                    .FirstOrDefaultAsync(
-                        y => y.Id == id
-                    );
+            // ------------------------------------------------------
+            // RETRY ANY PHOTO FILE LEFT OVER FROM AN EARLIER DELETE
+            // ------------------------------------------------------
 
-
-            if (participant == null)
+            try
             {
-                return NotFound();
+                var stillPending =
+                    _photoStorage.RetryPendingDeletes();
+
+                if (stillPending > 0)
+                {
+                    _logger.LogWarning(
+                        "{Count} attendance photo file(s) remain queued for deletion.",
+                        stillPending);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Pending attendance photo cleanup retry failed.");
             }
 
 
-            // ------------------------------------------------------
-            // GET REGISTRATIONS
-            //
-            // Includes legacy rows recorded before YouthParticipantId
-            // was filled in, matched through the linked Identity user.
-            // ------------------------------------------------------
+            var participant =
+                default(YouthParticipant);
 
             var registrations =
-                await _context.ProgramRegistrations
-                    .Where(r =>
-                        r.YouthParticipantId ==
-                        id
-
-                        ||
-
-                        (
-                            participant.UserId !=
-                                null
-
-                            &&
-
-                            r.UserId ==
-                                participant.UserId
-                        )
-                    )
-                    .ToListAsync();
-
-
-            var registrationIds =
-                registrations
-                    .Select(r => r.Id)
-                    .ToList();
-
-
-            // ------------------------------------------------------
-            // GET ATTENDANCE
-            // ------------------------------------------------------
+                new List<ProgramRegistration>();
 
             var attendance =
-                await _context.AttendanceRecords
-                    .Where(a =>
-                        registrationIds.Contains(
-                            a.RegistrationId
-                        )
-                    )
-                    .ToListAsync();
+                new List<AttendanceRecord>();
+
+            var photos =
+                new List<AttendancePhotoSubmission>();
+
+            var certificates =
+                new List<Certificate>();
+
+            var exclusiveFileNames =
+                new List<string>();
 
 
-            // ------------------------------------------------------
-            // PROTECTED HISTORICAL RECORDS (PHASE 2)
-            //
-            // Registrations carry attendance records, photo
-            // submissions, and certificates. When any history
-            // exists the hard delete is refused and deactivation is
-            // recommended instead. Only participants with no
-            // registration or attendance history can be deleted.
-            // ------------------------------------------------------
-
-            if (registrations.Any() ||
-                attendance.Any())
+            try
             {
+                await using var transaction =
+                    await _context.Database
+                        .BeginTransactionAsync();
+
+
+                // --------------------------------------------------
+                // LOCK THE TARGET ROW
+                //
+                // (SELECT ... FOR UPDATE) so a concurrent delete
+                // or edit of the same participant waits for this
+                // transaction and then re-reads the result.
+                // --------------------------------------------------
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "SELECT Id FROM YouthParticipants WHERE Id = {0} FOR UPDATE",
+                    id);
+
+
+                participant =
+                    await _context.YouthParticipants
+                        .FirstOrDefaultAsync(
+                            y => y.Id == id
+                        );
+
+                if (participant == null)
+                {
+                    // Already deleted by a concurrent request.
+                    // Disposing the transaction rolls back.
+
+                    return NotFound();
+                }
+
+
+                // --------------------------------------------------
+                // LOAD THE PARTICIPANT'S REGISTRATIONS
+                //
+                // Includes legacy rows recorded before
+                // YouthParticipantId was filled in, matched
+                // through the linked Identity user. Registrations
+                // that explicitly belong to a DIFFERENT
+                // participant are never taken, even if some legacy
+                // data anomaly links them to the same user.
+                // --------------------------------------------------
+
+                registrations =
+                    await _context.ProgramRegistrations
+                        .Where(r =>
+                            r.YouthParticipantId ==
+                            id
+
+                            ||
+
+                            (
+                                participant.UserId !=
+                                    null
+
+                                &&
+
+                                r.UserId ==
+                                    participant.UserId
+
+                                &&
+
+                                r.YouthParticipantId ==
+                                    null
+                            )
+                        )
+                        .ToListAsync();
+
+
+                var registrationIds =
+                    registrations
+                        .Select(r => r.Id)
+                        .ToList();
+
+
+                photos =
+                    await _context.AttendancePhotoSubmissions
+                        .Where(s =>
+                            registrationIds.Contains(
+                                s.RegistrationId
+                            )
+                        )
+                        .ToListAsync();
+
+
+                certificates =
+                    await _context.Certificates
+                        .Where(c =>
+                            registrationIds.Contains(
+                                c.RegistrationId
+                            )
+                        )
+                        .ToListAsync();
+
+
+                attendance =
+                    await _context.AttendanceRecords
+                        .Where(a =>
+                            registrationIds.Contains(
+                                a.RegistrationId
+                            )
+                        )
+                        .ToListAsync();
+
+
+                // --------------------------------------------------
+                // FILES OWNED EXCLUSIVELY BY THESE REGISTRATIONS
+                //
+                // A file name referenced by any submission OUTSIDE
+                // the deleted registrations must survive, so it is
+                // excluded from cleanup. Checked inside the same
+                // transaction, before anything is removed.
+                // --------------------------------------------------
+
+                var allFileNames =
+                    photos
+                        .Select(s => s.FileName)
+                        .Distinct()
+                        .ToList();
+
+                var sharedFileNames =
+                    allFileNames.Count == 0
+                        ? new List<string>()
+                        : await _context.AttendancePhotoSubmissions
+                            .Where(s =>
+                                allFileNames.Contains(
+                                    s.FileName
+                                )
+
+                                &&
+
+                                !registrationIds.Contains(
+                                    s.RegistrationId
+                                )
+                            )
+                            .Select(s => s.FileName)
+                            .Distinct()
+                            .ToListAsync();
+
+                exclusiveFileNames =
+                    allFileNames
+                        .Where(fn =>
+                            !sharedFileNames.Contains(fn)
+                        )
+                        .ToList();
+
+
+                // --------------------------------------------------
+                // DELETE DEPENDENCIES BEFORE THE PARENT
+                //
+                // One SaveChanges inside the one transaction.
+                // Registrations must go before the participant:
+                // that foreign key is NO ACTION at the database.
+                // --------------------------------------------------
+
+                if (photos.Count > 0)
+                {
+                    _context.AttendancePhotoSubmissions
+                        .RemoveRange(photos);
+                }
+
+                if (certificates.Count > 0)
+                {
+                    _context.Certificates
+                        .RemoveRange(certificates);
+                }
+
+                if (attendance.Count > 0)
+                {
+                    _context.AttendanceRecords
+                        .RemoveRange(attendance);
+                }
+
+                if (registrations.Count > 0)
+                {
+                    _context.ProgramRegistrations
+                        .RemoveRange(registrations);
+                }
+
+
+                _context.YouthParticipants
+                    .Remove(participant);
+
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Youth participant {ParticipantId} delete hit a concurrency conflict; nothing was committed.",
+                    id);
+
                 TempData["Error"] =
-                    "Cannot delete: this participant has registration or attendance history. " +
-                    "Use 'Deactivate' to preserve the history while preventing new activity.";
+                    "Could not delete: the participant changed while processing or was already deleted. " +
+                    "Refresh the list and try again.";
+
+                return RedirectToAction(
+                    nameof(Index)
+                );
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Youth participant {ParticipantId} delete failed at the database; transaction rolled back.",
+                    id);
+
+                TempData["Error"] =
+                    "Could not delete: related records could not be removed safely. " +
+                    "No changes were made. Refresh the list and try again.";
+
+                return RedirectToAction(
+                    nameof(Index)
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Youth participant {ParticipantId} delete failed; transaction rolled back.",
+                    id);
+
+                TempData["Error"] =
+                    "Could not delete the youth participant due to a database error. " +
+                    "No changes were made. Please try again.";
 
                 return RedirectToAction(
                     nameof(Index)
@@ -627,26 +853,53 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
-            // DELETE DEPENDENCIES FIRST
+            // FILE CLEANUP (AFTER COMMIT - BEST EFFORT)
+            //
+            // The database deletion is already durable. A file
+            // that cannot be removed now is logged and queued for
+            // retry on the next delete operation; it never fails
+            // the request or corrupts the committed deletion.
             // ------------------------------------------------------
 
-            _context.AttendanceRecords
-                .RemoveRange(attendance);
+            var cleanupFailures = 0;
+
+            foreach (var fileName in exclusiveFileNames)
+            {
+                try
+                {
+                    _photoStorage.Delete(fileName);
+                }
+                catch (Exception ex)
+                {
+                    cleanupFailures++;
+
+                    _logger.LogWarning(
+                        ex,
+                        "Could not delete attendance photo file {FileName} after deleting participant {ParticipantId}. Queued for retry.",
+                        fileName,
+                        id);
+
+                    _photoStorage.EnqueuePendingDelete(fileName);
+                }
+            }
 
 
-            _context.ProgramRegistrations
-                .RemoveRange(registrations);
+            var message =
+                $"Youth participant '{participant.FirstName} {participant.LastName}' permanently deleted together with " +
+                $"{registrations.Count} registration(s), " +
+                $"{attendance.Count} attendance record(s), " +
+                $"{photos.Count} photo submission(s), and " +
+                $"{certificates.Count} certificate(s). " +
+                "The linked login account, if any, was preserved.";
 
+            if (cleanupFailures > 0)
+            {
+                message +=
+                    $" {cleanupFailures} stored photo file(s) could not be removed yet " +
+                    "and are queued for automatic retry.";
+            }
 
-            _context.YouthParticipants
-                .Remove(participant);
-
-
-            await _context.SaveChangesAsync();
-
-
-            TempData["Success"] =
-                "Youth participant deleted successfully.";
+            TempData["Success"] = message;
 
 
             return RedirectToAction(

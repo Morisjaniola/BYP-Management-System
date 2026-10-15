@@ -91,12 +91,83 @@ namespace BYPManagementSystem.Services
         // ========================================================
         // WINDOW EVALUATION (INCLUSIVE BOUNDS)
         // ========================================================
+        //
+        // Boundaries are inclusive at minute precision, which is
+        // the precision the windows are configured with: a Time
+        // In window of 7:00 - 8:30 accepts anything from
+        // 7:00:00 through 8:30:59, and 6:59:59 is rejected.
+        // The submission and approval paths both call this one
+        // helper, so the policy can never drift between them.
+        //
+        // The checked value is only used for this comparison;
+        // the recorded attendance timestamp always stays the
+        // exact server-captured submission time.
+        //
 
         public static bool IsWithin(
             TimeOnly now,
             TimeOnly start,
-            TimeOnly end) =>
-            now >= start && now <= end;
+            TimeOnly end)
+        {
+            var minute =
+                new TimeOnly(now.Hour, now.Minute);
+
+            return minute >= start && minute <= end;
+        }
+
+
+        // ========================================================
+        // PROGRAM SCHEDULE DATE ELIGIBILITY
+        // ========================================================
+        //
+        // A program is scheduled on a Manila date when its
+        // optional structured schedule range (ScheduleStart /
+        // ScheduleEnd) covers that date. Programs that only
+        // have the free-text Schedule (no structured dates)
+        // remain attendable on any date - that is the
+        // documented legacy policy. A structured range whose
+        // start date is after its end date is invalid and
+        // never scheduled.
+        //
+
+        public static bool HasInvalidSchedule(
+            YouthProgram program) =>
+            program.ScheduleStart.HasValue &&
+            program.ScheduleEnd.HasValue &&
+            program.ScheduleStart.Value.Date >
+                program.ScheduleEnd.Value.Date;
+
+
+        public static bool IsScheduledOn(
+            YouthProgram program,
+            DateTime manilaDate)
+        {
+            if (HasInvalidSchedule(program))
+            {
+                return false;
+            }
+
+            var date = manilaDate.Date;
+
+
+            if (program.ScheduleStart.HasValue &&
+                program.ScheduleStart.Value.Date > date)
+            {
+                // The program has not started yet.
+                return false;
+            }
+
+
+            if (program.ScheduleEnd.HasValue &&
+                program.ScheduleEnd.Value.Date < date)
+            {
+                // The program already ended.
+                return false;
+            }
+
+
+            return true;
+        }
 
 
         // ========================================================

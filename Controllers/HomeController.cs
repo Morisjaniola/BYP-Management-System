@@ -107,8 +107,13 @@ namespace BYPManagementSystem.Controllers
         // 404 = Not Found
         // =========================================================
 
+        // Accepts every verb: UseStatusCodePagesWithReExecute
+        // re-executes the ORIGINAL request (including POST form
+        // submissions) against this action, so restricting it to
+        // GET would replace the real error status (400/404/...)
+        // with a misleading 405 from route matching.
         [AllowAnonymous]
-        [HttpGet]
+        [AcceptVerbs("GET", "POST", "PUT", "PATCH", "DELETE")]
         public new IActionResult StatusCode(int code)
         {
             ViewBag.StatusCode = code;

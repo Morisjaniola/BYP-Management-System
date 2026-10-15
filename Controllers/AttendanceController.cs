@@ -618,7 +618,30 @@ namespace BYPManagementSystem.Controllers
             }
 
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // A concurrent request (photo approval or a second
+                // manual entry) stored this date's record first.
+                // The unique registration + date index rejected
+                // ours, so no partial attendance was written.
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Attendance has already been recorded for this date by another request."
+                );
+
+                ViewBag.Program =
+                    registration.Program;
+
+                ViewBag.Youth =
+                    registration.YouthParticipant;
+
+                return View(model);
+            }
 
 
             TempData["Success"] =
@@ -1274,6 +1297,57 @@ namespace BYPManagementSystem.Controllers
                 TimeOnly.FromDateTime(manilaNow);
 
 
+            // ------------------------------------------------------
+            // PROGRAM ELIGIBILITY (SERVER-SIDE, PHILIPPINE DATE)
+            // The program must exist (checked above), have a
+            // usable schedule, be Active, and actually be
+            // scheduled for today's Philippine date - so
+            // future-dated, already-ended, or inactive
+            // programs never accept attendance. The client
+            // cannot influence this check.
+            // ------------------------------------------------------
+
+            if (AttendanceSchedule.HasInvalidSchedule(
+                    program))
+            {
+                TempData["Error"] =
+                    "This program has an invalid schedule, so attendance cannot be submitted. Please contact the program administrator.";
+
+                return RedirectToAction(
+                    nameof(MyAttendance)
+                );
+            }
+
+
+            if (!string.Equals(
+                    program.Status,
+                    "Active",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] =
+                    "This program is not active, so attendance cannot be submitted.";
+
+                return RedirectToAction(
+                    nameof(MyAttendance)
+                );
+            }
+
+
+            if (!AttendanceSchedule.IsScheduledOn(
+                    program,
+                    attendanceDate))
+            {
+                TempData["Error"] =
+                    "This program is not scheduled for "
+                    + attendanceDate.ToString("MMM dd, yyyy")
+                    + " (Philippine time), so attendance cannot be submitted today.";
+
+                return RedirectToAction(
+                    nameof(MyAttendance)
+                );
+            }
+
+
             var (windowStart, windowEnd) =
                 AttendanceSchedule.WindowFor(
                     program,
@@ -1359,8 +1433,24 @@ namespace BYPManagementSystem.Controllers
 
             // ------------------------------------------------------
             // ONE SUBMISSION PER REGISTRATION PER DATE PER ACTION
+            // The duplicate check and the insert run inside one
+            // transaction that first locks the registration row
+            // (SELECT ... FOR UPDATE). Concurrent submissions for
+            // the same registration wait on that lock and then
+            // re-read the row, so a second racing request can
+            // never pass the check after the first committed.
             // Rejected submissions may be replaced.
             // ------------------------------------------------------
+
+            await using var transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
+
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "SELECT Id FROM ProgramRegistrations WHERE Id = {0} FOR UPDATE",
+                registration.Id);
+
 
             var alreadySubmitted =
                 await _context.AttendancePhotoSubmissions
@@ -1382,6 +1472,7 @@ namespace BYPManagementSystem.Controllers
                     + AttendanceSchedule.ActionLabel(attendanceAction)
                     + " photo for this program today.";
 
+                // Disposal rolls the empty transaction back.
                 return RedirectToAction(
                     nameof(MyAttendance)
                 );
@@ -1391,7 +1482,8 @@ namespace BYPManagementSystem.Controllers
             // ------------------------------------------------------
             // SAVE FILE + SUBMISSION
             // If the database save fails the stored file is
-            // removed again so no orphan files are left behind.
+            // removed again so no orphan files are left behind,
+            // and the transaction rolls back (no partial row).
             // ------------------------------------------------------
 
             string? savedFileName =
@@ -1448,6 +1540,8 @@ namespace BYPManagementSystem.Controllers
 
 
                 await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
             catch (Exception)
             {
@@ -1697,6 +1791,29 @@ namespace BYPManagementSystem.Controllers
         public async Task<IActionResult> ApprovePhoto(
             int id)
         {
+            // ------------------------------------------------------
+            // ONE REVIEW AT A TIME
+            // The submission row is locked for this transaction
+            // (SELECT ... FOR UPDATE) before anything is read, so
+            // a repeated or concurrent approval request waits
+            // here, re-reads the row afterwards, and then sees
+            // "already reviewed" instead of recording attendance
+            // twice. Disposal rolls the transaction back whenever
+            // this action returns without committing, so either
+            // the whole approval (review metadata + attendance +
+            // notification) is saved together or not at all.
+            // ------------------------------------------------------
+
+            await using var transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
+
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "SELECT Id FROM AttendancePhotoSubmissions WHERE Id = {0} FOR UPDATE",
+                id);
+
+
             var submission =
                 await _context.AttendancePhotoSubmissions
                     .Include(s => s.Registration)
@@ -1771,6 +1888,69 @@ namespace BYPManagementSystem.Controllers
             {
                 TempData["Error"] =
                     "The program schedule could not be loaded. Attendance was not recorded.";
+
+                return RedirectToAction(
+                    nameof(PhotoReviews),
+                    new
+                    {
+                        status = "Pending"
+                    }
+                );
+            }
+
+
+            // ------------------------------------------------------
+            // PROGRAM RE-VALIDATION AT APPROVAL TIME
+            // The program must still be Active and the ORIGINAL
+            // submission date must still fall inside the
+            // program's structured schedule range. A submission
+            // for a program that was deactivated or rescheduled
+            // out from under it is not recorded; the pending
+            // photo itself is preserved for review.
+            // ------------------------------------------------------
+
+            if (AttendanceSchedule.HasInvalidSchedule(
+                    program))
+            {
+                TempData["Error"] =
+                    "The program schedule for this submission is invalid, so attendance was not recorded. The photo remains pending.";
+
+                return RedirectToAction(
+                    nameof(PhotoReviews),
+                    new
+                    {
+                        status = "Pending"
+                    }
+                );
+            }
+
+
+            if (!string.Equals(
+                    program.Status,
+                    "Active",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] =
+                    "The program is no longer active, so attendance was not recorded. The photo remains pending.";
+
+                return RedirectToAction(
+                    nameof(PhotoReviews),
+                    new
+                    {
+                        status = "Pending"
+                    }
+                );
+            }
+
+
+            if (!AttendanceSchedule.IsScheduledOn(
+                    program,
+                    attendanceDate))
+            {
+                TempData["Error"] =
+                    "This program is not scheduled for "
+                    + attendanceDate.ToString("MMM dd, yyyy")
+                    + " (Philippine time), so attendance was not recorded. The photo remains pending.";
 
                 return RedirectToAction(
                     nameof(PhotoReviews),
@@ -2022,7 +2202,12 @@ namespace BYPManagementSystem.Controllers
                 }
 
 
+                // Review metadata, attendance record changes,
+                // and the notification commit together.
+
                 await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
             catch (DbUpdateException)
             {
@@ -2074,6 +2259,22 @@ namespace BYPManagementSystem.Controllers
             int id,
             string? rejectionReason)
         {
+            // Serialized against a concurrent approval or second
+            // rejection of the same submission: the row lock is
+            // taken before the status is read, so exactly one
+            // review wins and the other request sees
+            // "already reviewed".
+
+            await using var transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
+
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "SELECT Id FROM AttendancePhotoSubmissions WHERE Id = {0} FOR UPDATE",
+                id);
+
+
             var submission =
                 await _context.AttendancePhotoSubmissions
                     .Include(s => s.Registration)
@@ -2193,6 +2394,8 @@ namespace BYPManagementSystem.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
             catch (DbUpdateException)
             {

@@ -2325,7 +2325,7 @@ html[data-theme="light"] .user-programs-page .program-schedule-datetime {
                                                       asp-route-id="@program.Id"
                                                       method="post"
                                                       class="program-action-form"
-                                                      onsubmit="return confirm('Delete this program?');">
+                                                      onsubmit="return confirm('Delete Program Permanently?\n\nThis action permanently deletes the selected program and its associated registrations, attendance records, photo submissions, and exclusively linked certificates or related data. This action cannot be undone.\n\nClick OK to delete permanently, or Cancel to keep it.');">
 
                                                     @Html.AntiForgeryToken()
 

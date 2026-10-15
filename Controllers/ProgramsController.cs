@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BYPManagementSystem.Controllers
 {
@@ -12,10 +13,17 @@ namespace BYPManagementSystem.Controllers
     public class ProgramsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly AttendancePhotoStorage _photoStorage;
+        private readonly ILogger<ProgramsController> _logger;
 
-        public ProgramsController(ApplicationDbContext context)
+        public ProgramsController(
+            ApplicationDbContext context,
+            AttendancePhotoStorage photoStorage,
+            ILogger<ProgramsController> logger)
         {
             _context = context;
+            _photoStorage = photoStorage;
+            _logger = logger;
         }
 
 
@@ -1223,31 +1231,23 @@ namespace BYPManagementSystem.Controllers
 
 
         // ==========================================================
-        // DELETE PROGRAM
+        // DELETE CONFIRMATION (GET)
         // ==========================================================
         //
-        // Admin only.
-        //
-        // Before deleting:
-        //
-        // Program
-        //   ↓
-        // Registrations
-        //   ↓
-        // Attendance
-        //
-        // Attendance records are removed first.
+        // Admin only. Renders the existing confirmation page that
+        // the Program Details "Delete" link points to. A GET only
+        // displays the prompt - it never removes anything. Only
+        // the POST action below deletes.
         // ==========================================================
 
         [Authorize(Roles = "Admin")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult>
-            Delete(
-                int id)
+        [HttpGet]
+        public async Task<IActionResult> DeleteConfirmation(
+            int id)
         {
             var program =
                 await _context.YouthPrograms
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(
                         p => p.Id == id
                     );
@@ -1258,89 +1258,367 @@ namespace BYPManagementSystem.Controllers
             }
 
 
+            return View(
+                "Delete",
+                program
+            );
+        }
+
+
+        // ==========================================================
+        // DELETE PROGRAM PERMANENTLY
+        // ==========================================================
+        //
+        // Admin only, POST + antiforgery only.
+        //
+        // Removes an obsolete program together with the records
+        // that belong exclusively to that program:
+        //
+        // Program
+        //   ↓
+        // Registrations (program scoped)
+        //   ↓
+        // Attendance records      ─┐
+        // Photo submissions       ─┤ by registration
+        // Certificates            ─┘
+        // Program notifications (program/registration scoped)
+        // Announcement logs (program scoped - idempotency rows)
+        //
+        // Participant rows and Identity accounts are never
+        // touched: a program delete removes registrations, not
+        // the people who held them.
+        //
+        // Everything runs in ONE transaction after locking the
+        // program row (SELECT ... FOR UPDATE), so concurrent
+        // delete/edit requests serialize and a failure can never
+        // leave a partially deleted program. Stored photo files
+        // are removed only AFTER the commit, only when no
+        // surviving submission still references the file, and
+        // only through AttendancePhotoStorage, which confines the
+        // resolved path to the configured photo folder.
+        // ==========================================================
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult>
+            Delete(
+                int id)
+        {
             // ------------------------------------------------------
-            // GET REGISTRATIONS
+            // RETRY ANY PHOTO FILE LEFT OVER FROM AN EARLIER DELETE
+            //
+            // A file whose removal failed after a previous commit
+            // is queued; retry it before doing new work.
             // ------------------------------------------------------
+
+            try
+            {
+                var stillPending =
+                    _photoStorage.RetryPendingDeletes();
+
+                if (stillPending > 0)
+                {
+                    _logger.LogWarning(
+                        "{Count} attendance photo file(s) remain queued for deletion.",
+                        stillPending);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Pending attendance photo cleanup retry failed.");
+            }
+
+
+            var program =
+                default(YouthProgram);
 
             var registrations =
-                await _context.ProgramRegistrations
-                    .Where(
-                        r =>
-                            r.ProgramId ==
-                            id
-                    )
-                    .ToListAsync();
-
-
-            // ------------------------------------------------------
-            // GET REGISTRATION IDS
-            // ------------------------------------------------------
-
-            var registrationIds =
-                registrations
-                    .Select(
-                        r => r.Id
-                    )
-                    .ToList();
-
-
-            // ------------------------------------------------------
-            // GET ATTENDANCE
-            // ------------------------------------------------------
+                new List<ProgramRegistration>();
 
             var attendance =
-                await _context.AttendanceRecords
-                    .Where(
-                        a =>
-                            registrationIds
-                                .Contains(
-                                    a.RegistrationId
-                                )
-                    )
-                    .ToListAsync();
+                new List<AttendanceRecord>();
+
+            var photos =
+                new List<AttendancePhotoSubmission>();
+
+            var certificates =
+                new List<Certificate>();
+
+            var announcementLogs =
+                new List<AttendanceAnnouncementLog>();
+
+            var notifications =
+                new List<YouthNotification>();
+
+            var exclusiveFileNames =
+                new List<string>();
 
 
-            // ------------------------------------------------------
-            // PROTECTED HISTORICAL RECORDS (PHASE 2)
-            //
-            // Deleting a program cascades into registrations and
-            // their attendance records, photo submissions, and
-            // certificates. When any such history exists the hard
-            // delete is refused and the admin is directed to the
-            // inactive/completed workflow instead. Only programs
-            // with no related records at all can still be deleted.
-            // ------------------------------------------------------
-
-            var photoCount =
-                await _context.AttendancePhotoSubmissions
-                    .CountAsync(
-                        s =>
-                            registrationIds
-                                .Contains(
-                                    s.RegistrationId
-                                )
-                    );
-
-
-            var certificateCount =
-                await _context.Certificates
-                    .CountAsync(
-                        c =>
-                            registrationIds
-                                .Contains(
-                                    c.RegistrationId
-                                )
-                    );
-
-
-            if (registrations.Any() ||
-                attendance.Any() ||
-                photoCount > 0 ||
-                certificateCount > 0)
+            try
             {
+                await using var transaction =
+                    await _context.Database
+                        .BeginTransactionAsync();
+
+
+                // --------------------------------------------------
+                // LOCK THE TARGET ROW
+                //
+                // (SELECT ... FOR UPDATE) so a concurrent delete
+                // or status change on the same program waits for
+                // this transaction and then re-reads the result.
+                // --------------------------------------------------
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "SELECT Id FROM YouthPrograms WHERE Id = {0} FOR UPDATE",
+                    id);
+
+
+                program =
+                    await _context.YouthPrograms
+                        .FirstOrDefaultAsync(
+                            p => p.Id == id
+                        );
+
+                if (program == null)
+                {
+                    // Already deleted by a concurrent request.
+                    // Disposing the transaction rolls back.
+
+                    return NotFound();
+                }
+
+
+                // --------------------------------------------------
+                // LOAD EVERYTHING THAT BELONGS TO THIS PROGRAM
+                // --------------------------------------------------
+
+                registrations =
+                    await _context.ProgramRegistrations
+                        .Where(
+                            r =>
+                                r.ProgramId ==
+                                id
+                        )
+                        .ToListAsync();
+
+
+                var registrationIds =
+                    registrations
+                        .Select(r => r.Id)
+                        .ToList();
+
+
+                photos =
+                    await _context.AttendancePhotoSubmissions
+                        .Where(
+                            s =>
+                                registrationIds
+                                    .Contains(
+                                        s.RegistrationId
+                                    )
+                        )
+                        .ToListAsync();
+
+
+                certificates =
+                    await _context.Certificates
+                        .Where(
+                            c =>
+                                registrationIds
+                                    .Contains(
+                                        c.RegistrationId
+                                    )
+                        )
+                        .ToListAsync();
+
+
+                attendance =
+                    await _context.AttendanceRecords
+                        .Where(
+                            a =>
+                                registrationIds
+                                    .Contains(
+                                        a.RegistrationId
+                                    )
+                        )
+                        .ToListAsync();
+
+
+                announcementLogs =
+                    await _context.AttendanceAnnouncementLogs
+                        .Where(
+                            l =>
+                                l.ProgramId ==
+                                id
+                        )
+                        .ToListAsync();
+
+
+                notifications =
+                    await _context.YouthNotifications
+                        .Where(
+                            n =>
+                                n.ProgramId == id
+
+                                ||
+
+                                (
+                                    n.RegistrationId != null
+
+                                    &&
+
+                                    registrationIds
+                                        .Contains(
+                                            n.RegistrationId
+                                                .Value
+                                        )
+                                )
+                        )
+                        .ToListAsync();
+
+
+                // --------------------------------------------------
+                // FILES OWNED EXCLUSIVELY BY THIS PROGRAM
+                //
+                // A file name referenced by any submission OUTSIDE
+                // the deleted registrations must survive, so it is
+                // excluded from cleanup. Checked inside the same
+                // transaction, before anything is removed.
+                // --------------------------------------------------
+
+                var allFileNames =
+                    photos
+                        .Select(s => s.FileName)
+                        .Distinct()
+                        .ToList();
+
+                var sharedFileNames =
+                    allFileNames.Count == 0
+                        ? new List<string>()
+                        : await _context.AttendancePhotoSubmissions
+                            .Where(
+                                s =>
+                                    allFileNames
+                                        .Contains(
+                                            s.FileName
+                                        )
+
+                                    &&
+
+                                    !registrationIds
+                                        .Contains(
+                                            s.RegistrationId
+                                        )
+                            )
+                            .Select(s => s.FileName)
+                            .Distinct()
+                            .ToListAsync();
+
+                exclusiveFileNames =
+                    allFileNames
+                        .Where(
+                            fn =>
+                                !sharedFileNames
+                                    .Contains(fn)
+                        )
+                        .ToList();
+
+
+                // --------------------------------------------------
+                // DELETE CHILDREN BEFORE THE PARENT
+                //
+                // One SaveChanges inside the one transaction.
+                // --------------------------------------------------
+
+                if (photos.Count > 0)
+                {
+                    _context.AttendancePhotoSubmissions
+                        .RemoveRange(photos);
+                }
+
+                if (certificates.Count > 0)
+                {
+                    _context.Certificates
+                        .RemoveRange(certificates);
+                }
+
+                if (attendance.Count > 0)
+                {
+                    _context.AttendanceRecords
+                        .RemoveRange(attendance);
+                }
+
+                if (announcementLogs.Count > 0)
+                {
+                    _context.AttendanceAnnouncementLogs
+                        .RemoveRange(announcementLogs);
+                }
+
+                if (notifications.Count > 0)
+                {
+                    _context.YouthNotifications
+                        .RemoveRange(notifications);
+                }
+
+                if (registrations.Count > 0)
+                {
+                    _context.ProgramRegistrations
+                        .RemoveRange(registrations);
+                }
+
+
+                _context.YouthPrograms
+                    .Remove(program);
+
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Program {ProgramId} delete hit a concurrency conflict; nothing was committed.",
+                    id);
+
                 TempData["Error"] =
-                    "Cannot delete: this program has registration, attendance, photo submission, or certificate history. " +
-                    "Use 'Set Status' to mark the program Inactive or Completed so the history is preserved.";
+                    "Could not delete: the program changed while processing or was already deleted. " +
+                    "Refresh the list and try again.";
+
+                return RedirectToAction(
+                    nameof(Index)
+                );
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Program {ProgramId} delete failed at the database; transaction rolled back.",
+                    id);
+
+                TempData["Error"] =
+                    "Could not delete: related records could not be removed safely. " +
+                    "No changes were made. Refresh the list and try again.";
+
+                return RedirectToAction(
+                    nameof(Index)
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Program {ProgramId} delete failed; transaction rolled back.",
+                    id);
+
+                TempData["Error"] =
+                    "Could not delete the program due to a database error. " +
+                    "No changes were made. Please try again.";
 
                 return RedirectToAction(
                     nameof(Index)
@@ -1349,46 +1627,53 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
-            // DELETE ATTENDANCE
+            // FILE CLEANUP (AFTER COMMIT - BEST EFFORT)
+            //
+            // The database deletion is already durable. A file
+            // that cannot be removed now is logged and queued for
+            // retry on the next delete operation; it never fails
+            // the request or corrupts the committed deletion.
             // ------------------------------------------------------
 
-            if (attendance.Any())
+            var cleanupFailures = 0;
+
+            foreach (var fileName in exclusiveFileNames)
             {
-                _context.AttendanceRecords
-                    .RemoveRange(
-                        attendance
-                    );
+                try
+                {
+                    _photoStorage.Delete(fileName);
+                }
+                catch (Exception ex)
+                {
+                    cleanupFailures++;
+
+                    _logger.LogWarning(
+                        ex,
+                        "Could not delete attendance photo file {FileName} after deleting program {ProgramId}. Queued for retry.",
+                        fileName,
+                        id);
+
+                    _photoStorage.EnqueuePendingDelete(fileName);
+                }
             }
 
 
-            // ------------------------------------------------------
-            // DELETE REGISTRATIONS
-            // ------------------------------------------------------
+            var message =
+                $"Program '{program.Name}' permanently deleted together with " +
+                $"{registrations.Count} registration(s), " +
+                $"{attendance.Count} attendance record(s), " +
+                $"{photos.Count} photo submission(s), " +
+                $"{certificates.Count} certificate(s), and " +
+                $"{notifications.Count} related notification(s).";
 
-            if (registrations.Any())
+            if (cleanupFailures > 0)
             {
-                _context.ProgramRegistrations
-                    .RemoveRange(
-                        registrations
-                    );
+                message +=
+                    $" {cleanupFailures} stored photo file(s) could not be removed yet " +
+                    "and are queued for automatic retry.";
             }
 
-
-            // ------------------------------------------------------
-            // DELETE PROGRAM
-            // ------------------------------------------------------
-
-            _context.YouthPrograms
-                .Remove(
-                    program
-                );
-
-
-            await _context.SaveChangesAsync();
-
-
-            TempData["Success"] =
-                "Program deleted successfully.";
+            TempData["Success"] = message;
 
 
             return RedirectToAction(
