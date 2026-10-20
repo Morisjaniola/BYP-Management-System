@@ -173,7 +173,7 @@
 
                     <i class="bi bi-clock"></i>
 
-                    @AttendanceSchedule.ToManila(Model.SubmittedAt).ToString("MMM dd, yyyy h:mm tt")
+                    @AttendanceSchedule.ToAppTime(Model.SubmittedAt).ToString("MMM dd, yyyy h:mm tt")
 
                 </span>
 
@@ -232,7 +232,7 @@
                     @if (program != null)
                     {
                         <div class="detail-item">
-                            <span>Allowed Window (Philippine time)</span>
+                            <span>Allowed Window (@AttendanceSchedule.ZoneLabel)</span>
                             <strong>
                                 @AttendanceSchedule.FormatTime(AttendanceSchedule.WindowFor(program, Model.Action).Start)
                                 &ndash;
@@ -248,7 +248,7 @@
 
                     <div class="detail-item">
                         <span>Submitted</span>
-                        <strong>@AttendanceSchedule.ToManila(Model.SubmittedAt).ToString("MMM dd, yyyy h:mm tt")</strong>
+                        <strong>@AttendanceSchedule.ToAppTime(Model.SubmittedAt).ToString("MMM dd, yyyy h:mm tt")</strong>
                     </div>
 
                 </div>
@@ -268,7 +268,7 @@
                             <span>Reviewed At</span>
                             <strong>
                                 @(Model.ReviewedAt.HasValue
-                                    ? AttendanceSchedule.ToManila(Model.ReviewedAt.Value).ToString("MMM dd, yyyy h:mm tt")
+                                    ? AttendanceSchedule.ToAppTime(Model.ReviewedAt.Value).ToString("MMM dd, yyyy h:mm tt")
                                     : "\u2014")
                             </strong>
                         </div>
@@ -319,15 +319,19 @@
                         for
                         @Model.AttendanceDate.ToString("MMM dd, yyyy")
                         using the original submission time
-                        <strong>@AttendanceSchedule.ToManila(Model.SubmittedAt).ToString("h:mm tt")</strong>
-                        (Philippine time).
-                        @if (AttendanceSchedule.IsTimeOutAction(Model.Action))
+                        <strong>@AttendanceSchedule.ToAppTime(Model.SubmittedAt).ToString("h:mm tt")</strong>
+                        (@AttendanceSchedule.ZoneLabel).
+                        @if (AttendanceSchedule.NormalizeAction(Model.Action) == AttendanceSchedule.AfternoonOutAction)
                         {
-                            <text>This completes the participant's attendance for the day.</text>
+                            <text>This closes the participant's attendance for the day.</text>
+                        }
+                        else if (AttendanceSchedule.IsTimeOutAction(Model.Action))
+                        {
+                            <text>This completes the session; the day stays open until the afternoon sessions are recorded.</text>
                         }
                         else
                         {
-                            <text>Attendance stays In Progress until a Time Out is approved.</text>
+                            <text>Attendance stays In Progress until the matching Time Out of this session is approved.</text>
                         }
                     </p>
 
@@ -509,7 +513,7 @@
         gap: 5px;
         margin-bottom: 9px;
         color: #769BA3;
-        font-size: .59rem;
+        font-size: 0.75rem;
         font-weight: 700;
         text-decoration: none;
     }
@@ -532,7 +536,7 @@
     .photo-review-page .page-eyebrow {
         display: block;
         color: #69DDF2;
-        font-size: .56rem;
+        font-size: 0.75rem;
         font-weight: 850;
         letter-spacing: .1em;
     }
@@ -550,7 +554,7 @@
     .photo-review-page .page-header p {
         margin: 0;
         color: #769BA3;
-        font-size: .67rem;
+        font-size: 0.75rem;
     }
 
 
@@ -565,7 +569,7 @@
         align-items: center;
         gap: 5px;
         border-radius: 999px;
-        font-size: .58rem;
+        font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: .05em;
@@ -613,7 +617,7 @@
         align-items: center;
         gap: 7px;
         border-radius: 8px;
-        font-size: .63rem;
+        font-size: 0.75rem;
         font-weight: 700;
     }
 
@@ -674,7 +678,7 @@
 
     .review-card-header span {
         color: #69DDF2;
-        font-size: 7px;
+        font-size: 12px;
         font-weight: 800;
         letter-spacing: .08em;
     }
@@ -682,7 +686,7 @@
 
     .review-card-header i {
         color: #769BA3;
-        font-size: 13px;
+        font-size: 14px;
     }
 
 
@@ -721,7 +725,7 @@
         align-items: center;
         gap: 4px;
         color: #8DDCF2;
-        font-size: 7px;
+        font-size: 12px;
         font-weight: 700;
     }
 
@@ -754,7 +758,7 @@
     .detail-item span {
         display: block;
         color: #668B94;
-        font-size: 6px;
+        font-size: 12px;
         font-weight: 700;
         letter-spacing: .05em;
         text-transform: uppercase;
@@ -766,7 +770,7 @@
         margin-top: 3px;
         overflow-wrap: anywhere;
         color: #FFFFFF;
-        font-size: 8px;
+        font-size: 13px;
         font-weight: 700;
         line-height: 1.4;
     }
@@ -794,7 +798,7 @@
     .review-note {
         margin: 0 0 10px;
         color: #AFC8CD;
-        font-size: 7px;
+        font-size: 12px;
         line-height: 1.5;
     }
 
@@ -808,7 +812,7 @@
         display: block;
         margin-bottom: 5px;
         color: #8DDCF2;
-        font-size: 7px;
+        font-size: 12px;
         font-weight: 700;
     }
 
@@ -827,7 +831,7 @@
         background: rgba(3,23,22,.65);
         color: #FFFFFF;
         font-family: inherit;
-        font-size: 7px;
+        font-size: 15px;
         line-height: 1.5;
         outline: none;
     }
@@ -843,7 +847,7 @@
         display: block;
         margin-top: 4px;
         color: #F56D78;
-        font-size: 7px;
+        font-size: 12px;
         font-weight: 700;
     }
 
@@ -865,7 +869,7 @@
         border: 0;
         border-radius: 7px;
         font-family: inherit;
-        font-size: 7px;
+        font-size: 14px;
         font-weight: 700;
         cursor: pointer;
     }
@@ -904,7 +908,7 @@
         background: rgba(105,199,232,.10);
         border: 1px solid rgba(105,199,232,.20);
         color: #69DDF2;
-        font-size: 7px;
+        font-size: 12px;
         font-weight: 700;
         text-decoration: none;
     }

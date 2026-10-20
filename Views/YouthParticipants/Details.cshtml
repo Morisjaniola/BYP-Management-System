@@ -1,4 +1,4 @@
-﻿@model BYPManagementSystem.Models.YouthParticipant
+@model BYPManagementSystem.ViewModels.ParticipantProfileViewModel
 
 @{
     ViewData["Title"] = "Participant Details";
@@ -70,7 +70,16 @@
     <div class="profile-summary">
 
         <div class="profile-avatar">
-            @initials
+            @if (Model.HasProfileImage)
+            {
+                <img src="@Model.ProfileImagePath"
+                     alt="@Model.FullName"
+                     class="profile-avatar-img" />
+            }
+            else
+            {
+                @initials
+            }
         </div>
 
         <div class="profile-main">
@@ -96,6 +105,14 @@
                     <i class="bi bi-calendar3"></i>
                     Added @(Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy"))
                 </span>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Email))
+                {
+                    <span>
+                        <i class="bi bi-envelope-fill"></i>
+                        @Model.Email
+                    </span>
+                }
 
             </div>
 
@@ -620,7 +637,7 @@
     display: block;
     margin-bottom: 4px;
     color: #A9D5DE;
-    font-size: 7px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
 }
@@ -628,7 +645,7 @@
 .form-header h1 {
     margin: 0;
     color: #FFFFFF;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     line-height: 1.1;
 }
@@ -636,7 +653,7 @@
 .form-header p {
     margin: 3px 0 0;
     color: #C5DDE2;
-    font-size: 8px;
+    font-size: 13px;
     line-height: 1.4;
 }
 
@@ -652,7 +669,7 @@
     background: rgba(255,255,255,.06);
     color: #C5DDE2;
     text-decoration: none;
-    font-size: 7px;
+    font-size: 14px;
     font-weight: 700;
     white-space: nowrap;
     transition: .16s ease;
@@ -697,8 +714,15 @@
     border-radius: 9px;
     background: rgba(105,199,232,.15);
     color: #69DDF2;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
 }
 
 .profile-main {
@@ -710,7 +734,7 @@
     display: block;
     margin-bottom: 2px;
     color: #69DDF2;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .8px;
 }
@@ -718,7 +742,7 @@
 .profile-main h2 {
     margin: 0 0 4px;
     color: #FFFFFF;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     line-height: 1.2;
 }
@@ -734,7 +758,7 @@
     align-items: center;
     gap: 4px;
     color: #72969E;
-    font-size: 6px;
+    font-size: 12px;
 }
 
 .profile-meta i { color: #69DDF2; }
@@ -752,7 +776,7 @@
     gap: 4px;
     padding: 5px 8px;
     border-radius: 999px;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
 }
@@ -807,7 +831,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 7px;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .section-icon.blue {
@@ -831,7 +855,7 @@
 .section-heading h2 {
     margin: 0 0 1px;
     color: #FFFFFF;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1.1;
 }
@@ -839,7 +863,7 @@
 .section-heading p {
     margin: 0;
     color: #769BA3;
-    font-size: 7px;
+    font-size: 12px;
 }
 
 
@@ -866,7 +890,7 @@
     display: block;
     margin-bottom: 4px;
     color: #9FC6CC;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .4px;
@@ -876,7 +900,7 @@
     display: block;
     overflow: hidden;
     color: #FFFFFF;
-    font-size: 9px;
+    font-size: 13px;
     font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -895,7 +919,7 @@
     display: block;
     margin-bottom: 4px;
     color: #9FC6CC;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .4px;
@@ -910,14 +934,14 @@
     border-radius: 7px;
     background: rgba(255,255,255,.035);
     color: #C1D8DD;
-    font-size: 7px;
+    font-size: 12px;
     line-height: 1.4;
 }
 
 .address-box i {
     color: #69DDF2;
     margin-top: 1px;
-    font-size: 8px;
+    font-size: 13px;
 }
 
 
@@ -946,7 +970,7 @@
     border-radius: 7px;
     background: rgba(104,125,184,.10);
     color: #B9BFFF;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .account-info {
@@ -958,7 +982,7 @@
     display: block;
     margin-bottom: 2px.
     color: #69DDF2;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .6px;
 }
@@ -967,7 +991,7 @@
     display: block;
     margin-bottom: 2px;
     color: #FFFFFF;
-    font-size: 9px;
+    font-size: 13px;
     font-weight: 700;
 }
 
@@ -975,7 +999,7 @@
     display: block;
     overflow: hidden;
     color: #72969E;
-    font-size: 6px;
+    font-size: 12px;
     text-overflow: ellipsis;
 }
 
@@ -985,7 +1009,7 @@
     gap: 4px;
     padding: 5px 7px.
     border-radius: 999px;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 700.
     white-space: nowrap;
 }
@@ -1028,7 +1052,7 @@
     border-radius: 6px.
     background: rgba(105,199,232,.10).
     color: #69DDF2.
-    font-size: 12px.
+    font-size: 14px.
 }
 
 .assignment-content {
@@ -1040,13 +1064,13 @@
     display: block.
     margin-bottom: 2px.
     color: #FFFFFF.
-    font-size: 8px.
+    font-size: 13px.
 }
 
 .assignment-content p {
     margin: 0.
     color: #769BA3.
-    font-size: 6px.
+    font-size: 12px.
     line-height: 1.4.
 }
 
@@ -1060,13 +1084,13 @@
     display: block.
     margin-bottom: 2px.
     color: #72969E.
-    font-size: 6px.
+    font-size: 12px.
 }
 
 .assignment-value strong {
     display: block.
     color: #FFFFFF.
-    font-size: 9px.
+    font-size: 13px.
     font-weight: 700.
 }
 
@@ -1097,11 +1121,11 @@
     justify-content: center.
     gap: 3px.
     border-radius: 11px.
-    font-size: 13px.
+    font-size: 14px.
 }
 
 .connection-node span {
-    font-size: 6px.
+    font-size: 12px.
     font-weight: 700.
 }
 
@@ -1121,18 +1145,18 @@
     display: block.
     margin-bottom: 3px.
     color: #FFFFFF.
-    font-size: 9px.
+    font-size: 13px.
 }
 
 .registration-text p {
     margin: 0 0 8px.
     color: #769BA3.
-    font-size: 6px.
+    font-size: 12px.
     line-height: 1.4.
 }
 
 .registration-button {
-    min-height: 28px.
+    min-height: 30px.
     padding: 0 9px.
     display: inline-flex.
     align-items: center.
@@ -1142,7 +1166,7 @@
     background: #0C9096.
     color: #FFFFFF.
     text-decoration: none.
-    font-size: 6px.
+    font-size: 14px.
     font-weight: 700.
     transition: .13s ease.
 }
@@ -1187,20 +1211,20 @@
     border-radius: 6px.
     background: rgba(105,199,232,.10).
     color: #69DDF2.
-    font-size: 12px.
+    font-size: 14px.
 }
 
 .actions-content strong {
     display: block.
     margin-bottom: 2px.
     color: #FFFFFF.
-    font-size: 8px.
+    font-size: 13px.
 }
 
 .actions-content p {
     margin: 0.
     color: #769BA3.
-    font-size: 6px.
+    font-size: 12px.
 }
 
 .action-buttons {
@@ -1213,14 +1237,14 @@
 .edit-button,
 .deactivate-button,
 .activate-button {
-    min-height: 28px.
+    min-height: 30px.
     padding: 0 8px.
     display: inline-flex.
     align-items: center.
     justify-content: center.
     gap: 4px.
     border-radius: 6px.
-    font-size: 6px.
+    font-size: 14px.
     font-weight: 700.
     text-decoration: none.
     white-space: nowrap.
@@ -1281,7 +1305,7 @@
     justify-content: center.
     gap: 4px.
     border-radius: 6px.
-    font-size: 6px.
+    font-size: 12px.
     font-weight: 700.
     text-decoration: none.
     transition: .13s ease.
@@ -1329,8 +1353,8 @@
 @@media (max-width: 750px) {
     .participant-details-page { padding: 8px; }
     .form-header { padding: 12px 15px; }
-    .form-header h1 { font-size: 18px; }
-    .form-header p { font-size: 7px; }
+    .form-header h1 { font-size: 19px; }
+    .form-header p { font-size: 12px; }
     .form-back-button { display: none; }
     .profile-summary { align-items: flex-start; flex-wrap: wrap; }
     .profile-status { width: 100%; margin-left: 54px; }
@@ -1347,7 +1371,7 @@
     .information-grid { padding: 9px 10px; }
     .address-section { padding: 0 10px 9px; }
     .account-card { margin: 9px 10px; }
-    .profile-main h2 { font-size: 12px; }
+    .profile-main h2 { font-size: 14px; }
     .connection-visual { transform: scale(.9); transform-origin: left center; }
     .registration-button { width: 100%; }
     .footer-actions { align-items: stretch; flex-direction: column; }

@@ -154,7 +154,7 @@ html[data-theme="light"] .topbar-avatar {
     background: var(--byp-surface-secondary);
     color: var(--byp-text-secondary);
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     transition: .18s ease;
 }
@@ -165,7 +165,7 @@ html[data-theme="light"] .topbar-avatar {
 }
 
 .theme-toggle i {
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .theme-toggle[data-mode="dark"] i.bi-sun,
@@ -396,13 +396,13 @@ html[data-theme="light"] .dashboard-header p {
 html[data-theme] :is(.page-header, .form-header, .attendance-header,
     .registration-header, .profile-header, .participants-header,
     .programs-header) h1 {
-    font-size: 20px;
+    font-size: 24px;
 }
 
 html[data-theme] :is(.page-header, .form-header, .attendance-header,
     .registration-header, .profile-header, .participants-header,
     .programs-header) p {
-    font-size: 10px;
+    font-size: 14px;
     line-height: 1.45;
 }
 
@@ -485,12 +485,12 @@ html[data-theme] .attendance-header .attendance-icon {
 
 .empty-state h2 {
     margin: 0;
-    font-size: 15px;
+    font-size: 16px;
 }
 
 .empty-state p {
     margin: 0;
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.5;
     max-width: 520px;
     color: #A7D2D2;
@@ -517,7 +517,7 @@ html[data-theme="light"] .empty-state p {
     gap: 6px;
     width: fit-content;
     margin-bottom: 6px;
-    font-size: 9px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: .3px;
     color: #A9D5DE;
@@ -555,7 +555,7 @@ html[data-theme="light"] .empty-state p {
     justify-content: center;
     gap: 5px;
     border-radius: 7px;
-    font-size: 7px;
+    font-size: 14px;
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
@@ -644,7 +644,7 @@ html[data-theme="light"] .form-actions {
     gap: 4px;
     padding: 4px 7px;
     border-radius: 999px;
-    font-size: .54rem;
+    font-size: 0.75rem;
     font-weight: 700;
 }
 
@@ -2166,7 +2166,7 @@ html[data-theme="light"] [class*="page"] :is(.form-header, .attendance-header) h
 
 html[data-theme="light"] [class*="page"] :is(.form-header, .attendance-header) p {
     color: #587373;
-    font-size: 10px;
+    font-size: 14px;
 }
 
 html[data-theme="light"] [class*="page"] .form-header .form-header-kicker {
@@ -2185,12 +2185,12 @@ html[data-theme="light"] [class*="page"] .form-group label,
 html[data-theme="light"] [class*="page"] .filter-grid label,
 html[data-theme="light"] :is(.participants-page, .registration-page) .search-field label,
 html[data-theme="light"] :is(.participants-page, .registration-page) .status-field label {
-    font-size: 10px;
+    font-size: 15px;
 }
 
 html[data-theme="light"] [class*="page"] :is(.field-help, .character-limit) {
     color: #587373 !important;
-    font-size: 9px;
+    font-size: 13px;
     line-height: 1.5;
 }
 
@@ -2200,7 +2200,7 @@ html[data-theme="light"] [class*="page"] .field-help i {
 
 html[data-theme="light"] [class*="page"] :is(.field-error, .required, .field-validation-error) {
     color: #B23B48 !important;
-    font-size: 10px;
+    font-size: 14px;
 }
 
 html[data-theme="light"] [class*="page"] :is(.validation-box, .validation-summary) {
@@ -2215,7 +2215,7 @@ html[data-theme="light"] [class*="page"] :is(.validation-box, .validation-summar
 
 html[data-theme="light"] [class*="page"] :is(.form-card-header p, .panel-header p, .info-box p, .assignment-info p, .program-banner p) {
     color: #587373;
-    font-size: 10px;
+    font-size: 14px;
 }
 
 /* ---------- INPUT WRAPPERS / ICONS / PLACEHOLDERS ---------- */
@@ -2546,7 +2546,7 @@ html[data-theme="light"] .program-details-page .program-cover .muted-text {
    and icon chip size are corrected here. */
 
 html[data-theme="light"] [class*="page"] :is(.form-header, .attendance-header) h1 {
-    font-size: 20px;
+    font-size: 24px;
 }
 
 /* Chip size for .form-header-icon is unified at 38px by the

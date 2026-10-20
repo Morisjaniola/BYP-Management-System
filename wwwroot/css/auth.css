@@ -1,0 +1,815 @@
+/* ============================================================================
+   BYP MANAGEMENT SYSTEM — AUTHENTICATION DESIGN LAYER
+   ----------------------------------------------------------------------------
+   Shared visual design for the authentication shell (_AuthLayout):
+   Login, Registration and Access Denied pages.
+
+   Load order: bootstrap -> site.css -> theme.css -> typography.css -> auth.css.
+   - typography.css owns the global type scale (font sizes).
+   - theme.css owns the global color themes for the portal.
+   - auth.css owns layout, surfaces, control geometry and interaction states
+     for the authentication pages. They always use the branded dark,
+     glass-style treatment (see the theme pin in _AuthLayout), so the sign-in
+     experience stays consistent and readable in both user themes.
+
+   All rules are scoped to html[data-theme] .auth-page so they win over the
+   portal-wide theme rules by specificity, without !important.
+   ============================================================================ */
+
+
+/* ============================================================================
+   1. BASE
+   ============================================================================ */
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #EAF6F4;
+    background: #052523;
+}
+
+
+/* ============================================================================
+   2. PAGE SHELL (restrained teal -> deep green gradient with soft depth)
+   ============================================================================ */
+
+html[data-theme] .auth-page {
+    /* Auth palette tokens */
+    --auth-accent: #3BE0D4;
+    --auth-accent-soft: rgba(59, 224, 212, .14);
+    --auth-card-bg: rgba(8, 39, 38, .58);
+    --auth-card-border: rgba(148, 226, 222, .22);
+    --auth-input-bg: rgba(255, 255, 255, .055);
+    --auth-input-border: rgba(148, 226, 222, .20);
+    --auth-text: #F2FBF9;
+    --auth-text-muted: #B9D8D4;
+    --auth-text-soft: #8FB4B0;
+    --auth-radius-card: 20px;
+    --auth-radius-control: 12px;
+    --auth-focus-ring: 0 0 0 4px rgba(59, 224, 212, .14);
+
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(24px, 4.5vh, 52px) clamp(18px, 3.5vw, 44px);
+    box-sizing: border-box;
+    background:
+        radial-gradient(58rem 40rem at 6% -12%, rgba(45, 212, 191, .13), transparent 60%),
+        radial-gradient(46rem 34rem at 104% 112%, rgba(16, 185, 160, .11), transparent 62%),
+        linear-gradient(148deg, #04201F 0%, #06302D 42%, #0A453E 74%, #0D544A 100%);
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.auth-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 84px);
+}
+
+/* theme.css treats every [class*="-card"] inside a [class*="page"] as an
+   opaque portal card (background + border + muted colour). The auth shell
+   uses .auth-card only as the split grid, and the page wrappers only as
+   layout boxes, so re-assert transparent surfaces for the whole auth shell.
+   The glass treatment belongs to .login-card / .register-card alone. */
+html[data-theme] .auth-page > .auth-container > .auth-card {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: inherit;
+}
+
+html[data-theme] .auth-page :is(.login-page, .register-page) {
+    background: transparent;
+    color: inherit;
+}
+
+
+/* ============================================================================
+   3. BRAND PANEL
+   ============================================================================ */
+
+.auth-brand {
+    min-width: 0;
+}
+
+.brand-content {
+    max-width: 540px;
+}
+
+.brand-top {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2vw, 24px);
+}
+
+html[data-theme] .auth-page .brand-logo {
+    width: 94px;
+    height: 94px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px;
+    box-sizing: border-box;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, .055);
+    border: 1px solid rgba(148, 226, 222, .18);
+    box-shadow:
+        0 16px 36px rgba(2, 16, 15, .38),
+        inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+html[data-theme] .auth-page .brand-logo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+html[data-theme] .auth-page h2.brand-title {
+    margin: 0;
+    max-width: 430px;
+    color: #F4FCFA;
+    font-size: 34px;
+    line-height: 1.16;
+    font-weight: 800;
+    letter-spacing: -.015em;
+}
+
+html[data-theme] .auth-page p.brand-description {
+    max-width: 520px;
+    margin: 20px 0 0;
+    color: var(--auth-text-muted);
+    font-size: 15.5px;
+    line-height: 1.65;
+}
+
+.brand-feature-list {
+    max-width: 520px;
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 20px;
+}
+
+.brand-feature {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+/* theme.css colors spans inside any *-card with a broad rule; the :not()
+   pair keeps the auth design's own span colors deterministic. */
+html[data-theme] .auth-page .brand-feature span:not(.badge):not(.status-badge) {
+    color: #D6ECE8;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+html[data-theme] .auth-page .brand-feature i {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--auth-accent-soft);
+    border: 1px solid rgba(59, 224, 212, .20);
+    color: #5FE9D6;
+    font-size: 15px;
+}
+
+
+/* ============================================================================
+   4. FORM SIDE + GLASS CARD
+   ============================================================================ */
+
+.auth-form-side {
+    min-width: 0;
+}
+
+html[data-theme] .auth-page :is(.login-card, .register-card) {
+    width: 100%;
+    max-width: 470px;
+    margin: 0 auto;
+    padding: 38px 38px 34px;
+    box-sizing: border-box;
+    border-radius: var(--auth-radius-card);
+    background: var(--auth-card-bg);
+    border: 1px solid var(--auth-card-border);
+    box-shadow:
+        0 26px 64px rgba(2, 16, 15, .46),
+        inset 0 1px 0 rgba(255, 255, 255, .05);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+
+/* ============================================================================
+   5. FORM HEADINGS
+   ============================================================================ */
+
+html[data-theme] .auth-page :is(.login-header, .register-header) {
+    margin: 0 0 26px;
+    text-align: center;
+}
+
+html[data-theme] .auth-page h1.login-title {
+    margin: 0;
+    color: #F4FCFA;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.01em;
+}
+
+html[data-theme] .auth-page h1.register-title {
+    margin: 0;
+    color: #F4FCFA;
+    font-size: 27px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.01em;
+}
+
+html[data-theme] .auth-page p.login-subtitle,
+html[data-theme] .auth-page p.register-subtitle {
+    max-width: 360px;
+    margin: 10px auto 0;
+    color: var(--auth-text-muted);
+    line-height: 1.55;
+}
+
+
+/* ============================================================================
+   6. FIELDS
+   ============================================================================ */
+
+html[data-theme] .auth-page .form-group {
+    margin: 0 0 18px;
+}
+
+html[data-theme] .auth-page .form-group > label {
+    display: block;
+    margin: 0 0 8px;
+    color: #CFE7E2;
+    font-weight: 600;
+    letter-spacing: .01em;
+}
+
+html[data-theme] .auth-page .input-wrapper {
+    position: relative;
+    display: block;
+    /* Legacy site.css pins a light surface on .input-wrapper and on fields
+       with !important; re-assert the auth glass treatment here. */
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+html[data-theme] .auth-page .input-wrapper > i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7FAFAA;
+    line-height: 1;
+    pointer-events: none;
+    transition: color .15s ease;
+}
+
+html[data-theme] .auth-page .input-wrapper:focus-within > i {
+    color: #56E4D4;
+}
+
+html[data-theme] .auth-page input.custom-input {
+    width: 100%;
+    height: 50px;
+    padding: 0 15px 0 43px;
+    box-sizing: border-box;
+    border-radius: var(--auth-radius-control);
+    /* These three properties are pinned by legacy site.css rules that use
+       !important (light input surface); the auth design re-asserts them. */
+    background: var(--auth-input-bg) !important;
+    border: 1px solid var(--auth-input-border) !important;
+    color: var(--auth-text) !important;
+    font-weight: 500;
+    letter-spacing: .005em;
+    -webkit-appearance: none;
+    appearance: none;
+    transition:
+        border-color .16s ease,
+        box-shadow .16s ease,
+        background-color .16s ease;
+}
+
+html[data-theme] .auth-page input.custom-input::placeholder {
+    color: rgba(199, 230, 226, .52) !important;
+    opacity: 1;
+}
+
+html[data-theme] .auth-page input.custom-input:hover {
+    border-color: rgba(148, 226, 222, .38) !important;
+}
+
+html[data-theme] .auth-page input.custom-input:focus {
+    outline: none;
+    border-color: var(--auth-accent) !important;
+    background: rgba(255, 255, 255, .08) !important;
+    box-shadow: var(--auth-focus-ring) !important;
+}
+
+/* Client-side validation marks invalid fields (jQuery unobtrusive). */
+html[data-theme] .auth-page input.custom-input.input-validation-error {
+    border-color: rgba(255, 138, 150, .65) !important;
+    box-shadow: 0 0 0 4px rgba(255, 110, 122, .10);
+}
+
+html[data-theme] .auth-page input.custom-input.input-validation-error:focus {
+    border-color: #FF8A96 !important;
+    box-shadow: 0 0 0 4px rgba(255, 110, 122, .14) !important;
+}
+
+/* Keep autofilled fields on the dark glass surface (beats the forced light
+   surface from site.css), including while hovered or focused. */
+html[data-theme] .auth-page input.custom-input:-webkit-autofill,
+html[data-theme] .auth-page input.custom-input:-webkit-autofill:hover,
+html[data-theme] .auth-page input.custom-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #F2FBF9 !important;
+    caret-color: #F2FBF9 !important;
+    border-color: rgba(148, 226, 222, .38) !important;
+    -webkit-box-shadow: 0 0 0 1000px #0A3A37 inset !important;
+    box-shadow: 0 0 0 1000px #0A3A37 inset !important;
+}
+
+html[data-theme] .auth-page input.password-input {
+    padding-right: 52px;
+}
+
+html[data-theme] .auth-page .password-toggle {
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #7FAFAA;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+html[data-theme] .auth-page .password-toggle:hover {
+    background: rgba(255, 255, 255, .08);
+    color: #EAF6F4;
+}
+
+html[data-theme] .auth-page .password-toggle:focus-visible {
+    outline: 2px solid #6EE7DA;
+    outline-offset: 1px;
+    color: #EAF6F4;
+}
+
+html[data-theme] .auth-page span.password-help:not(.badge):not(.status-badge) {
+    display: block;
+    margin-top: 7px;
+    color: var(--auth-text-soft);
+}
+
+
+/* ============================================================================
+   7. VALIDATION
+   ============================================================================ */
+
+html[data-theme] .auth-page span.field-error:not(.badge):not(.status-badge) {
+    display: block;
+    margin-top: 7px;
+    /* theme.css pins .field-error to a dark red with !important; the auth
+       card is always dark, so keep the message readable on it. */
+    color: #FFB0B8 !important;
+}
+
+html[data-theme] .auth-page .validation-summary {
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 122, 134, .34);
+    border-radius: 12px;
+    background: rgba(255, 92, 106, .12);
+    color: #FFC9CE;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+html[data-theme] .auth-page .validation-summary ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+html[data-theme] .auth-page .validation-summary li {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+
+/* Informational notice (for example: account created, but the
+   automatic sign-in attempt failed). Uses the teal accent so it
+   cannot be mistaken for a validation error. */
+
+html[data-theme] .auth-page .auth-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    border: 1px solid rgba(110, 231, 218, .3);
+    border-radius: 12px;
+    background: rgba(45, 212, 191, .1);
+    color: #CDEDE8;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+html[data-theme] .auth-page .auth-notice i {
+    margin-top: 1px;
+    color: #6EE7DA;
+}
+
+
+/* ============================================================================
+   8. REMEMBER ME + LINK ROWS
+   ============================================================================ */
+
+html[data-theme] .auth-page .remember-row {
+    margin: 2px 0 4px;
+}
+
+html[data-theme] .auth-page .remember-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #CFE7E2;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html[data-theme] .auth-page .remember-checkbox {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    flex-shrink: 0;
+    border: 1px solid rgba(148, 226, 222, .40) !important;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, .06) !important;
+    accent-color: #2FD9C6;
+    cursor: pointer;
+}
+
+html[data-theme] .auth-page .remember-checkbox:focus-visible {
+    outline: 2px solid #6EE7DA;
+    outline-offset: 2px;
+}
+
+html[data-theme] .auth-page :is(.register-area, .login-link-area) {
+    margin-top: 22px;
+    text-align: center;
+    color: #A9CFC9;
+}
+
+html[data-theme] .auth-page :is(.register-area, .login-link-area) a {
+    color: #5FE9D6;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+html[data-theme] .auth-page :is(.register-area, .login-link-area) a:hover {
+    color: #A5F3EC;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+html[data-theme] .auth-page :is(.register-area, .login-link-area) a:focus-visible {
+    outline: 2px solid #6EE7DA;
+    outline-offset: 2px;
+}
+
+
+/* ============================================================================
+   9. PRIMARY BUTTONS
+   ============================================================================ */
+
+html[data-theme] .auth-page :is(.login-button, .register-button) {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0 20px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: var(--auth-radius-control);
+    background: linear-gradient(135deg, #38DFCB 0%, #23AEC7 100%);
+    color: #042A28;
+    font-weight: 700;
+    letter-spacing: .01em;
+    text-align: center;
+    box-shadow: 0 14px 30px rgba(15, 176, 176, .26);
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+html[data-theme] .auth-page :is(.login-button, .register-button) i {
+    font-size: 16px;
+}
+
+html[data-theme] .auth-page :is(.login-button, .register-button) span:not(.badge):not(.status-badge) {
+    color: inherit;
+}
+
+html[data-theme] .auth-page :is(.login-button, .register-button):hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+    box-shadow: 0 18px 36px rgba(15, 176, 176, .32);
+}
+
+html[data-theme] .auth-page :is(.login-button, .register-button):active {
+    transform: translateY(0);
+    filter: brightness(.97);
+}
+
+html[data-theme] .auth-page :is(.login-button, .register-button):focus-visible {
+    outline: 2px solid #A9F5E9;
+    outline-offset: 2px;
+}
+
+html[data-theme] .auth-page :is(.login-button, .register-button):disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* ============================================================================
+   10. ACCESS DENIED (shares this layout; keep its card on the same glass)
+   ============================================================================ */
+
+html[data-theme] .auth-page .access-denied-page {
+    min-height: 0;
+    padding: 0;
+    background: transparent;
+}
+
+html[data-theme] .auth-page .access-denied-card {
+    width: 100%;
+    max-width: 470px;
+    margin: 0 auto;
+    padding: 34px 32px;
+    box-sizing: border-box;
+    border-radius: var(--auth-radius-card);
+    background: var(--auth-card-bg);
+    border: 1px solid var(--auth-card-border);
+    box-shadow:
+        0 26px 64px rgba(2, 16, 15, .46),
+        inset 0 1px 0 rgba(255, 255, 255, .05);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    text-align: center;
+}
+
+html[data-theme] .auth-page .access-icon {
+    background: rgba(255, 158, 74, .13);
+    border: 1px solid rgba(255, 158, 74, .26);
+    color: #FFB37A;
+}
+
+html[data-theme] .auth-page span.access-label:not(.badge):not(.status-badge) {
+    color: #FFB37A;
+}
+
+html[data-theme] .auth-page .access-denied-card h1 {
+    color: #F4FCFA;
+}
+
+html[data-theme] .auth-page p.access-message {
+    color: #DCEEEA;
+}
+
+html[data-theme] .auth-page p.access-description {
+    color: #A9CFC9;
+}
+
+html[data-theme] .auth-page .role-box {
+    border: 1px solid rgba(148, 226, 222, .18);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .05);
+}
+
+html[data-theme] .auth-page .role-icon {
+    background: var(--auth-accent-soft);
+    border: 1px solid rgba(59, 224, 212, .20);
+    color: #5FE9D6;
+    font-size: 15px;
+}
+
+html[data-theme] .auth-page .role-content span {
+    color: #8FB4B0;
+}
+
+html[data-theme] .auth-page .role-content strong {
+    color: #EAF6F4;
+}
+
+html[data-theme] .auth-page .role-content small {
+    color: #5FE9D6;
+}
+
+html[data-theme] .auth-page .role-content :is(span, strong, small) {
+    font-size: 13.5px;
+}
+
+html[data-theme] .auth-page .access-button.primary {
+    border: 1px solid rgba(255, 255, 255, .16);
+    background: linear-gradient(135deg, #38DFCB 0%, #23AEC7 100%);
+    color: #042A28;
+}
+
+html[data-theme] .auth-page .access-button.primary:hover {
+    background: linear-gradient(135deg, #45E4D1 0%, #2FB8CF 100%);
+    color: #042A28;
+}
+
+html[data-theme] .auth-page .access-button.secondary {
+    border: 1px solid rgba(148, 226, 222, .26);
+    background: rgba(255, 255, 255, .05);
+    color: #CFE7E2;
+}
+
+html[data-theme] .auth-page .access-button.secondary:hover {
+    background: rgba(255, 255, 255, .09);
+    color: #F2FBF9;
+}
+
+html[data-theme] .auth-page .help-note {
+    border: 1px solid rgba(148, 226, 222, .16);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .04);
+    color: #9FC0BC;
+}
+
+html[data-theme] .auth-page .help-note i {
+    color: #5FE9D6;
+}
+
+
+/* ============================================================================
+   11. RESPONSIVE (desktop -> laptop -> tablet -> phone)
+   ============================================================================ */
+
+@media (max-width: 1199.98px) {
+
+    html[data-theme] .auth-page h2.brand-title {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 991.98px) {
+
+    .auth-card {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 30px;
+    }
+
+    html[data-theme] .auth-page .brand-content {
+        max-width: 640px;
+    }
+
+    html[data-theme] .auth-page .brand-logo {
+        width: 78px;
+        height: 78px;
+        padding: 9px;
+        border-radius: 22px;
+    }
+
+    html[data-theme] .auth-page h2.brand-title {
+        max-width: 560px;
+        font-size: 27px;
+    }
+
+    html[data-theme] .auth-page p.brand-description {
+        margin-top: 14px;
+        font-size: 15px;
+    }
+
+    /* Keep the stacked layout compact: the feature list is decorative. */
+    .brand-feature-list {
+        display: none;
+    }
+
+    html[data-theme] .auth-page h1.login-title {
+        font-size: 28px;
+    }
+
+    html[data-theme] .auth-page h1.register-title {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 767.98px) {
+
+    .auth-page {
+        padding: 22px 16px 30px;
+    }
+
+    .auth-brand {
+        text-align: center;
+    }
+
+    .brand-top {
+        justify-content: center;
+        gap: 14px;
+    }
+
+    html[data-theme] .auth-page h2.brand-title {
+        margin-inline: auto;
+        font-size: 24px;
+    }
+
+    html[data-theme] .auth-page p.brand-description {
+        margin-inline: auto;
+    }
+
+    html[data-theme] .auth-page :is(.login-card, .register-card) {
+        padding: 30px 22px 26px;
+        border-radius: 18px;
+    }
+
+    html[data-theme] .auth-page h1.login-title {
+        font-size: 26px;
+    }
+
+    html[data-theme] .auth-page h1.register-title {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .auth-page {
+        padding: 18px 12px 26px;
+    }
+
+    .brand-top {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    html[data-theme] .auth-page .brand-logo {
+        width: 68px;
+        height: 68px;
+        padding: 8px;
+        border-radius: 20px;
+    }
+
+    html[data-theme] .auth-page h2.brand-title {
+        font-size: 22px;
+    }
+
+    html[data-theme] .auth-page p.brand-description {
+        font-size: 14.5px;
+    }
+
+    html[data-theme] .auth-page :is(.login-card, .register-card) {
+        padding: 26px 18px 24px;
+    }
+}

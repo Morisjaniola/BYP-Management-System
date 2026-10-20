@@ -144,8 +144,9 @@ namespace BYPManagementSystem.Data
             // ATTENDANCE WINDOWS
             // Database defaults mirror the model defaults so rows
             // that existed before this feature receive the
-            // standard barangay morning schedule
-            // (7:00-8:30 AM time in, 10:30-11:30 AM time out).
+            // standard barangay schedule:
+            // Morning In 7:00-8:30 AM, Morning Out 10:30-11:30 AM,
+            // Afternoon In 1:00-2:00 PM, Afternoon Out 4:00-5:00 PM.
             // ----------------------------------------------------
 
             modelBuilder.Entity<YouthProgram>()
@@ -164,10 +165,27 @@ namespace BYPManagementSystem.Data
                 .Property(p => p.TimeOutEnd)
                 .HasDefaultValue(new TimeOnly(11, 30));
 
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.AfternoonInStart)
+                .HasDefaultValue(new TimeOnly(13, 0));
+
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.AfternoonInEnd)
+                .HasDefaultValue(new TimeOnly(14, 0));
+
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.AfternoonOutStart)
+                .HasDefaultValue(new TimeOnly(16, 0));
+
+            modelBuilder.Entity<YouthProgram>()
+                .Property(p => p.AfternoonOutEnd)
+                .HasDefaultValue(new TimeOnly(17, 0));
+
 
             // ----------------------------------------------------
-            // SUBMISSION ACTION
-            // Legacy photo submissions default to "TimeIn".
+            // PHOTO ACTION
+            // Legacy photo submissions default to "TimeIn", which
+            // normalizes to the morning session.
             // ----------------------------------------------------
 
             modelBuilder.Entity<AttendancePhotoSubmission>()

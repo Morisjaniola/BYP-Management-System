@@ -29,4 +29,15 @@
 	  <Folder Include="wwwroot\images\" />
 	</ItemGroup>
 
+	<!-- The integration test project lives in Tests\ under the
+	     application folder. Exclude it from this project's
+	     default Compile/Content globs so the web app never
+	     builds test sources. -->
+	<ItemGroup>
+		<Compile Remove="Tests\**" />
+		<Content Remove="Tests\**" />
+		<EmbeddedResource Remove="Tests\**" />
+		<None Remove="Tests\**" />
+	</ItemGroup>
+
 </Project>

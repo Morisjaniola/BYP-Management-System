@@ -20,7 +20,9 @@ namespace BYPManagementSystem.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IWebHostEnvironment _environment;
-        private const string ProfileImageClaimType = "BYPManagementSystem.ProfileImagePath";
+        // Reused by YouthParticipantsController to read the same
+        // claim when rendering the admin pages.
+        public const string ProfileImageClaimType = "BYPManagementSystem.ProfileImagePath";
         private const long MaximumProfileImageBytes = 5 * 1024 * 1024;
 
         public ProfileController(

@@ -1,0 +1,796 @@
+/* ============================================================
+   BYProgram - GLOBAL TYPOGRAPHY & READABILITY LAYER
+   ------------------------------------------------------------
+   Single source of truth for:
+     * page / section / subsection title sizes
+     * body, table, label, helper and badge text sizes
+     * form control text + comfortable control heights
+     * button text size, padding, min-height and icon spacing
+     * placeholder and validation message legibility
+
+   Palettes, colors and theme switches stay owned by theme.css;
+   this file never repaints components, only typesets them.
+
+   Load order: linked AFTER theme.css on every layout. Rules are
+   intentionally written with an extra specificity step
+   (html[data-theme] + .app-content / .auth-page) because each
+   view ships its own <style> block that loads later in the
+   document - extra specificity is the only way that centralized
+   sizes can win over those legacy page-local font-size rules
+   without using !important.
+
+   If a future page needs a truly bespoke size, raise it with a
+   selector that carries the same or greater specificity rather
+   than adding !important.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. TYPE SCALE TOKENS
+   ------------------------------------------------------------ */
+
+:root {
+    --byp-fs-page-title: 27px;
+    --byp-fs-section-title: 19px;
+    --byp-fs-subsection-title: 17px;
+    --byp-fs-body: 15px;
+    --byp-fs-meta: 14px;
+    --byp-fs-table: 14.5px;
+    --byp-fs-table-head: 14px;
+    --byp-fs-label: 14.5px;
+    --byp-fs-input: 15px;
+    --byp-fs-button: 14.5px;
+    --byp-fs-button-sm: 13.5px;
+    --byp-fs-badge: 13.5px;
+    --byp-fs-helper: 13.5px;
+    --byp-fs-eyebrow: 12.5px;
+}
+
+
+/* ============================================================
+   2. PAGE HEADERS (admin + youth portals)
+   Main page titles: 26-30px, subtitle text 15px.
+   ============================================================ */
+
+html[data-theme] .app-content :is(.page-header, .form-header, .attendance-header,
+    .registration-header, .profile-header, .participants-header, .programs-header,
+    .dashboard-header) :is(h1, .attendance-header-title, .programs-title) {
+    font-size: var(--byp-fs-page-title);
+    line-height: 1.22;
+}
+
+/* Dashboard title rows that carry the page <h1>. */
+html[data-theme] .app-content :is(.dashboard-title-area, .dashboard-title-row) h1 {
+    font-size: var(--byp-fs-page-title);
+    line-height: 1.22;
+}
+
+html[data-theme] .app-content :is(.page-header, .form-header, .attendance-header,
+    .registration-header, .profile-header, .participants-header, .programs-header,
+    .dashboard-header) p {
+    font-size: var(--byp-fs-body);
+    line-height: 1.5;
+}
+
+/* Small uppercase kickers above titles stay small but legible. */
+html[data-theme] .app-content :is(.page-eyebrow, .panel-eyebrow, .header-kicker,
+    .form-header-kicker, .dashboard-eyebrow, .section-eyebrow, .card-eyebrow,
+    .participants-eyebrow, .profile-eyebrow, .attendance-eyebrow,
+    .programs-eyebrow, .context-eyebrow, .program-list-eyebrow, .eyebrow,
+    .banner-eyebrow, .attendance-name-eyebrow, .hero-eyebrow) {
+    font-size: var(--byp-fs-eyebrow);
+}
+
+
+/* ============================================================
+   3. SECTION + CARD TITLES
+   Section/card titles: 19px, subsection titles: 17px.
+   ============================================================ */
+
+html[data-theme] .app-content :is(.section-header, .section-heading, .panel-header,
+    .form-card-header, .users-card-header, .card-header, .table-title, .login-header) h2 {
+    font-size: var(--byp-fs-section-title);
+    line-height: 1.3;
+}
+
+html[data-theme] .app-content :is(.side-card-header, .card-header, .window-card-header,
+    .review-card-header) :is(h3, h4) {
+    font-size: var(--byp-fs-subsection-title);
+    line-height: 1.3;
+}
+
+html[data-theme] .app-content :is(.form-section-title, .form-subsection-title,
+    .window-card-title) {
+    font-size: var(--byp-fs-subsection-title);
+    line-height: 1.35;
+}
+
+/* Titles whose text node lives inside a <strong>/<span> wrapper. */
+html[data-theme] .app-content :is(.form-section-title, .form-subsection-title,
+    .window-card-title) :is(strong, span) {
+    font-size: inherit;
+}
+
+/* Secondary line under a section title. */
+html[data-theme] .app-content :is(.section-header, .section-heading, .panel-header,
+    .form-card-header, .users-card-header, .card-header, .side-card-header,
+    .table-title) p,
+html[data-theme] .app-content :is(.section-header, .section-heading, .panel-header,
+    .form-card-header, .card-header, .side-card-header) > small,
+html[data-theme] .app-content .side-card-header span {
+    font-size: var(--byp-fs-meta);
+    line-height: 1.45;
+}
+
+/* Heading rows built from strong/span text nodes (RoleManagement, filters). */
+html[data-theme] .app-content .section-heading strong {
+    font-size: var(--byp-fs-body);
+}
+
+html[data-theme] .app-content :is(.section-heading, .section-header, .panel-header,
+    .card-header) span:not(.panel-eyebrow) {
+    font-size: var(--byp-fs-helper);
+}
+
+/* Inline "view all" links that sit next to panel titles. */
+html[data-theme] .app-content .panel-link {
+    font-size: var(--byp-fs-helper);
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   4. BODY / META TEXT
+   Secondary information raised out of the 12px range so it is
+   readable on both themes.
+   ============================================================ */
+
+html[data-theme] .app-content :is(.program-meta, .profile-meta, .context-meta,
+    .detail-item, .detail-row, .info-item, .metadata-item, .side-detail-row,
+    .table-text, .table-main-text, .table-person strong, .program-description,
+    .side-card-text, .card-text, .record-date, .record-created, .queue-date,
+    .schedule-text, .notes-cell, .notification-message) {
+    font-size: var(--byp-fs-meta);
+    line-height: 1.5;
+}
+
+html[data-theme] .app-content :is(.table-person small, .name-cell small, .name-cell span,
+    .row-sub, .notification-time, .record-id) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.45;
+}
+
+/* Attendance record strips: nested span/strong keep the strip size
+   instead of falling back to the legacy 12px page values. */
+html[data-theme] .app-content :is(.record-id, .record-date, .record-created,
+    .record-status) :is(span, strong) {
+    font-size: inherit;
+}
+
+/* Meta containers whose nested span/strong carried page-local 12px. */
+html[data-theme] .app-content :is(.profile-meta, .program-meta, .context-meta,
+    .person-meta, .detail-row, .detail-item, .side-detail-row) :is(span, strong) {
+    font-size: var(--byp-fs-meta);
+}
+
+/* Summary / statistic card labels (numbers keep their own scale). */
+html[data-theme] .app-content :is(.summary-content, .stat-content) span {
+    font-size: var(--byp-fs-helper);
+}
+
+html[data-theme] .app-content :is(.summary-content, .stat-content) small {
+    font-size: 13px;
+}
+
+/* Quick access / module tiles. */
+html[data-theme] .app-content .quick-card strong {
+    font-size: var(--byp-fs-body);
+}
+
+html[data-theme] .app-content .quick-card span {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.45;
+}
+
+html[data-theme] .app-content .quick-card small {
+    font-size: 13px;
+}
+
+html[data-theme] .app-content .record-count {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Long unbroken values (emails, tokens) wrap instead of overflowing. */
+html[data-theme] .app-content :is(.user-details strong, .email-cell) {
+    overflow-wrap: anywhere;
+}
+
+/* Empty states. */
+html[data-theme] .app-content .empty-state :is(h2, h3, strong) {
+    font-size: var(--byp-fs-subsection-title);
+}
+
+html[data-theme] .app-content .empty-state :is(p, span) {
+    font-size: var(--byp-fs-meta);
+    line-height: 1.5;
+}
+
+/* Generic <small> text (field hints, captions, footnotes). */
+html[data-theme] .app-content small {
+    font-size: var(--byp-fs-helper);
+}
+
+/* ------------------------------------------------------------
+   SMALL-PRINT CONTEXTS
+   Detail cards, side cards, info panels, activity feeds and
+   table cells across the legacy pages set nested span/strong/
+   small/p text at 12px. These grouped rules raise that text to
+   the helper/meta band so every card reads consistently.
+   (Numbered step chips and avatar circles are intentionally
+   excluded - their glyphs must fit fixed circles.)
+   ------------------------------------------------------------ */
+
+html[data-theme] .app-content :is(.side-details, .side-person, .guide-item,
+    .notice-card, .notice-content, .notice-box, .warning-card, .protected-box,
+    .status-row, .system-role-item, .role-info-item,
+    .role-item, .switch-text, .account-info, .account-row, .program-data,
+    .registered-data, .assignment-value, .assignment-content,
+    .assignment-info, .profile-info, .address-section, .address-box,
+    .information-item, .profile-main, .actions-content, .registration-text,
+    .connection-node, .participant-information, .profile-picture-card,
+    .profile-links-header, .profile-complete-box, .profile-incomplete-box,
+    .activity-info, .activity-right, .quick-content, .workflow-content,
+    .workflow-text, .side-header, .side-card, .example-box,
+    .role-preview, .security-list, .validation-list, .admin-note, .user-info,
+    .security-note, .roles-header, .system-role-header, .status-section-heading,
+    .info-box, .info-box-content, .info-banner-text, .legend-item, .legend-title,
+    .filter-heading, .search-header, .filter-header, .attendance-notes,
+    .attendance-status, .attendance-program-label, .schedule-windows-row,
+    .schedule-windows-title, .attendance-empty, .attendance-list-title,
+    .photo-alert, .upload-empty, .program-count, .panel-count,
+    .participant-count, .page-info, .summary-small, .program-schedule-datetime,
+    .schedule-datetime-line, .review-note, .queue-empty, .queue-alert,
+    .capacity-footer, .capacity-value, .reason-text,
+    .date-cell, .recorded-cell, .program-cell, .participant-details,
+    .program-details, .name-content, .registration-id, .privacy-card,
+    .privacy-panel, .security-item, .feature-card, .role-content, .workflow-item,
+    .floating-card, .cta-section, .status-info, .support-note, .reference-content,
+    .reference-note, .error-label, .error-message, .panel-label, .role-label,
+    .account-status, .usage-note, .password-card, .password-match, .queue-id,
+    .validation-box, .side-program-name, .status-guide-title, .optional,
+    .attendance-list-title, .delete-modal-body) :is(span, strong, small, p, li) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.5;
+}
+
+/* Containers that also carry larger emphasised values: only their
+   secondary span/small text is raised; strong values keep their
+   designed scale. */
+html[data-theme] .app-content :is(.status-card, .information-content,
+    .usage-content, .role-users) :is(span, small) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.5;
+}
+
+/* Direct small-print text elements (notes, counters, captions). */
+html[data-theme] .app-content :is(.attendance-notes, .attendance-status,
+    .attendance-program-label, .attendance-record-chip, .program-count,
+    .panel-count, .participant-count, .page-info, .summary-small, .review-note,
+    .review-alert, .review-status, .queue-id, .queue-alert, .upload-empty,
+    .photo-alert, .capacity-value, .capacity-footer, .registration-id,
+    .reason-text, .program-schedule-datetime, .schedule-datetime-line,
+    .account-status, .usage-note, .role-label, .panel-label, .error-label,
+    .error-message, .support-note, .reference-note, .password-match, .optional,
+    .confirmed-text, .unconfirmed-text, .delete-modal-warning, .row-view,
+    .side-program-name, .status-guide-title, .cell-badge) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.5;
+}
+
+html[data-theme] .app-content .workflow-actions a {
+    font-size: var(--byp-fs-helper);
+    font-weight: 700;
+}
+
+/* Table cells: nested text follows the cell size. */
+html[data-theme] .app-content table :is(span, strong, small) {
+    font-size: inherit;
+}
+
+/* Hero paragraph on public pages. */
+html[data-theme] .app-content .hero-content p {
+    font-size: var(--byp-fs-body);
+    line-height: 1.55;
+}
+
+
+/* ============================================================
+   5. TABLES
+   Header cells 14px, content 14.5px, readable row rhythm kept.
+   ============================================================ */
+
+html[data-theme] .app-content table {
+    font-size: var(--byp-fs-table);
+}
+
+html[data-theme] .app-content table thead th {
+    font-size: var(--byp-fs-table-head);
+    letter-spacing: .2px;
+}
+
+html[data-theme] .app-content table tbody td {
+    font-size: var(--byp-fs-table);
+    line-height: 1.45;
+}
+
+html[data-theme] .app-content table :is(th, td) {
+    vertical-align: middle;
+}
+
+/* Keep horizontal scrolling inside the table container only. */
+html[data-theme] .app-content :is(.table-wrapper, .table-responsive, .program-table-wrapper,
+    .queue-table-wrapper, .attendance-table-wrapper) {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Pagination controls (inside the table cards). */
+html[data-theme] .app-content .page-link {
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--byp-fs-button-sm);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+
+/* ============================================================
+   6. STATUS BADGES / CHIPS
+   ============================================================ */
+
+html[data-theme] .app-content :is(.status-badge, .table-status,
+    .role-badge, .st-badge, .system-badge, .custom-badge, .capacity-badge,
+    .large-status, .self-badge, .pending-chip, .type-badge, .record-status,
+    .approved-badge, .status-active, .status-inactive, .active-badge,
+    .queue-status, .edit-badge, .badge) {
+    font-size: var(--byp-fs-badge);
+    line-height: 1.35;
+}
+
+/* Count pills inside buttons (photo queue, notifications). */
+html[data-theme] .app-content .queue-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12.5px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* Selectable filter chips. */
+html[data-theme] .app-content :is(.filter-chip, .chip) {
+    min-height: 32px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: var(--byp-fs-button-sm);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+
+/* ============================================================
+   7. FORM LABELS, HELPERS AND VALIDATION
+   ============================================================ */
+
+html[data-theme] .app-content label {
+    font-size: var(--byp-fs-label);
+    line-height: 1.4;
+}
+
+html[data-theme] .app-content :is(.label-text, .section-label,
+    .program-label, .summary-label, .form-label, .report-filter-label) {
+    font-size: var(--byp-fs-label);
+}
+
+html[data-theme] .app-content :is(.field-help, .character-limit, .field-bottom,
+    .info-note, .password-help, .upload-help, .help-note) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.5;
+}
+
+/* Labels that carry a nested <strong>/<span> keep the label size. */
+html[data-theme] .app-content :is(.upload-label, .review-label) :is(strong, span) {
+    font-size: inherit;
+}
+
+html[data-theme] .app-content :is(.field-error, .field-validation-error,
+    .validation-summary-errors, .validation-summary, .review-field-error) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.45;
+}
+
+/* Bootstrap's .text-danger is a colour utility that also appears on
+   page headings (e.g. Shared/Error), so validation sizing only
+   targets message elements, never headings. */
+html[data-theme] .app-content :is(span, div).text-danger {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.45;
+}
+
+html[data-theme] .app-content :is(.alert-box, .alert-success, .alert-danger,
+    .info-banner) {
+    font-size: var(--byp-fs-meta);
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   8. INPUTS, SELECTS, TEXTAREAS
+   Consistent 15px control text. Textareas keep their designed
+   heights (never touched); single-line controls get a
+   comfortable minimum height so 15px text never feels cramped.
+   ============================================================ */
+
+html[data-theme] .app-content :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]) {
+    font-size: var(--byp-fs-input);
+}
+
+html[data-theme] .app-content :is(input, select, textarea)::placeholder {
+    font-size: var(--byp-fs-input);
+    opacity: 1;
+}
+
+html[data-theme="dark"] .app-content :is(input, textarea, select)::placeholder {
+    color: #8FBDBD;
+}
+
+html[data-theme="light"] .app-content :is(input, textarea, select)::placeholder {
+    color: #678080;
+}
+
+/* Form-page controls: roomy 40px minimum. Textareas are excluded
+   so each page keeps its designed multi-line height. */
+html[data-theme] .app-content :is(.form-control, .form-input, .password-input,
+    .address-control, .date-input, .status-select, .photo-select, .photo-file,
+    .input-wrapper):not(textarea) {
+    min-height: 40px;
+}
+
+/* Filter / search / report controls: compact but comfortable. */
+html[data-theme] .app-content :is(.filter-input, .search-input, .report-filter-input,
+    .report-filter-select, .filter-field input, .filter-field select, .input-box,
+    .search-input-wrapper, .input-with-icon) {
+    min-height: 36px;
+}
+
+/* Custom auth-style inputs keep their own 50px+ design height. */
+html[data-theme] .app-content .custom-input {
+    min-height: 40px;
+}
+
+/* Date/time pickers and file inputs keep their indicator aligned. */
+html[data-theme] .app-content :is(input[type="date"], input[type="time"],
+    input[type="datetime-local"], input[type="month"]) {
+    line-height: 1.3;
+}
+
+
+/* ============================================================
+   9. BUTTONS
+   ------------------------------------------------------------
+   Three families:
+     a) standard actions  -> 38px min-height, 14.5px text
+     b) compact chips     -> 32px min-height, 13.5px text
+     c) icon-only squares -> fixed square, centered glyph
+   ============================================================ */
+
+/* --- a) Standard action buttons ---------------------------------- */
+
+html[data-theme] .app-content :is(.header-button, .browse-button, .bottom-button,
+    .cancel-button, .save-button, .btn-save, .btn-cancel, .form-back-button,
+    .empty-button, .create-program-button, .delete-button, .delete-modal-cancel,
+    .delete-modal-confirm, .program-button, .registration-button,
+    .registration-panel-button, .mark-all-button, .mark-read-button,
+    .panel-print-button, .print-button, .approve-button, .reject-button,
+    .filter-apply, .filter-button, .filter-submit, .filter-reset, .report-filter-button,
+    .clear-button, .reset-button, .search-button, .search-submit, .login-button,
+    .register-button, .guest-button, .error-button, .hero-button, .cta-button,
+    .status-button, .privacy-button, .profile-button, .dashboard-button,
+    .attendance-dashboard-button, .protected-button, .photo-submit-button,
+    .header-action, .back-button, .btn, .btn-primary, .btn-secondary,
+    .btn-outline-primary, .btn-outline-secondary) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: auto;
+    min-height: 38px;
+    padding: 0 15px;
+    font-size: var(--byp-fs-button);
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+/* Bootstrap small buttons stay compact but readable. */
+html[data-theme] .app-content .btn-sm {
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: var(--byp-fs-button-sm);
+}
+
+/* --- b) Compact chips (table rows, role actions, card actions) --- */
+
+html[data-theme] .app-content :is(.action-button, .attendance-button,
+    .edit-button, .deactivate-button, .activate-button, .role-action,
+    .protected-role, .cannot-delete, .queue-review-button, .records-link,
+    .photo-view-link, .program-action, .action-edit, .action-view,
+    .action-delete, .action-register, .action-status, .back-link, .reset-link,
+    .my-registration-link, .view-attendance-link, .quick-link,
+    .report-filter-reset) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: auto;
+    min-height: 32px;
+    padding: 0 11px;
+    font-size: var(--byp-fs-button-sm);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+/* --- c) Icon-only controls --------------------------------------- */
+
+html[data-theme] .app-content .table-action {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* Registration approve / reject / attendance square actions. */
+html[data-theme] .app-content .registration-page .action-button {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    font-size: 16px;
+}
+
+html[data-theme] .app-content .search-reset {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    line-height: 1;
+}
+
+html[data-theme] .app-content .password-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 15px;
+    line-height: 1;
+}
+
+html[data-theme] .app-content .delete-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: var(--byp-fs-button-sm);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* --- Action rows wrap instead of overflowing ---------------------- */
+
+html[data-theme] .app-content :is(.header-actions, .form-actions, .bottom-actions) {
+    flex-wrap: wrap;
+}
+
+html[data-theme] .app-content :is(.form-actions, .bottom-actions) {
+    gap: 10px;
+}
+
+
+/* ============================================================
+   10. AUTH PAGES (login / register / access denied)
+   ============================================================ */
+
+html[data-theme] .auth-page :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) {
+    font-size: var(--byp-fs-input);
+}
+
+html[data-theme] .auth-page :is(input, select, textarea)::placeholder {
+    opacity: 1;
+}
+
+/* Placeholder colors for the auth pages are owned by auth.css. */
+
+html[data-theme] .auth-page label {
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+html[data-theme] .auth-page :is(.login-header, .register-header) p {
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+
+html[data-theme] .auth-page .register-subtitle {
+    font-size: 14.5px;
+}
+
+html[data-theme] .auth-page :is(.field-error, .validation-summary,
+    .validation-summary-errors) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.45;
+}
+
+html[data-theme] .auth-page :is(span, div).text-danger {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.45;
+}
+
+html[data-theme] .auth-page :is(.help-note, .password-help) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.5;
+}
+
+html[data-theme] .auth-page :is(.input-icon, .password-toggle) {
+    font-size: 15px;
+}
+
+html[data-theme] .auth-page :is(.login-button, .register-button, .access-button) {
+    font-size: 15px;
+}
+
+html[data-theme] .auth-page :is(.login-link-area, .register-area) {
+    font-size: 14.5px;
+}
+
+html[data-theme] .auth-page :is(.login-link-area, .register-area) a {
+    font-size: 14.5px;
+    font-weight: 700;
+}
+
+/* Register page account-type / role selector cards. */
+html[data-theme] .auth-page :is(.account-type-title, .role-title) {
+    font-size: var(--byp-fs-body);
+}
+
+html[data-theme] .auth-page :is(.account-type-description) {
+    font-size: var(--byp-fs-helper);
+    line-height: 1.45;
+}
+
+/* Access denied page. */
+html[data-theme] .auth-page .access-label {
+    font-size: 13px;
+}
+
+html[data-theme] .auth-page .access-message {
+    font-size: var(--byp-fs-body);
+    line-height: 1.5;
+}
+
+html[data-theme] .auth-page .access-description {
+    font-size: var(--byp-fs-meta);
+    line-height: 1.55;
+}
+
+html[data-theme] .auth-page .access-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 16px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+
+/* ============================================================
+   11. RESPONSIVE ADJUSTMENTS
+   Larger text must never push buttons out of cards or cause
+   page-level horizontal overflow.
+   ============================================================ */
+
+@media (max-width: 1199.98px) {
+
+    html[data-theme] .app-content :is(.page-header, .form-header, .attendance-header,
+        .registration-header, .profile-header, .participants-header, .programs-header,
+        .dashboard-header) :is(h1, .attendance-header-title, .programs-title),
+    html[data-theme] .app-content :is(.dashboard-title-area, .dashboard-title-row) h1 {
+        font-size: 25px;
+    }
+}
+
+@media (max-width: 991.98px) {
+
+    html[data-theme] .app-content :is(.page-header, .form-header, .attendance-header,
+        .registration-header, .profile-header, .participants-header, .programs-header,
+        .dashboard-header) :is(h1, .attendance-header-title, .programs-title),
+    html[data-theme] .app-content :is(.dashboard-title-area, .dashboard-title-row) h1 {
+        font-size: 23px;
+    }
+
+    html[data-theme] .app-content :is(.section-header, .section-heading, .panel-header,
+        .form-card-header, .users-card-header, .card-header, .table-title, .login-header) h2 {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    html[data-theme] .app-content :is(.page-header, .form-header, .attendance-header,
+        .registration-header, .profile-header, .participants-header, .programs-header,
+        .dashboard-header) :is(h1, .attendance-header-title, .programs-title),
+    html[data-theme] .app-content :is(.dashboard-title-area, .dashboard-title-row) h1 {
+        font-size: 21px;
+    }
+
+    html[data-theme] .app-content :is(.section-header, .section-heading, .panel-header,
+        .form-card-header, .users-card-header, .card-header, .table-title, .login-header) h2 {
+        font-size: 17px;
+    }
+
+    html[data-theme] .app-content :is(.side-card-header, .card-header, .window-card-header,
+        .review-card-header) h3,
+    html[data-theme] .app-content :is(.form-section-title, .form-subsection-title,
+        .window-card-title) {
+        font-size: 16px;
+    }
+
+    /* Buttons keep comfortable touch targets without overflowing. */
+    html[data-theme] .app-content :is(.header-button, .browse-button, .bottom-button,
+        .cancel-button, .save-button, .btn-save, .btn-cancel, .form-back-button,
+        .empty-button, .create-program-button, .delete-button, .delete-modal-cancel,
+        .delete-modal-confirm, .program-button, .registration-button,
+        .registration-panel-button, .mark-all-button, .mark-read-button,
+        .panel-print-button, .print-button, .approve-button, .reject-button,
+        .filter-apply, .filter-button, .filter-submit, .filter-reset, .report-filter-button,
+        .clear-button, .reset-button, .search-button, .search-submit, .login-button,
+        .register-button, .guest-button, .error-button, .hero-button, .cta-button,
+        .status-button, .privacy-button, .profile-button, .dashboard-button,
+        .attendance-dashboard-button, .protected-button, .photo-submit-button,
+        .header-action, .back-button, .btn, .btn-primary, .btn-secondary,
+        .btn-outline-primary, .btn-outline-secondary) {
+        min-height: 36px;
+        padding: 0 13px;
+    }
+}

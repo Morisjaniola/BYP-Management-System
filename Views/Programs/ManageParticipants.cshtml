@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BYPManagementSystem.Models.YouthParticipant>
+@model IEnumerable<BYPManagementSystem.Models.YouthParticipant>
 
 @{
     ViewData["Title"] = "Manage Participants";
@@ -45,6 +45,29 @@
 
 
 <div class="manage-participants-page">
+
+    <!-- =========================================================
+         ALERTS (TempData success / error messages)
+         The Assign Matching Youth POST redirects back here with a
+         counted success message (matched / created / skipped), so
+         this page must actually display it.
+    ========================================================== -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-box success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-box error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
 
     <!-- =========================================================
          HEADER
@@ -285,13 +308,94 @@
                 <p>
                     Active youth participants whose barangay matches
                     the program barangay are automatically submitted
-                    as registration requests (Pending). An Admin or
+                    as registration requests (Pending) when you use
+                    "Assign Matching Youth". An Admin or
                     authorized Staff member processes them in
                     Registration, and approved participants are
                     shown below.
                 </p>
 
             </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             BARANGAY MATCH PREVIEW (STEP 2)
+        ====================================================== -->
+
+        <section class="capacity-panel" style="margin-bottom: 16px;">
+
+            <div class="capacity-header">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        MATCH BARANGAY PREVIEW
+                    </span>
+
+                    <h3>
+                        Matching Participants
+                    </h3>
+
+                </div>
+
+
+                <strong>
+                    @(ViewBag.MatchedCount ?? 0) matched
+                </strong>
+
+            </div>
+
+
+            @if ((ViewBag.MatchedCount ?? 0) == 0)
+            {
+                <div class="assignment-notice">
+
+                    <div class="notice-icon">
+
+                        <i class="bi bi-exclamation-circle"></i>
+
+                    </div>
+
+                    <div class="notice-content">
+
+                        <strong>
+                            No eligible participants matched
+                        </strong>
+
+                        <p>
+                            No ACTIVE youth participant currently has a
+                            Barangay matching "@(program?.Barangay)".
+                            They can be added from Youth Participants; their
+                            saved Barangay is never changed to force a match.
+                        </p>
+
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <p style="margin: 8px 0 0;">
+
+                    Active youth that match this program's Barangay:
+
+                    <strong>@(ViewBag.MatchedApprovedCount ?? 0)</strong>
+                    already approved,
+
+                    <strong>@(ViewBag.MatchedPendingCount ?? 0)</strong>
+                    pending approval,
+
+                    <strong>@((ViewBag.MatchedWithoutApprovalCount ?? 0) - (ViewBag.MatchedPendingCount ?? 0))</strong>
+                    with no registration yet.
+
+                    Use "Assign Matching Youth" to submit requests for
+                    those without one; existing approved registrations
+                    are never duplicated.
+
+                </p>
+            }
 
         </section>
 
@@ -601,7 +705,7 @@
 
                                 <a asp-controller="Attendance"
                                    asp-action="Record"
-                                   asp-route-programId="@program.Id"
+                                   asp-route-programId="@program?.Id"
                                    asp-route-youthParticipantId="@participant.Id"
                                    class="attendance-button">
 
@@ -905,6 +1009,75 @@
 
 
         <!-- =====================================================
+             FOUR-STEP WORKFLOW PROGRESS
+        ====================================================== -->
+
+        <div class="workflow-card">
+
+            <div class="workflow-step completed">
+
+                <div class="step-number">
+                    1
+                </div>
+
+                <span>
+                    Create Program
+                </span>
+
+            </div>
+
+
+            <div class="step-line"></div>
+
+
+            <div class="workflow-step">
+
+                <div class="step-number">
+                    2
+                </div>
+
+                <span>
+                    Match Barangay
+                </span>
+
+            </div>
+
+
+            <div class="step-line"></div>
+
+
+            <div class="workflow-step active">
+
+                <div class="step-number">
+                    3
+                </div>
+
+                <span>
+                    Assign Youth
+                </span>
+
+            </div>
+
+
+            <div class="step-line"></div>
+
+
+            <div class="workflow-step">
+
+                <div class="step-number">
+                    4
+                </div>
+
+                <span>
+                    Attendance
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
              BOTTOM ACTIONS
         ====================================================== -->
 
@@ -912,7 +1085,7 @@
 
             <a asp-controller="Programs"
                asp-action="Details"
-               asp-route-id="@program.Id"
+               asp-route-id="@program?.Id"
                class="bottom-button secondary">
 
                 <i class="bi bi-arrow-left"></i>
@@ -924,7 +1097,7 @@
 
             <a asp-controller="Attendance"
                asp-action="Participants"
-               asp-route-id="@program.Id"
+               asp-route-id="@program?.Id"
                class="bottom-button primary">
 
                 <i class="bi bi-clipboard-check"></i>
@@ -986,7 +1159,7 @@
 
         color: #64748b;
 
-        font-size: .59rem;
+        font-size: 0.75rem;
 
         font-weight: 700;
 
@@ -1009,7 +1182,7 @@
 
         color: #0d6efd;
 
-        font-size: .56rem;
+        font-size: 0.75rem;
 
         font-weight: 850;
 
@@ -1040,7 +1213,7 @@
 
         color: #64748b;
 
-        font-size: .68rem;
+        font-size: 0.75rem;
 
     }
 
@@ -1073,7 +1246,7 @@
 
         border-radius: 7px;
 
-        font-size: .54rem;
+        font-size: 0.75rem;
 
         font-weight: 750;
 
@@ -1220,7 +1393,7 @@
 
         color: #94a3b8;
 
-        font-size: .48rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -1272,7 +1445,7 @@
 
         color: #7b8796;
 
-        font-size: .54rem;
+        font-size: 0.75rem;
 
     }
 
@@ -1312,7 +1485,7 @@
 
         border-radius: 999px;
 
-        font-size: .51rem;
+        font-size: 0.75rem;
 
         font-weight: 750;
 
@@ -1397,7 +1570,7 @@
 
         color: #0d6efd;
 
-        font-size: .7rem;
+        font-size: 0.8rem;
 
     }
 
@@ -1415,7 +1588,7 @@
 
         color: #334155;
 
-        font-size: .61rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -1429,7 +1602,7 @@
 
         color: #7b8796;
 
-        font-size: .55rem;
+        font-size: 0.75rem;
 
         line-height: 1.5;
 
@@ -1493,7 +1666,7 @@
 
         border-radius: 9px;
 
-        font-size: .78rem;
+        font-size: 0.8rem;
 
     }
 
@@ -1547,7 +1720,7 @@
 
         color: #64748b;
 
-        font-size: .53rem;
+        font-size: 0.75rem;
 
         font-weight: 700;
 
@@ -1577,7 +1750,7 @@
 
         color: #94a3b8;
 
-        font-size: .48rem;
+        font-size: 0.75rem;
 
     }
 
@@ -1623,7 +1796,7 @@
 
         color: #334155;
 
-        font-size: .77rem;
+        font-size: 0.8rem;
 
         font-weight: 800;
 
@@ -1634,7 +1807,7 @@
 
         color: #475569;
 
-        font-size: .7rem;
+        font-size: 0.8rem;
 
         font-weight: 800;
 
@@ -1684,7 +1857,7 @@
 
         color: #94a3b8;
 
-        font-size: .51rem;
+        font-size: 0.75rem;
 
     }
 
@@ -1761,7 +1934,7 @@
 
         color: #1e293b;
 
-        font-size: .91rem;
+        font-size: 0.95rem;
 
         font-weight: 800;
 
@@ -1774,7 +1947,7 @@
 
         color: #94a3b8;
 
-        font-size: .57rem;
+        font-size: 0.75rem;
 
     }
 
@@ -1802,7 +1975,7 @@
 
         color: #15803d;
 
-        font-size: .53rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -1884,7 +2057,7 @@
 
         color: #0d6efd;
 
-        font-size: .56rem;
+        font-size: 0.75rem;
 
         font-weight: 850;
 
@@ -1908,7 +2081,7 @@
 
         color: #475569;
 
-        font-size: .61rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -1929,7 +2102,7 @@
 
         color: #94a3b8;
 
-        font-size: .51rem;
+        font-size: 0.75rem;
 
         text-overflow: ellipsis;
 
@@ -1953,7 +2126,7 @@
 
         color: #a0a9b5;
 
-        font-size: .5rem;
+        font-size: 0.75rem;
 
     }
 
@@ -1999,7 +2172,7 @@
 
         color: #15803d;
 
-        font-size: .48rem;
+        font-size: 0.75rem;
 
         font-weight: 750;
 
@@ -2008,7 +2181,7 @@
 
     .attendance-button {
 
-        min-height: 27px;
+        min-height: 30px;
 
         padding:
             0 7px;
@@ -2030,7 +2203,7 @@
 
         color: #2563eb;
 
-        font-size: .5rem;
+        font-size: 0.75rem;
 
         font-weight: 750;
 
@@ -2087,7 +2260,7 @@
 
         color: #94a3b8;
 
-        font-size: .49rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -2110,7 +2283,7 @@
 
         color: #64748b;
 
-        font-size: .55rem;
+        font-size: 0.75rem;
 
     }
 
@@ -2160,7 +2333,7 @@
 
         color: #64748b;
 
-        font-size: .53rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -2173,7 +2346,7 @@
 
         color: #475569;
 
-        font-size: .57rem;
+        font-size: 0.75rem;
 
         font-weight: 750;
 
@@ -2188,7 +2361,7 @@
 
         color: #a0a9b5;
 
-        font-size: .47rem;
+        font-size: 0.75rem;
 
     }
 
@@ -2197,7 +2370,7 @@
 
         color: #64748b;
 
-        font-size: .54rem;
+        font-size: 0.75rem;
 
     }
 
@@ -2217,7 +2390,7 @@
 
         border-radius: 999px;
 
-        font-size: .47rem;
+        font-size: 0.75rem;
 
         font-weight: 700;
 
@@ -2251,7 +2424,7 @@
 
         gap: 4px;
 
-        font-size: .48rem;
+        font-size: 0.75rem;
 
         font-weight: 700;
 
@@ -2363,7 +2536,7 @@
 
         color: #475569;
 
-        font-size: .82rem;
+        font-size: 0.9rem;
 
         font-weight: 800;
 
@@ -2377,7 +2550,7 @@
 
         color: #94a3b8;
 
-        font-size: .59rem;
+        font-size: 0.75rem;
 
     }
 
@@ -2401,7 +2574,7 @@
 
         color: #ffffff;
 
-        font-size: .55rem;
+        font-size: 0.75rem;
 
         font-weight: 750;
 
@@ -2451,7 +2624,7 @@
 
         margin-bottom: 8px;
 
-        font-size: .82rem;
+        font-size: 0.9rem;
 
     }
 
@@ -2460,7 +2633,7 @@
 
         color: #475569;
 
-        font-size: .64rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -2475,7 +2648,7 @@
 
         color: #94a3b8;
 
-        font-size: .55rem;
+        font-size: 0.75rem;
 
         line-height: 1.5;
 
@@ -2529,7 +2702,7 @@
 
         color: #0d6efd;
 
-        font-size: .73rem;
+        font-size: 0.8rem;
 
     }
 
@@ -2551,7 +2724,7 @@
 
         color: #475569;
 
-        font-size: .59rem;
+        font-size: 0.75rem;
 
         font-weight: 800;
 
@@ -2565,7 +2738,7 @@
 
         color: #94a3b8;
 
-        font-size: .53rem;
+        font-size: 0.75rem;
 
         line-height: 1.45;
 
@@ -2608,7 +2781,7 @@
 
         border-radius: 8px;
 
-        font-size: .56rem;
+        font-size: 0.75rem;
 
         font-weight: 750;
 
@@ -2814,6 +2987,133 @@
 
         }
 
+
+        .workflow-card {
+
+            justify-content: flex-start;
+
+            overflow-x: auto;
+
+        }
+
+    }
+
+
+    /* =========================================================
+       ALERTS (TempData messages) - same styling as Programs Index
+    ========================================================== */
+
+    .alert-box {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 12px 14px;
+
+        margin-bottom: 15px;
+
+        border-radius: 7px;
+
+        font-size: 0.8rem;
+
+    }
+
+
+    .alert-box.success {
+
+        background: #edf5ef;
+
+        border: 1px solid #dcebdd;
+
+        color: #52735b;
+
+    }
+
+
+    .alert-box.error {
+
+        background: #f8eeee;
+
+        border: 1px solid #efdede;
+
+        color: #955c5c;
+
+    }
+
+
+    /* =========================================================
+       FOUR-STEP WORKFLOW PROGRESS (matches Create Program)
+    ========================================================== */
+
+    .workflow-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 11px;
+        margin-top: 16px;
+        border-radius: 13px;
+        border: 1px solid #dfe7ef;
+        background: #ffffff;
+        box-shadow: 0 7px 20px rgba(15, 23, 42, .03);
+    }
+
+    .workflow-step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+
+    .workflow-step.active {
+        color: #0C9096;
+    }
+
+
+    .workflow-step.completed {
+        color: #15803d;
+    }
+
+
+    .step-number {
+        width: 26px;
+        height: 26px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+
+
+    .workflow-step.active .step-number {
+        color: #FFFFFF;
+        background: #0C9096;
+    }
+
+
+    .workflow-step.completed .step-number {
+        color: #FFFFFF;
+        background: #15803d;
+    }
+
+
+    .step-line {
+        width: 44px;
+        height: 2px;
+        flex-shrink: 0;
+        margin: 0 7px;
+        background: #dfe7ef;
     }
 
 </style>

@@ -1,6 +1,7 @@
 ﻿using BYPManagementSystem.Data;
 using BYPManagementSystem.Models;
 using BYPManagementSystem.Services;
+using BYPManagementSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,117 @@ namespace BYPManagementSystem.Controllers
             _context = context;
             _photoStorage = photoStorage;
             _logger = logger;
+        }
+
+
+        // ==========================================================
+        // ACCOUNT ENRICHMENT (LATEST EMAIL + PROFILE PICTURE)
+        //
+        // The linked Identity account (YouthParticipant.UserId ->
+        // AspNetUsers.Id) is the single source of truth for the
+        // e-mail and for the profile picture path (stored by
+        // ProfileController as an Identity claim). Both are read
+        // fresh on every request, so the admin pages always show
+        // the values the user last saved - never stale copies -
+        // without duplicating them into other tables.
+        // ==========================================================
+
+        private async Task<List<ParticipantProfileViewModel>>
+            LoadParticipantProfilesAsync(
+                List<YouthParticipant> participants)
+        {
+            var rows =
+                participants
+                    .Select(ParticipantProfileViewModel.From)
+                    .ToList();
+
+
+            var userIds =
+                rows
+                    .Where(
+                        r => !string.IsNullOrWhiteSpace(r.UserId))
+                    .Select(r => r.UserId!)
+                    .Distinct()
+                    .ToList();
+
+
+            if (userIds.Count == 0)
+            {
+                return rows;
+            }
+
+
+            // ------------------------------------------------------
+            // LATEST ACCOUNT E-MAILS
+            // ------------------------------------------------------
+
+            var emails =
+                await _context.Users
+                    .AsNoTracking()
+                    .Where(u => userIds.Contains(u.Id))
+                    .Select(u => new { u.Id, u.Email })
+                    .ToDictionaryAsync(
+                        u => u.Id,
+                        u => u.Email);
+
+
+            // ------------------------------------------------------
+            // STORED PROFILE PICTURE PATHS
+            // ------------------------------------------------------
+
+            var claimRows =
+                await _context.UserClaims
+                    .AsNoTracking()
+                    .Where(
+                        c =>
+                            userIds.Contains(c.UserId) &&
+                            c.ClaimType ==
+                                ProfileController
+                                    .ProfileImageClaimType)
+                    .Select(
+                        c => new { c.UserId, c.ClaimValue })
+                    .ToListAsync();
+
+
+            // Defensive against duplicate claims: keep the
+            // first path per user instead of throwing.
+            var imagePaths =
+                claimRows
+                    .GroupBy(c => c.UserId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.First().ClaimValue);
+
+
+            // ------------------------------------------------------
+            // APPLY TO ROWS
+            // ------------------------------------------------------
+
+            foreach (var row in rows)
+            {
+                if (string.IsNullOrWhiteSpace(row.UserId))
+                {
+                    continue;
+                }
+
+                if (emails.TryGetValue(
+                        row.UserId,
+                        out var email) &&
+                    !string.IsNullOrWhiteSpace(email))
+                {
+                    row.Email = email;
+                }
+
+                if (imagePaths.TryGetValue(
+                        row.UserId,
+                        out var imagePath) &&
+                    !string.IsNullOrWhiteSpace(imagePath))
+                {
+                    row.ProfileImagePath = imagePath;
+                }
+            }
+
+            return rows;
         }
 
 
@@ -124,6 +236,11 @@ namespace BYPManagementSystem.Controllers
                     .ToListAsync();
 
 
+            var profiles =
+                await LoadParticipantProfilesAsync(
+                    participants);
+
+
             ViewBag.Search =
                 search;
 
@@ -131,7 +248,7 @@ namespace BYPManagementSystem.Controllers
                 status;
 
 
-            return View(participants);
+            return View(profiles);
         }
 
 
@@ -158,7 +275,15 @@ namespace BYPManagementSystem.Controllers
             }
 
 
-            return View(participant);
+            var profiles =
+                await LoadParticipantProfilesAsync(
+                    new List<YouthParticipant>
+                    {
+                        participant
+                    });
+
+
+            return View(profiles[0]);
         }
 
 
@@ -953,7 +1078,7 @@ namespace BYPManagementSystem.Controllers
 
 
             var youthBarangay =
-                CleanBarangay(
+                BarangayNormalizer.ForComparison(
                     youth.Barangay
                 );
 
@@ -967,18 +1092,34 @@ namespace BYPManagementSystem.Controllers
 
             // ------------------------------------------------------
             // MATCH ACTIVE PROGRAMS
+            //
+            // Matched in C# with the ONE shared Barangay normalizer
+            // (Services/BarangayNormalizer), so capitalization,
+            // whitespace, and the optional "Barangay " prefix never
+            // matter. A naive database-side string compare missed
+            // programs stored as "Barangay X" while participants
+            // stored "X" (or vice versa); genuinely different
+            // barangay names still never match.
             // ------------------------------------------------------
 
-            var programs =
+            var activePrograms =
                 await _context.YouthPrograms
                     .Where(p =>
-                        p.Status == "Active" &&
-                        p.Barangay != null &&
-                        p.Barangay.ToLower()
-                            ==
-                        youthBarangay.ToLower()
+                        p.Status == "Active"
                     )
                     .ToListAsync();
+
+
+            var programs =
+                activePrograms
+                    .Where(p =>
+                        BarangayNormalizer.ForComparison(
+                            p.Barangay
+                        )
+                        ==
+                        youthBarangay
+                    )
+                    .ToList();
 
 
             if (!programs.Any())
@@ -987,12 +1128,45 @@ namespace BYPManagementSystem.Controllers
             }
 
 
+            // --------------------------------------------------
+            // SERIALIZE WITH THE OTHER ASSIGNMENT PATHS
+            //
+            // The same per-program row lock (SELECT ... FOR UPDATE)
+            // that ProgramsController uses is taken here, in
+            // ascending Id order, before any registrations are
+            // read. A participant Create/Edit/Activate that races
+            // an admin Create/Assign pass for the same program
+            // waits at this lock and then works on fresh rows, so
+            // neither path can create duplicates or push Pending
+            // registrations past the configured capacity.
+            // --------------------------------------------------
+
+            programs = programs
+                .OrderBy(p => p.Id)
+                .ToList();
+
+
+            await using var transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
+
+
+            foreach (var lockedProgram in programs)
+            {
+                await _context.Database.ExecuteSqlRawAsync(
+                    "SELECT Id FROM YouthPrograms WHERE Id = {0} FOR UPDATE",
+                    lockedProgram.Id);
+            }
+
+
             // ------------------------------------------------------
             // EXISTING REGISTRATIONS
             //
-            // Legacy rows recorded before YouthParticipantId was
-            // filled in are matched through the linked Identity user
-            // so the same registration is never created twice.
+            // Read AFTER the locks so this pass always sees the
+            // rows a concurrent assignment just committed. Legacy
+            // rows recorded before YouthParticipantId was filled in
+            // are matched through the linked Identity user so the
+            // same registration is never created twice.
             // ------------------------------------------------------
 
             var existingRegistrations =
@@ -1042,19 +1216,36 @@ namespace BYPManagementSystem.Controllers
 
                 // --------------------------------------------------
                 // CAPACITY
+                //
+                // Approved + Pending occupy seats here for the same
+                // reason the program-side pass counts both: Pending
+                // requests must not be able to stack past the
+                // configured capacity while awaiting approval, and
+                // both assignment paths must agree on when a
+                // program is full.
                 // --------------------------------------------------
 
-                var approvedCount =
-                    await _context.ProgramRegistrations
-                        .CountAsync(r =>
+                var committedSeats =
+                    existingRegistrations
+                        .Count(r =>
                             r.ProgramId ==
-                                program.Id &&
-                            r.Status ==
-                                "Approved"
+                                program.Id
+
+                            &&
+
+                            (
+                                r.Status ==
+                                    "Approved"
+
+                                ||
+
+                                r.Status ==
+                                    "Pending"
+                            )
                         );
 
 
-                if (approvedCount >=
+                if (committedSeats >=
                     program.Capacity)
                 {
                     continue;
@@ -1105,6 +1296,17 @@ namespace BYPManagementSystem.Controllers
 
 
             await _context.SaveChangesAsync();
+
+
+            // --------------------------------------------------
+            // COMMIT REGISTRATIONS INSIDE THE SAME TRANSACTION
+            // The row locks plus the post-lock registration read
+            // already serialized concurrent assignment passes; a
+            // single SaveChanges here means all rows created for
+            // this participant commit together or not at all.
+            // --------------------------------------------------
+
+            await transaction.CommitAsync();
 
 
             // ------------------------------------------------------

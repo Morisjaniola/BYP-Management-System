@@ -1,4 +1,4 @@
-﻿@using BYPManagementSystem.Models
+@using BYPManagementSystem.Models
 
 @{
     ViewData["Title"] = "Youth Dashboard";
@@ -93,6 +93,62 @@
             </div>
 
     </section>
+
+
+    <!-- =========================================================
+         REGISTRATION CONFIRMATION + PROFILE ONBOARDING
+         ========================================================= -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="dashboard-alert success" role="status">
+
+            <i class="bi bi-check-circle-fill"></i>
+
+            <span>
+                @TempData["Success"]
+            </span>
+
+        </div>
+    }
+
+
+    @if (participant == null)
+    {
+        <section class="onboarding-banner">
+
+            <div class="onboarding-icon">
+
+                <i class="bi bi-person-vcard"></i>
+
+            </div>
+
+            <div class="onboarding-content">
+
+                <strong>
+                    Complete your youth profile
+                </strong>
+
+                <span>
+                    Add your first name, last name, and barangay so
+                    your account can be connected to your Youth
+                    Participant profile.
+                </span>
+
+            </div>
+
+            <a asp-controller="Profile"
+               asp-action="Index"
+               class="onboarding-button">
+
+                Complete Profile
+
+                <i class="bi bi-arrow-right"></i>
+
+            </a>
+
+        </section>
+    }
 
 
     <!-- =========================================================
@@ -1013,8 +1069,7 @@
     color:
         #A9D5DE;
 
-    font-size:
-        7px;
+    font-size: 12px;
 
     font-weight:
         700;
@@ -1083,8 +1138,7 @@
     color:
         #FFFFFF;
 
-    font-size:
-        20px;
+    font-size: 24px;
 
     line-height:
         1.1;
@@ -1102,8 +1156,7 @@
     color:
         #C5DDE2;
 
-    font-size:
-        8px;
+    font-size: 13px;
 
     line-height:
         1.4;
@@ -1152,8 +1205,7 @@
     text-decoration:
         none;
 
-    font-size:
-        7px;
+    font-size: 14px;
 
     font-weight:
         700;
@@ -1397,8 +1449,7 @@
     color:
         #69DDF2;
 
-    font-size:
-        14px;
+    font-size: 15px;
 }
 
 
@@ -1450,8 +1501,7 @@
     color:
         #9FC6CC;
 
-    font-size:
-        6px;
+    font-size: 12px;
 
     font-weight:
         600;
@@ -1488,8 +1538,7 @@
     color:
         #72969E;
 
-    font-size:
-        6px;
+    font-size: 12px;
 }
 
 
@@ -1557,8 +1606,7 @@
     color:
         #69DDF2;
 
-    font-size:
-        6px;
+    font-size: 12px;
 
     font-weight:
         700;
@@ -1586,8 +1634,7 @@
     color:
         #FFFFFF;
 
-    font-size:
-        12px;
+    font-size: 14px;
 
     line-height:
         1.1;
@@ -1602,8 +1649,7 @@
     color:
         #769BA3;
 
-    font-size:
-        7px;
+    font-size: 12px;
 }
 
 
@@ -1653,8 +1699,7 @@
     color:
         #8DDCF2;
 
-    font-size:
-        7px;
+    font-size: 12px;
 
     font-weight:
         700;
@@ -1781,8 +1826,7 @@
     color:
         #69DDF2;
 
-    font-size:
-        11px;
+    font-size: 14px;
 }
 
 
@@ -1824,8 +1868,7 @@
     color:
         #FFFFFF;
 
-    font-size:
-        8px;
+    font-size: 13px;
 
     text-overflow:
         ellipsis;
@@ -1849,8 +1892,7 @@
     color:
         #72969E;
 
-    font-size:
-        6px;
+    font-size: 12px;
 
     text-overflow:
         ellipsis;
@@ -1865,8 +1907,7 @@
     color:
         #628D96;
 
-    font-size:
-        8px;
+    font-size: 13px;
 }
 
 
@@ -1983,8 +2024,7 @@
     color:
         #69DDF2;
 
-    font-size:
-        10px;
+    font-size: 14px;
 }
 
 
@@ -2020,8 +2060,7 @@
     color:
         #FFFFFF;
 
-    font-size:
-        7px;
+    font-size: 12px;
 
     text-overflow:
         ellipsis;
@@ -2045,8 +2084,7 @@
     color:
         #72969E;
 
-    font-size:
-        6px;
+    font-size: 12px;
 
     text-overflow:
         ellipsis;
@@ -2080,8 +2118,7 @@
     color:
         #607F87;
 
-    font-size:
-        5px;
+    font-size: 12px;
 }
 
 
@@ -2109,8 +2146,7 @@
     border-radius:
         999px;
 
-    font-size:
-        5px;
+    font-size: 14px;
 
     font-weight:
         700;
@@ -2211,15 +2247,13 @@
     color:
         #69C7E8;
 
-    font-size:
-        18px;
+    font-size: 19px;
 }
 
 
 .empty-state span {
 
-    font-size:
-        7px;
+    font-size: 12px;
 }
 
 
@@ -2288,8 +2322,7 @@
     color:
         #69DDF2;
 
-    font-size:
-        10px;
+    font-size: 14px;
 }
 
 
@@ -2307,8 +2340,7 @@
     color:
         #69F0AE;
 
-    font-size:
-        5px;
+    font-size: 12px;
 
     font-weight:
         700;
@@ -2327,8 +2359,7 @@
     color:
         #FFFFFF;
 
-    font-size:
-        9px;
+    font-size: 13px;
 
     font-weight:
         700;
@@ -2346,8 +2377,7 @@
     color:
         #72969E;
 
-    font-size:
-        6px;
+    font-size: 12px;
 
     line-height:
         1.4;
@@ -2377,14 +2407,13 @@
     color:
         #72969E;
 
-    font-size:
-        5px;
+    font-size: 12px;
 }
 
 
 .program-details i {
     color: #69DDF2;
-    font-size: 7px;
+    font-size: 12px;
 }
 
 
@@ -2398,7 +2427,7 @@
     background: #0C9096;
     color: #FFFFFF;
     text-decoration: none;
-    font-size: 6px;
+    font-size: 14px;
     font-weight: 700;
     transition: .13s ease;
     margin-top: 4px;
@@ -2408,6 +2437,186 @@
     background: #0A7D82;
     color: #FFFFFF;
     text-decoration: none;
+}
+
+
+/* =========================================================
+   REGISTRATION CONFIRMATION + PROFILE ONBOARDING
+   ========================================================= */
+
+.dashboard-alert {
+
+    margin-top: 8px;
+
+    padding: 9px 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border-radius: 9px;
+
+    border:
+        1px solid
+        rgba(105,240,174,.16);
+
+    background:
+        rgba(43,166,126,.12);
+
+    color: #BFF3DA;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+.dashboard-alert i {
+    color: #69F0AE;
+}
+
+
+.onboarding-banner {
+
+    margin-top: 8px;
+
+    padding: 10px 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        rgba(105,199,232,.18);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12,144,150,.22),
+            rgba(3,23,22,.9)
+        );
+
+    box-shadow:
+        0 6px 16px
+        rgba(0,0,0,.10);
+}
+
+
+.onboarding-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    flex: 0 0 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background:
+        rgba(105,199,232,.09);
+
+    border:
+        1px solid
+        rgba(105,199,232,.14);
+
+    color: #69DDF2;
+
+    font-size: 15px;
+}
+
+
+.onboarding-content {
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+.onboarding-content strong {
+
+    display: block;
+
+    color: #FFFFFF;
+
+    font-size: 13px;
+}
+
+
+.onboarding-content span {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color: #9FC6CC;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+
+.onboarding-button {
+
+    min-height: 30px;
+
+    padding: 0 11px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    flex-shrink: 0;
+
+    border-radius: 7px;
+
+    background: #0C9096;
+
+    border: 1px solid #0C9096;
+
+    color: #FFFFFF;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: .16s ease;
+}
+
+
+.onboarding-button:hover {
+
+    background: #0A7D82;
+
+    border-color: #0A7D82;
+
+    color: #FFFFFF;
+
+    text-decoration: none;
+
+    transform: translateY(-1px);
 }
 
 
@@ -2474,6 +2683,16 @@
     .panel-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+
+    .onboarding-banner {
+        align-items: flex-start;
+    }
+
+
+    .onboarding-button {
+        flex: 1 1 100%;
     }
 }
 

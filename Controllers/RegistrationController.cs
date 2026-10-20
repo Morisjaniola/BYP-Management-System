@@ -14,13 +14,16 @@ namespace BYPManagementSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<RegistrationController> _logger;
 
         public RegistrationController(
             ApplicationDbContext context,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            ILogger<RegistrationController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _logger = logger;
         }
 
 
@@ -876,6 +879,8 @@ namespace BYPManagementSystem.Controllers
             // Only when a real status change occurred.
             // ------------------------------------------------------
 
+            var statusNotificationFailed = false;
+
             if (previousStatus != status)
             {
                 var statusProgramName =
@@ -931,17 +936,30 @@ namespace BYPManagementSystem.Controllers
                     {
                         await _context.SaveChangesAsync();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         // A notification problem must not
-                        // fail the staff status update.
+                        // fail the staff status update - but
+                        // it must never be silent either.
+                        statusNotificationFailed = true;
+
+                        _logger.LogWarning(
+                            ex,
+                            "Registration {RegistrationId} changed to {Status} but notification persistence failed.",
+                            registration.Id,
+                            status);
                     }
                 }
             }
 
 
             TempData["Success"] =
-                $"Registration status changed to {status}.";
+                $"Registration status changed to {status}."
+                + (statusNotificationFailed
+                    ? " The participant could not be notified"
+                      + " automatically - please inform them"
+                      + " manually."
+                    : string.Empty);
 
 
             return RedirectToAction(

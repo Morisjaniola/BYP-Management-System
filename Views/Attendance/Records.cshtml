@@ -509,11 +509,19 @@
                             </th>
 
                             <th>
-                                Time In
+                                Morning In
                             </th>
 
                             <th>
-                                Time Out
+                                Morning Out
+                            </th>
+
+                            <th>
+                                Afternoon In
+                            </th>
+
+                            <th>
+                                Afternoon Out
                             </th>
 
                             <th>
@@ -675,7 +683,7 @@
                                     {
                                         <div class="recorded-cell">
 
-                                            @AttendanceSchedule.ToManila(record.TimeInAt.Value).ToString("hh:mm tt")
+                                            @AttendanceSchedule.ToAppTime(record.TimeInAt.Value).ToString("hh:mm tt")
 
                                             <span>
                                                 Approved submission
@@ -693,7 +701,7 @@
                                 </td>
 
 
-                                <!-- TIME OUT -->
+                                <!-- MORNING TIME OUT -->
 
                                 <td>
 
@@ -701,7 +709,59 @@
                                     {
                                         <div class="recorded-cell">
 
-                                            @AttendanceSchedule.ToManila(record.TimeOutAt.Value).ToString("hh:mm tt")
+                                            @AttendanceSchedule.ToAppTime(record.TimeOutAt.Value).ToString("hh:mm tt")
+
+                                            <span>
+                                                Approved submission
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="no-notes">
+                                            &mdash;
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- AFTERNOON TIME IN -->
+
+                                <td>
+
+                                    @if (record.AfternoonInAt.HasValue)
+                                    {
+                                        <div class="recorded-cell">
+
+                                            @AttendanceSchedule.ToAppTime(record.AfternoonInAt.Value).ToString("hh:mm tt")
+
+                                            <span>
+                                                Approved submission
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="no-notes">
+                                            &mdash;
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- AFTERNOON TIME OUT -->
+
+                                <td>
+
+                                    @if (record.AfternoonOutAt.HasValue)
+                                    {
+                                        <div class="recorded-cell">
+
+                                            @AttendanceSchedule.ToAppTime(record.AfternoonOutAt.Value).ToString("hh:mm tt")
 
                                             <span>
                                                 Approved submission
@@ -748,11 +808,11 @@
 
                                     <div class="recorded-cell">
 
-                                        @AttendanceSchedule.ToManila(record.RecordedAt).ToString("MMM dd, yyyy")
+                                        @AttendanceSchedule.ToAppTime(record.RecordedAt).ToString("MMM dd, yyyy")
 
                                         <span>
 
-                                            @AttendanceSchedule.ToManila(record.RecordedAt).ToString("h:mm tt")
+                                            @AttendanceSchedule.ToAppTime(record.RecordedAt).ToString("h:mm tt")
 
                                         </span>
 
@@ -986,7 +1046,7 @@
         gap: 5px;
         margin-bottom: 9px;
         color: #64748b;
-        font-size: .59rem;
+        font-size: 0.75rem;
         font-weight: 700;
         text-decoration: none;
     }
@@ -1001,7 +1061,7 @@
     .panel-eyebrow {
         display: block;
         color: #0d6efd;
-        font-size: .56rem;
+        font-size: 0.75rem;
         font-weight: 850;
         letter-spacing: .1em;
     }
@@ -1019,7 +1079,7 @@
     .page-header p {
         margin: 0;
         color: #64748b;
-        font-size: .67rem;
+        font-size: 0.75rem;
     }
 
 
@@ -1038,7 +1098,7 @@
         justify-content: center;
         gap: 5px;
         border-radius: 7px;
-        font-size: .54rem;
+        font-size: 0.75rem;
         font-weight: 750;
         text-decoration: none;
     }
@@ -1105,7 +1165,7 @@
         border-radius: 50%;
         background: #ffffff;
         color: #0d6efd;
-        font-size: .62rem;
+        font-size: 0.75rem;
         font-weight: 850;
         box-shadow: 0 3px 9px rgba(15, 23, 42, .04);
     }
@@ -1119,7 +1179,7 @@
     .context-eyebrow {
         display: block;
         color: #0d6efd;
-        font-size: .48rem;
+        font-size: 0.75rem;
         font-weight: 850;
         letter-spacing: .08em;
     }
@@ -1150,7 +1210,7 @@
             align-items: center;
             gap: 4px;
             color: #64748b;
-            font-size: .49rem;
+            font-size: 0.75rem;
         }
 
 
@@ -1176,7 +1236,7 @@
             margin: 4px 0 6px;
             overflow: hidden;
             color: #475569;
-            font-size: .72rem;
+            font-size: 0.8rem;
             font-weight: 800;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -1216,7 +1276,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 9px;
-        font-size: .78rem;
+        font-size: 0.8rem;
     }
 
 
@@ -1252,7 +1312,7 @@
         .summary-content span {
             display: block;
             color: #64748b;
-            font-size: .52rem;
+            font-size: 0.75rem;
             font-weight: 700;
         }
 
@@ -1270,7 +1330,7 @@
             display: block;
             margin-top: 4px;
             color: #94a3b8;
-            font-size: .46rem;
+            font-size: 0.75rem;
         }
 
 
@@ -1295,7 +1355,7 @@
         .filter-heading span {
             display: block;
             color: #0d6efd;
-            font-size: .51rem;
+            font-size: 0.75rem;
             font-weight: 850;
             letter-spacing: .08em;
         }
@@ -1304,7 +1364,7 @@
         .filter-heading h2 {
             margin: 4px 0 0;
             color: #475569;
-            font-size: .75rem;
+            font-size: 0.8rem;
             font-weight: 800;
         }
 
@@ -1321,7 +1381,7 @@
         display: block;
         margin-bottom: 5px;
         color: #526174;
-        font-size: .52rem;
+        font-size: 0.75rem;
         font-weight: 750;
     }
 
@@ -1336,7 +1396,7 @@
             left: 10px;
             top: 50%;
             color: #94a3b8;
-            font-size: .61rem;
+            font-size: 0.75rem;
             transform: translateY(-50%);
         }
 
@@ -1351,7 +1411,7 @@
         background: #ffffff;
         color: #526174;
         font-family: inherit;
-        font-size: .55rem;
+        font-size: 0.75rem;
     }
 
 
@@ -1393,7 +1453,7 @@
         gap: 4px;
         border-radius: 7px;
         font-family: inherit;
-        font-size: .53rem;
+        font-size: 0.75rem;
         font-weight: 750;
         text-decoration: none;
         cursor: pointer;
@@ -1458,7 +1518,7 @@
         .panel-header p {
             margin: 0;
             color: #94a3b8;
-            font-size: .56rem;
+            font-size: 0.75rem;
         }
 
 
@@ -1472,7 +1532,7 @@
         border-radius: 7px;
         background: #f8fafc;
         color: #64748b;
-        font-size: .51rem;
+        font-size: 0.75rem;
         font-weight: 700;
         white-space: nowrap;
     }
@@ -1514,7 +1574,7 @@
             border-bottom: 1px solid #e5eaf0;
             background: #f8fafc;
             color: #64748b;
-            font-size: .48rem;
+            font-size: 0.75rem;
             font-weight: 800;
             letter-spacing: .03em;
             text-align: left;
@@ -1526,7 +1586,7 @@
             padding: 11px;
             border-bottom: 1px solid #eef1f4;
             color: #526174;
-            font-size: .52rem;
+            font-size: 0.75rem;
             vertical-align: middle;
         }
 
@@ -1568,14 +1628,14 @@
         border-radius: 7px;
         background: #eff6ff;
         color: #0d6efd;
-        font-size: .58rem;
+        font-size: 0.75rem;
     }
 
 
     .date-cell strong {
         display: block;
         color: #475569;
-        font-size: .54rem;
+        font-size: 0.75rem;
         font-weight: 750;
     }
 
@@ -1584,7 +1644,7 @@
         display: block;
         margin-top: 2px;
         color: #a0a9b5;
-        font-size: .44rem;
+        font-size: 0.75rem;
     }
 
 
@@ -1597,7 +1657,7 @@
         align-items: center;
         gap: 5px;
         color: #526174;
-        font-size: .52rem;
+        font-size: 0.75rem;
         font-weight: 700;
     }
 
@@ -1618,7 +1678,7 @@
         align-items: center;
         gap: 4px;
         border-radius: 999px;
-        font-size: .46rem;
+        font-size: 0.75rem;
         font-weight: 750;
         white-space: nowrap;
     }
@@ -1662,7 +1722,7 @@
         max-width: 270px;
         overflow: hidden;
         color: #64748b;
-        font-size: .5rem;
+        font-size: 0.75rem;
         line-height: 1.45;
     }
 
@@ -1678,7 +1738,7 @@
 
     .recorded-cell {
         color: #64748b;
-        font-size: .5rem;
+        font-size: 0.75rem;
     }
 
 
@@ -1686,7 +1746,7 @@
             display: block;
             margin-top: 2px;
             color: #a0a9b5;
-            font-size: .44rem;
+            font-size: 0.75rem;
         }
 
 
@@ -1695,7 +1755,7 @@
         ========================================================== */
 
     .edit-button {
-        min-height: 28px;
+        min-height: 30px;
         padding: 0 8px;
         display: inline-flex;
         align-items: center;
@@ -1705,7 +1765,7 @@
         border-radius: 6px;
         background: #eff6ff;
         color: #2563eb;
-        font-size: .49rem;
+        font-size: 0.75rem;
         font-weight: 750;
         text-decoration: none;
     }
@@ -1748,7 +1808,7 @@
     .empty-state h3 {
         margin: 0;
         color: #475569;
-        font-size: .77rem;
+        font-size: 0.8rem;
         font-weight: 800;
     }
 
@@ -1757,7 +1817,7 @@
         max-width: 400px;
         margin: 5px 0 13px;
         color: #94a3b8;
-        font-size: .57rem;
+        font-size: 0.75rem;
         line-height: 1.55;
     }
 
@@ -1771,7 +1831,7 @@
         border-radius: 7px;
         background: #0d6efd;
         color: #ffffff;
-        font-size: .54rem;
+        font-size: 0.75rem;
         font-weight: 750;
         text-decoration: none;
     }
@@ -1803,7 +1863,7 @@
 
         .legend-title span {
             color: #0d6efd;
-            font-size: .5rem;
+            font-size: 0.75rem;
             font-weight: 850;
             letter-spacing: .08em;
         }
@@ -1855,14 +1915,14 @@
 
     .legend-item strong {
         color: #526174;
-        font-size: .51rem;
+        font-size: 0.75rem;
         font-weight: 800;
     }
 
 
     .legend-item > span:last-child {
         color: #94a3b8;
-        font-size: .45rem;
+        font-size: 0.75rem;
     }
 
 
@@ -1887,7 +1947,7 @@
         justify-content: center;
         gap: 5px;
         border-radius: 8px;
-        font-size: .55rem;
+        font-size: 0.75rem;
         font-weight: 750;
         text-decoration: none;
     }

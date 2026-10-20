@@ -2,6 +2,7 @@ using System.Security.Claims;
 using BYPManagementSystem.Data;
 using BYPManagementSystem.Models;
 using BYPManagementSystem.Services;
+using BYPManagementSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -54,19 +55,55 @@ namespace BYPManagementSystem.Controllers
                     );
 
 
+            // --------------------------------------------------
+            // SCHEDULE ELIGIBILITY (APPLICATION TIME ZONE)
+            // Per program: is it actually scheduled for today?
+            // Admin/Staff still see every program (history and
+            // management stay reachable), but the list now
+            // shows which ones accept attendance today.
+            // --------------------------------------------------
+
+            var appToday =
+                AttendanceSchedule.NowApp().Date;
+
+            ViewBag.AppToday =
+                appToday;
+
+            ViewBag.ScheduledTodayProgramIds =
+                programs
+                    .Where(p =>
+                        string.Equals(
+                            p.Status,
+                            "Active",
+                            StringComparison
+                                .OrdinalIgnoreCase) &&
+                        AttendanceSchedule.IsScheduledOn(
+                            p,
+                            appToday))
+                    .Select(p => p.Id)
+                    .ToHashSet();
+
+
             return View(programs);
         }
 
 
         // ==========================================================
-        // SELECT PROGRAM
-        // SHOW APPROVED YOUTH PARTICIPANTS
+        // VIEW PARTICIPANTS
+        // MAIN TABLE: APPROVED PARTICIPANTS OF THE SELECTED PROGRAM
+        // WITH THE PER-ACTION ATTENDANCE STATUS FOR ONE DATE
+        // (#, PARTICIPANT NAME, MORNING IN, MORNING OUT, AFTERNOON
+        //  IN, AFTERNOON OUT, STATUS, ACTION)
         // ==========================================================
 
         [Authorize(Roles = "Admin,Staff")]
         [HttpGet]
         public async Task<IActionResult> Participants(
-            int id)
+            int id,
+            string? search,
+            string? status,
+            DateTime? attendanceDate,
+            int page = 1)
         {
             var program =
                 await _context.YouthPrograms
@@ -81,7 +118,16 @@ namespace BYPManagementSystem.Controllers
             }
 
 
-            var participants =
+            var nowApp = AttendanceSchedule.NowApp();
+
+            var date =
+                (attendanceDate ?? nowApp.Date).Date;
+
+
+            // EVERY approved registration is listed, including
+            // participants who never submitted a photo.
+
+            var registrations =
                 await _context.ProgramRegistrations
                     .AsNoTracking()
                     .Include(r => r.YouthParticipant)
@@ -100,10 +146,291 @@ namespace BYPManagementSystem.Controllers
                     .ToListAsync();
 
 
+            var registrationIds =
+                registrations
+                    .Select(r => r.Id)
+                    .ToList();
+
+
+            // Records and submissions for the selected date only.
+
+            var records =
+                registrationIds.Count == 0
+                    ? new List<AttendanceRecord>()
+                    : await _context.AttendanceRecords
+                        .AsNoTracking()
+                        .Where(x =>
+                            registrationIds.Contains(
+                                x.RegistrationId) &&
+                            x.AttendanceDate >= date &&
+                            x.AttendanceDate <
+                                date.AddDays(1))
+                        .ToListAsync();
+
+            var submissions =
+                registrationIds.Count == 0
+                    ? new List<AttendancePhotoSubmission>()
+                    : await _context.AttendancePhotoSubmissions
+                        .AsNoTracking()
+                        .Where(s =>
+                            registrationIds.Contains(
+                                s.RegistrationId) &&
+                            s.AttendanceDate >= date &&
+                            s.AttendanceDate <
+                                date.AddDays(1))
+                        .ToListAsync();
+
+            var recordByRegistration =
+                records
+                    .GroupBy(x => x.RegistrationId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.First());
+
+            var submissionsByRegistration =
+                submissions
+                    .GroupBy(s => s.RegistrationId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.ToList());
+
+
+            var rows =
+                new List<ParticipantAttendanceRowViewModel>();
+
+            foreach (var registration in registrations)
+            {
+                recordByRegistration.TryGetValue(
+                    registration.Id,
+                    out var dayRecord);
+
+                submissionsByRegistration.TryGetValue(
+                    registration.Id,
+                    out var daySubs);
+
+                var evaluation =
+                    AttendanceStatusCalculator.Evaluate(
+                        program,
+                        dayRecord,
+                        daySubs,
+                        date,
+                        nowApp);
+
+                rows.Add(
+                    new ParticipantAttendanceRowViewModel
+                    {
+                        RegistrationId = registration.Id,
+
+                        YouthParticipantId =
+                            registration.YouthParticipantId ?? 0,
+
+                        FullName =
+                            registration.YouthParticipant
+                                ?.FullName ??
+                            "Unknown Participant",
+
+                        Barangay =
+                            registration.YouthParticipant
+                                ?.Barangay,
+
+                        RegisteredAt = registration.RegisteredAt,
+
+                        MorningIn =
+                            ToCell(evaluation.MorningIn),
+
+                        MorningOut =
+                            ToCell(evaluation.MorningOut),
+
+                        AfternoonIn =
+                            ToCell(evaluation.AfternoonIn),
+
+                        AfternoonOut =
+                            ToCell(evaluation.AfternoonOut),
+
+                        StatusLabel =
+                            evaluation.OverallStatus,
+
+                        StatusCss =
+                            StatusCssFor(
+                                evaluation.OverallStatus)
+                    });
+            }
+
+
+            // STATUS FILTER + counts per computed status.
+
+            var statusFilter =
+                string.IsNullOrWhiteSpace(status)
+                    ? "All"
+                    : status.Trim();
+
+            var statusCounts =
+                rows
+                    .GroupBy(r => r.StatusLabel)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Count());
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim();
+
+                rows =
+                    rows
+                        .Where(r =>
+                            r.FullName.Contains(
+                                term,
+                                System.StringComparison.OrdinalIgnoreCase) ||
+                            (r.Barangay != null &&
+                             r.Barangay.Contains(
+                                 term,
+                                 System.StringComparison.OrdinalIgnoreCase)))
+                        .ToList();
+            }
+
+            if (statusFilter != "All")
+            {
+                rows =
+                    rows
+                        .Where(r =>
+                            r.StatusLabel == statusFilter)
+                        .ToList();
+            }
+
+
+            // PAGINATION
+
+            const int pageSize = 15;
+
+            var totalCount = rows.Count;
+
+            var totalPages = Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    totalCount / (double)pageSize));
+
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            var pagedRows =
+                rows
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+            for (var i = 0; i < pagedRows.Count; i++)
+            {
+                pagedRows[i].RowNumber =
+                    (page - 1) * pageSize + i + 1;
+            }
+
+
+            // Status filter options in the workflow priority
+            // order, each with its live count.
+
+            var statusOptions =
+                new List<(string Value, string Label, int Count)>();
+
+            var coreStatuses = new[]
+            {
+                AttendanceStatusCalculator.PendingReview,
+                AttendanceStatusCalculator.Present,
+                AttendanceStatusCalculator.Incomplete,
+                AttendanceStatusCalculator.Rejected,
+                AttendanceStatusCalculator.Absent,
+                AttendanceStatusCalculator.NotYetDue
+            };
+
+            foreach (var core in coreStatuses)
+            {
+                statusCounts.TryGetValue(core, out var coreCount);
+
+                statusOptions.Add(
+                    (core, core, coreCount));
+            }
+
+            // Legacy/manual statuses (Late, Excused, ...) appear
+            // only when such rows actually exist.
+
+            foreach (var extra in statusCounts
+                .Keys
+                .Where(k => !coreStatuses.Contains(k))
+                .OrderBy(k => k))
+            {
+                statusOptions.Add(
+                    (extra, extra, statusCounts[extra]));
+            }
+
+
             ViewBag.Program = program;
+            ViewBag.Search = search;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.StatusOptions = statusOptions;
+            ViewBag.AttendanceDate = date;
+            ViewBag.AppToday = nowApp.Date;
+            ViewBag.Page = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalCount;
 
 
-            return View(participants);
+            return View(pagedRows);
+        }
+
+
+        private static AttendanceActionCellViewModel ToCell(
+            AttendanceStatusCalculator.ActionState state)
+        {
+            return new AttendanceActionCellViewModel
+            {
+                Kind = state.Kind,
+
+                TimeDisplay = state.ApprovedTimeApp.HasValue
+                    ? state.ApprovedTimeApp.Value
+                        .ToString("hh:mm tt")
+                    : ""
+            };
+        }
+
+
+        private static string StatusCssFor(string status)
+        {
+            switch (status)
+            {
+                case AttendanceStatusCalculator.Present:
+                case "Complete":
+                    return "st-present";
+
+                case AttendanceStatusCalculator.PendingReview:
+                    return "st-pending";
+
+                case AttendanceStatusCalculator.Incomplete:
+                    return "st-incomplete";
+
+                case AttendanceStatusCalculator.Rejected:
+                    return "st-rejected";
+
+                case AttendanceStatusCalculator.Absent:
+                    return "st-absent";
+
+                case AttendanceStatusCalculator.NotYetDue:
+                    return "st-notyetdue";
+
+                case "Late":
+                    return "st-late";
+
+                case "Excused":
+                    return "st-excused";
+
+                default:
+                    return "st-other";
+            }
         }
 
 
@@ -501,6 +828,53 @@ namespace BYPManagementSystem.Controllers
 
 
                 return View(model);
+            }
+
+
+            // ------------------------------------------------------
+            // PROGRAM STATUS + SCHEDULE (SERVER-SIDE)
+            //
+            // Manual recording follows the same policy as photo
+            // submissions: the program must still be Active, and
+            // the chosen attendance date must fall inside the
+            // program's structured schedule (application zone).
+            // Inactive/completed programs and out-of-schedule
+            // dates are rejected before anything is written.
+            // ------------------------------------------------------
+
+            var recordProgram =
+                registration.Program;
+
+
+            if (recordProgram != null &&
+                !string.Equals(
+                    recordProgram.Status,
+                    "Active",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(
+                    nameof(model.AttendanceDate),
+                    "The program is "
+                    + recordProgram.Status
+                    + ", so no new attendance can be recorded for it."
+                );
+            }
+
+
+            if (recordProgram != null &&
+                model.AttendanceDate != default &&
+                AttendanceSchedule.IsScheduledOn(
+                    recordProgram,
+                    model.AttendanceDate.Date) ==
+                        false)
+            {
+                ModelState.AddModelError(
+                    nameof(model.AttendanceDate),
+                    "This program is not scheduled on "
+                    + model.AttendanceDate.ToString(
+                        "MMM dd, yyyy")
+                    + " (" + AttendanceSchedule.ZoneLabel + "), so attendance cannot be recorded for that date."
+                );
             }
 
 
@@ -1144,11 +1518,11 @@ namespace BYPManagementSystem.Controllers
                     1);
 
 
-            // Philippine "now" so the view can show which
+            // Application-zone "now" so the view can show which
             // attendance windows are currently open.
 
-            ViewBag.NowManila =
-                AttendanceSchedule.NowManila();
+            ViewBag.NowApp =
+                AttendanceSchedule.NowApp();
 
 
             return View(records);
@@ -1267,10 +1641,6 @@ namespace BYPManagementSystem.Controllers
                 AttendanceSchedule.NormalizeAction(
                     action);
 
-            var isTimeOut =
-                AttendanceSchedule.IsTimeOutAction(
-                    attendanceAction);
-
 
             var program =
                 registration.Program;
@@ -1288,7 +1658,7 @@ namespace BYPManagementSystem.Controllers
 
 
             var manilaNow =
-                AttendanceSchedule.NowManila();
+                AttendanceSchedule.NowApp();
 
             var attendanceDate =
                 manilaNow.Date;
@@ -1340,7 +1710,7 @@ namespace BYPManagementSystem.Controllers
                 TempData["Error"] =
                     "This program is not scheduled for "
                     + attendanceDate.ToString("MMM dd, yyyy")
-                    + " (Philippine time), so attendance cannot be submitted today.";
+                    + " (" + AttendanceSchedule.ZoneLabel + "), so attendance cannot be submitted today.";
 
                 return RedirectToAction(
                     nameof(MyAttendance)
@@ -1365,7 +1735,7 @@ namespace BYPManagementSystem.Controllers
                     + AttendanceSchedule.FormatTime(windowStart)
                     + " and "
                     + AttendanceSchedule.FormatTime(windowEnd)
-                    + " (Philippine time). It is currently "
+                    + " (" + AttendanceSchedule.ZoneLabel + "). It is currently "
                     + AttendanceSchedule.FormatTime(nowTime)
                     + ".";
 
@@ -1376,58 +1746,118 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
-            // VALID SEQUENCE
-            // A Time Out requires an approved Time In for the same
-            // day, and an approved Time In is never submitted
-            // twice.
+            // VALID SEQUENCE (FOUR ACTIONS)
+            // A Time Out requires its own session's Time In to be
+            // approved first: Morning Out needs Morning In, and
+            // Afternoon Out needs Afternoon In. A Time In is never
+            // submitted twice, whether morning or afternoon.
             // ------------------------------------------------------
 
-            var timeInRecorded =
+            var sessionInAction =
+                AttendanceSchedule.SessionInFor(
+                    attendanceAction);
+
+            var existingRecord =
                 await _context.AttendanceRecords
-                    .AnyAsync(a =>
+                    .FirstOrDefaultAsync(a =>
                         a.RegistrationId ==
                             registration.Id &&
                         a.AttendanceDate ==
-                            attendanceDate &&
-                        a.TimeInAt != null
+                            attendanceDate
                     );
 
 
-            if (isTimeOut)
+            var sessionInRecorded =
+                existingRecord != null &&
+                AttendanceSchedule.RecordedTimeFor(
+                    existingRecord,
+                    sessionInAction).HasValue;
+
+
+            var isMorningSession =
+                AttendanceSchedule.IsMorningAction(
+                    sessionInAction);
+
+
+            // Canonical rows store the new action values; legacy
+            // rows store the old single-session values ("TimeIn"),
+            // which map to the morning session.
+
+            var approvedSessionIn =
+                sessionInRecorded ||
+                await _context.AttendancePhotoSubmissions
+                    .AnyAsync(s =>
+                        s.RegistrationId ==
+                            registration.Id &&
+                        s.AttendanceDate ==
+                            attendanceDate &&
+                        s.Status ==
+                            "Approved" &&
+                        (isMorningSession
+                            ? (s.Action ==
+                                sessionInAction ||
+                                s.Action ==
+                                    "TimeIn")
+                            : s.Action ==
+                                sessionInAction)
+                    );
+
+
+            if (AttendanceSchedule.IsTimeOutAction(
+                    attendanceAction))
             {
-                var approvedTimeIn =
-                    timeInRecorded ||
-                    await _context.AttendancePhotoSubmissions
-                        .AnyAsync(s =>
-                            s.RegistrationId ==
-                                registration.Id &&
-                            s.AttendanceDate ==
-                                attendanceDate &&
-                            s.Action ==
-                                "TimeIn" &&
-                            s.Status ==
-                                "Approved"
-                        );
-
-
-                if (!approvedTimeIn)
+                if (!approvedSessionIn)
                 {
                     TempData["Error"] =
-                        "A Time Out can only be submitted after your Time In has been approved for the same day.";
+                        "A "
+                        + AttendanceSchedule.ActionLabel(attendanceAction)
+                        + " can only be submitted after your "
+                        + AttendanceSchedule.ActionLabel(sessionInAction)
+                        + " has been approved for the same day.";
+
+                    return RedirectToAction(
+                        nameof(MyAttendance)
+                    );
+                }
+
+
+                var outAlreadyRecorded =
+                    existingRecord != null &&
+                    AttendanceSchedule.RecordedTimeFor(
+                        existingRecord,
+                        attendanceAction).HasValue;
+
+                if (outAlreadyRecorded)
+                {
+                    TempData["Error"] =
+                        "Your "
+                        + AttendanceSchedule.ActionLabel(attendanceAction)
+                        + " has already been recorded for today.";
 
                     return RedirectToAction(
                         nameof(MyAttendance)
                     );
                 }
             }
-            else if (timeInRecorded)
+            else
             {
-                TempData["Error"] =
-                    "Your Time In has already been recorded for today.";
+                var inAlreadyRecorded =
+                    existingRecord != null &&
+                    AttendanceSchedule.RecordedTimeFor(
+                        existingRecord,
+                        attendanceAction).HasValue;
 
-                return RedirectToAction(
-                    nameof(MyAttendance)
-                );
+                if (inAlreadyRecorded)
+                {
+                    TempData["Error"] =
+                        "Your "
+                        + AttendanceSchedule.ActionLabel(attendanceAction)
+                        + " has already been recorded for today.";
+
+                    return RedirectToAction(
+                        nameof(MyAttendance)
+                    );
+                }
             }
 
 
@@ -1950,7 +2380,7 @@ namespace BYPManagementSystem.Controllers
                 TempData["Error"] =
                     "This program is not scheduled for "
                     + attendanceDate.ToString("MMM dd, yyyy")
-                    + " (Philippine time), so attendance was not recorded. The photo remains pending.";
+                    + " (" + AttendanceSchedule.ZoneLabel + "), so attendance was not recorded. The photo remains pending.";
 
                 return RedirectToAction(
                     nameof(PhotoReviews),
@@ -1972,7 +2402,7 @@ namespace BYPManagementSystem.Controllers
 
 
             var submittedManila =
-                AttendanceSchedule.ToManila(
+                AttendanceSchedule.ToAppTime(
                     submission.SubmittedAt);
 
             var submittedTime =
@@ -1999,7 +2429,7 @@ namespace BYPManagementSystem.Controllers
                     + AttendanceSchedule.FormatTime(windowStart)
                     + " \u2013 "
                     + AttendanceSchedule.FormatTime(windowEnd)
-                    + ", Philippine time). Attendance was not recorded.";
+                    + ", " + AttendanceSchedule.ZoneLabel + "). Attendance was not recorded.";
 
                 return RedirectToAction(
                     nameof(PhotoReviews),
@@ -2024,13 +2454,16 @@ namespace BYPManagementSystem.Controllers
                 + DateTime.UtcNow.ToString("MMM dd, yyyy")
                 + "; original submission time "
                 + recordedTimeText
-                + " (Philippine time) recorded.";
+                + " (" + AttendanceSchedule.ZoneLabel + ") recorded.";
 
 
             try
             {
                 // --------------------------------------------------
                 // CREATE OR UPDATE - NEVER DUPLICATE
+                // Any action writes its own session column via the
+                // shared helper, so submission and approval can
+                // never disagree about where a time belongs.
                 // --------------------------------------------------
 
                 var existingRecord =
@@ -2043,17 +2476,74 @@ namespace BYPManagementSystem.Controllers
                         );
 
 
-                if (!isTimeOut)
+                if (AttendanceSchedule.RecordedTimeFor(
+                        existingRecord ?? new AttendanceRecord(),
+                        attendanceAction).HasValue)
+                {
+                    TempData["Error"] =
+                        "A "
+                        + AttendanceSchedule.ActionLabel(attendanceAction)
+                        + " has already been recorded for this date.";
+
+                    return RedirectToAction(
+                        nameof(PhotoReviews),
+                        new
+                        {
+                            status = "Pending"
+                        }
+                    );
+                }
+
+
+                if (isTimeOut)
                 {
                     // ----------------------------------------------
-                    // TIME IN - OPEN THE DAY'S ATTENDANCE
+                    // TIME OUT - REQUIRES ITS SESSION'S TIME IN
+                    // Morning Out needs Morning In; Afternoon Out
+                    // needs Afternoon In.
                     // ----------------------------------------------
 
-                    if (existingRecord != null &&
-                        existingRecord.TimeInAt != null)
+                    var sessionInAction =
+                        AttendanceSchedule.SessionInFor(
+                            attendanceAction);
+
+                    var sessionInRecorded =
+                        existingRecord != null &&
+                        AttendanceSchedule.RecordedTimeFor(
+                            existingRecord,
+                            sessionInAction).HasValue;
+
+                    var isMorningSession =
+                        AttendanceSchedule.IsMorningAction(
+                            sessionInAction);
+
+                    var sessionInApproved =
+                        sessionInRecorded ||
+                        await _context.AttendancePhotoSubmissions
+                            .AnyAsync(s =>
+                                s.RegistrationId ==
+                                    submission.RegistrationId &&
+                                s.AttendanceDate ==
+                                    attendanceDate &&
+                                s.Status ==
+                                    "Approved" &&
+                                (isMorningSession
+                                    ? (s.Action ==
+                                        sessionInAction ||
+                                        s.Action ==
+                                            "TimeIn")
+                                    : s.Action ==
+                                        sessionInAction)
+                            );
+
+                    if (!sessionInApproved)
                     {
                         TempData["Error"] =
-                            "A Time In has already been recorded for this date.";
+                            "A "
+                            + AttendanceSchedule.ActionLabel(attendanceAction)
+                            + " can only be recorded after the approved "
+                            + AttendanceSchedule.ActionLabel(sessionInAction)
+                            + " for the same date.";
 
                         return RedirectToAction(
                             nameof(PhotoReviews),
@@ -2063,97 +2553,49 @@ namespace BYPManagementSystem.Controllers
                             }
                         );
                     }
+                }
 
 
-                    if (existingRecord != null)
-                    {
-                        existingRecord.Status =
-                            "InProgress";
+                if (existingRecord == null)
+                {
+                    existingRecord =
+                        new AttendanceRecord
+                        {
+                            RegistrationId =
+                                submission
+                                    .RegistrationId,
 
-                        existingRecord.TimeInAt =
-                            submission.SubmittedAt;
+                            AttendanceDate =
+                                attendanceDate,
 
-                        existingRecord.Notes =
-                            MergeAttendanceNote(
-                                existingRecord.Notes,
-                                attendanceNote);
-                    }
-                    else
-                    {
-                        _context.AttendanceRecords.Add(
-                            new AttendanceRecord
-                            {
-                                RegistrationId =
-                                    submission
-                                        .RegistrationId,
+                            Notes =
+                                attendanceNote,
 
-                                AttendanceDate =
-                                    attendanceDate,
+                            RecordedAt =
+                                DateTime.UtcNow
+                        };
 
-                                Status =
-                                    "InProgress",
-
-                                TimeInAt =
-                                    submission
-                                        .SubmittedAt,
-
-                                Notes =
-                                    attendanceNote,
-
-                                RecordedAt =
-                                    DateTime.UtcNow
-                            });
-                    }
+                    _context.AttendanceRecords.Add(
+                        existingRecord);
                 }
                 else
                 {
-                    // ----------------------------------------------
-                    // TIME OUT - COMPLETE THE DAY'S ATTENDANCE
-                    // Requires an approved Time In first.
-                    // ----------------------------------------------
-
-                    if (existingRecord == null ||
-                        existingRecord.TimeInAt == null)
-                    {
-                        TempData["Error"] =
-                            "A Time Out can only be recorded after an approved Time In for the same date.";
-
-                        return RedirectToAction(
-                            nameof(PhotoReviews),
-                            new
-                            {
-                                status = "Pending"
-                            }
-                        );
-                    }
-
-
-                    if (existingRecord.TimeOutAt != null)
-                    {
-                        TempData["Error"] =
-                            "A Time Out has already been recorded for this date.";
-
-                        return RedirectToAction(
-                            nameof(PhotoReviews),
-                            new
-                            {
-                                status = "Pending"
-                            }
-                        );
-                    }
-
-
-                    existingRecord.TimeOutAt =
-                        submission.SubmittedAt;
-
-                    existingRecord.Status =
-                        "Present";
-
                     existingRecord.Notes =
                         MergeAttendanceNote(
                             existingRecord.Notes,
                             attendanceNote);
                 }
+
+
+                AttendanceSchedule.SetRecordedTime(
+                    existingRecord,
+                    attendanceAction,
+                    submission.SubmittedAt);
+
+
+                existingRecord.Status =
+                    AttendanceSchedule.DayStatus(
+                        existingRecord);
 
 
                 // --------------------------------------------------
@@ -2183,15 +2625,16 @@ namespace BYPManagementSystem.Controllers
                     program.Name;
 
 
+                var actionLabelText =
+                    AttendanceSchedule.ActionLabel(
+                        attendanceAction);
+
+
                 var approvedNotification =
                     NotificationHelper.ForRegistration(
                         submission.Registration,
-                        isTimeOut
-                            ? "Attendance Time Out Approved"
-                            : "Attendance Time In Approved",
-                        isTimeOut
-                            ? $"Your Time Out photo for \"{programName}\" on {attendanceDate:MMM dd, yyyy} has been approved. Your Time Out was recorded at {recordedTimeText} (Philippine time) and your attendance for this day is complete."
-                            : $"Your Time In photo for \"{programName}\" on {attendanceDate:MMM dd, yyyy} has been approved. Your Time In was recorded at {recordedTimeText} (Philippine time).",
+                        "Attendance " + actionLabelText + " Approved",
+                        $"Your {actionLabelText} photo for \"{programName}\" on {attendanceDate:MMM dd, yyyy} has been approved. Your {actionLabelText} was recorded at {recordedTimeText} ({AttendanceSchedule.ZoneLabel}) with the original submission time.{(attendanceAction == AttendanceSchedule.AfternoonOutAction ? " Your attendance for this day is now complete." : string.Empty)}",
                         "Attendance");
 
 
@@ -2229,13 +2672,11 @@ namespace BYPManagementSystem.Controllers
 
 
             TempData["Success"] =
-                isTimeOut
-                    ? "Photo approved. Time Out recorded at the original submission time "
-                      + recordedTimeText
-                      + " (Philippine time)."
-                    : "Photo approved. Time In recorded at the original submission time "
-                      + recordedTimeText
-                      + " (Philippine time).";
+                "Photo approved. "
+                + AttendanceSchedule.ActionLabel(attendanceAction)
+                + " recorded at the original submission time "
+                + recordedTimeText
+                + " (" + AttendanceSchedule.ZoneLabel + ").";
 
             return RedirectToAction(
                 nameof(PhotoReviews),

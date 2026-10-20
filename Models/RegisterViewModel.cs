@@ -21,9 +21,10 @@ namespace BYPManagementSystem.Models
         [Required(ErrorMessage = "Password is required.")]
         [StringLength(
             100,
-            MinimumLength = 6,
-            ErrorMessage = "Password must be at least 6 characters long."
+            MinimumLength = PasswordPolicyAttribute.MinimumLength,
+            ErrorMessage = "Password must be at least 8 characters long and no more than 100 characters."
         )]
+        [PasswordPolicy]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; } = string.Empty;

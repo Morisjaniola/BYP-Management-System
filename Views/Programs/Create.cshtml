@@ -76,7 +76,7 @@
          VALIDATION
          ========================================================== -->
 
-    <div asp-validation-summary="ModelOnly"
+    <div asp-validation-summary="All"
          class="validation-summary">
     </div>
 
@@ -116,7 +116,7 @@
 
 
             <!-- ==================================================
-                 PROGRAM NAME
+                 ROW 1 - PROGRAM NAME (full width)
                  ================================================== -->
 
             <div class="form-group">
@@ -145,7 +145,8 @@
 
 
             <!-- ==================================================
-                 DESCRIPTION
+                 ROW 2 - DESCRIPTION (full width, character-limit
+                 helper aligned to the right)
                  ================================================== -->
 
             <div class="form-group">
@@ -183,162 +184,77 @@
 
 
             <!-- ==================================================
-                 SCHEDULE
+                 ROW 3 - PROGRAM DATE / START / END TIME
+                 Three-column responsive row on desktop; the
+                 structured schedule the attendance windows are
+                 validated against.
                  ================================================== -->
 
-            <div class="form-group">
+            <div class="form-row form-row-three schedule-picker-row">
 
-                <label asp-for="Schedule">
-                    Schedule
-                    <span>*</span>
-                </label>
-
-                <div class="field-wrapper">
-
-                    <i class="bi bi-clock-fill"></i>
-
-                    <input asp-for="Schedule"
-                           class="form-control"
-                           maxlength="250"
-                           placeholder="Example: Every Saturday, 8:00 AM - 12:00 PM" />
-
-                </div>
-
-                <span asp-validation-for="Schedule"
-                      class="field-error">
-                </span>
-
-            </div>
-
-
-            <!-- ==================================================
-                 SCHEDULE START / END DATE TIME PICKERS
-                 ================================================== -->
-
-            <div class="form-row schedule-picker-row">
-
-                <!-- START -->
+                <!-- PROGRAM DATE -->
 
                 <div class="form-group">
 
-                    <label asp-for="ScheduleStart">
-                        Schedule Start Date &amp; Time
+                    <label for="ProgramDate">
+                        Program Schedule Date
+                        <span>*</span>
+                    </label>
+
+                    <div class="field-wrapper">
+
+                        <i class="bi bi-calendar3"></i>
+
+                        <input type="date"
+                               name="ProgramDate"
+                               id="ProgramDate"
+                               class="form-control"
+                               value="@(ViewBag.ProgramDate as string ?? Model.ScheduleStart?.ToString("yyyy-MM-dd"))" />
+
+                    </div>
+
+                    @Html.ValidationMessage(
+                        "ProgramDate",
+                        new { @class = "field-error" })
+
+                </div>
+
+
+                <!-- PROGRAM START TIME -->
+
+                <div class="form-group">
+
+                    <label for="ScheduleStartTime">
+                        Program Start Time
+                        <span>*</span>
                     </label>
 
                     <div class="field-wrapper">
 
                         <i class="bi bi-alarm"></i>
 
-                        <input asp-for="ScheduleStart"
-                               type="datetime-local"
-                               class="form-control"
-                               id="ScheduleStart"
-                               data-schedule-start="true" />
-
-                    </div>
-
-                    <span class="field-help">
-
-                        <i class="bi bi-info-circle"></i>
-
-                        Optional structured start date and time.
-
-                    </span>
-
-                    <span asp-validation-for="ScheduleStart"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-
-                <!-- END -->
-
-                <div class="form-group">
-
-                    <label asp-for="ScheduleEnd">
-                        Schedule End Date &amp; Time
-                    </label>
-
-                    <div class="field-wrapper">
-
-                        <i class="bi bi-hourglass-split"></i>
-
-                        <input asp-for="ScheduleEnd"
-                               type="datetime-local"
-                               class="form-control"
-                               id="ScheduleEnd"
-                               data-schedule-end="true" />
-
-                    </div>
-
-                    <span class="field-help">
-
-                        <i class="bi bi-info-circle"></i>
-
-                        Optional. Must be after the start date and time.
-
-                    </span>
-
-                    <span asp-validation-for="ScheduleEnd"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- ==================================================
-                 ATTENDANCE WINDOWS
-                 Allowed submission windows in Philippine time.
-                 Defaults: Time In 7:00-8:30 AM, Time Out
-                 10:30-11:30 AM.
-                 ================================================== -->
-
-            <div class="form-row schedule-picker-row">
-
-                <!-- TIME IN START -->
-
-                <div class="form-group">
-
-                    <label for="TimeInStart">
-                        Time In Window Start
-                    </label>
-
-                    <div class="field-wrapper">
-
-                        <i class="bi bi-box-arrow-in-right"></i>
-
                         <input type="time"
-                               name="TimeInStart"
-                               id="TimeInStart"
+                               name="ScheduleStartTime"
+                               id="ScheduleStartTime"
                                class="form-control"
-                               value="@Model.TimeInStart.ToString("HH:mm")" />
+                               value="@(ViewBag.ScheduleStartTime as string ?? Model.ScheduleStart?.ToString("HH:mm"))" />
 
                     </div>
 
-                    <span class="field-help">
-
-                        <i class="bi bi-info-circle"></i>
-
-                        Morning Time In opens (Philippine time).
-
-                    </span>
-
-                    <span asp-validation-for="TimeInStart"
-                          class="field-error">
-                    </span>
+                    @Html.ValidationMessage(
+                        "ScheduleStartTime",
+                        new { @class = "field-error" })
 
                 </div>
 
 
-                <!-- TIME IN END -->
+                <!-- PROGRAM END TIME -->
 
                 <div class="form-group">
 
-                    <label for="TimeInEnd">
-                        Time In Window End
+                    <label for="ScheduleEndTime">
+                        Program End Time
+                        <span>*</span>
                     </label>
 
                     <div class="field-wrapper">
@@ -346,94 +262,16 @@
                         <i class="bi bi-hourglass-split"></i>
 
                         <input type="time"
-                               name="TimeInEnd"
-                               id="TimeInEnd"
+                               name="ScheduleEndTime"
+                               id="ScheduleEndTime"
                                class="form-control"
-                               value="@Model.TimeInEnd.ToString("HH:mm")" />
+                               value="@(ViewBag.ScheduleEndTime as string ?? Model.ScheduleEnd?.ToString("HH:mm"))" />
 
                     </div>
 
-                    <span class="field-help">
-
-                        <i class="bi bi-info-circle"></i>
-
-                        Morning Time In closes (inclusive).
-
-                    </span>
-
-                    <span asp-validation-for="TimeInEnd"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-
-                <!-- TIME OUT START -->
-
-                <div class="form-group">
-
-                    <label for="TimeOutStart">
-                        Time Out Window Start
-                    </label>
-
-                    <div class="field-wrapper">
-
-                        <i class="bi bi-box-arrow-right"></i>
-
-                        <input type="time"
-                               name="TimeOutStart"
-                               id="TimeOutStart"
-                               class="form-control"
-                               value="@Model.TimeOutStart.ToString("HH:mm")" />
-
-                    </div>
-
-                    <span class="field-help">
-
-                        <i class="bi bi-info-circle"></i>
-
-                        Morning Time Out opens (inclusive).
-
-                    </span>
-
-                    <span asp-validation-for="TimeOutStart"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-
-                <!-- TIME OUT END -->
-
-                <div class="form-group">
-
-                    <label for="TimeOutEnd">
-                        Time Out Window End
-                    </label>
-
-                    <div class="field-wrapper">
-
-                        <i class="bi bi-hourglass-bottom"></i>
-
-                        <input type="time"
-                               name="TimeOutEnd"
-                               id="TimeOutEnd"
-                               class="form-control"
-                               value="@Model.TimeOutEnd.ToString("HH:mm")" />
-
-                    </div>
-
-                    <span class="field-help">
-
-                        <i class="bi bi-info-circle"></i>
-
-                        Morning Time Out closes (inclusive).
-
-                    </span>
-
-                    <span asp-validation-for="TimeOutEnd"
-                          class="field-error">
-                    </span>
+                    @Html.ValidationMessage(
+                        "ScheduleEndTime",
+                        new { @class = "field-error" })
 
                 </div>
 
@@ -441,48 +279,453 @@
 
 
             <!-- ==================================================
-                 BARANGAY
+                 ATTENDANCE SCHEDULE
+                 Admin-configurable Morning and Afternoon windows in
+                 the configured application time zone, grouped in a
+                 two-column card grid: Morning In/Out on the first
+                 row, Afternoon In/Out on the second. Defaults apply
+                 to newly created programs only.
                  ================================================== -->
 
-            <div class="form-group barangay-group">
+            <div class="form-subsection">
 
-                <label asp-for="Barangay">
-                    Barangay
-                    <span>*</span>
-                </label>
-
-                <div class="field-wrapper">
-
-                    <i class="bi bi-geo-alt-fill"></i>
-
-                    <input asp-for="Barangay"
-                           class="form-control"
-                           maxlength="100"
-                           placeholder="Enter Barangay" />
-
+                <div class="form-subsection-title">
+                    <i class="bi bi-clock-fill"></i>
+                    <strong>
+                        Attendance Schedule
+                    </strong>
                 </div>
 
                 <span class="field-help">
 
-                    <i class="bi bi-magic"></i>
+                    <i class="bi bi-info-circle"></i>
 
-                    Active youth participants from the same Barangay
-                    can be automatically assigned to this program.
+                    The Admin can configure the Morning and Afternoon
+                    attendance times below. Allowed submission windows
+                    (@AttendanceSchedule.ZoneLabel). These defaults
+                    initialize new programs only - saved values always
+                    win.
 
-                </span>
-
-                <span asp-validation-for="Barangay"
-                      class="field-error">
                 </span>
 
             </div>
 
 
+            <div class="attendance-grid">
+
+                <!-- MORNING TIME IN -->
+
+                <div class="attendance-window-card session-morning">
+
+                    <div class="window-card-header">
+
+                        <div class="window-icon">
+                            <i class="bi bi-sunrise"></i>
+                        </div>
+
+                        <strong class="window-card-title">
+                            Morning Time In
+                        </strong>
+
+                    </div>
+
+                    <div class="window-inputs schedule-picker-row">
+
+                        <div class="form-group">
+
+                            <label for="TimeInStart">
+                                Start Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-box-arrow-in-right"></i>
+
+                                <input type="time"
+                                       name="TimeInStart"
+                                       id="TimeInStart"
+                                       class="form-control"
+                                       value="@Model.TimeInStart.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Morning Time In opens.
+
+                            </span>
+
+                            <span asp-validation-for="TimeInStart"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="TimeInEnd">
+                                End Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-hourglass-split"></i>
+
+                                <input type="time"
+                                       name="TimeInEnd"
+                                       id="TimeInEnd"
+                                       class="form-control"
+                                       value="@Model.TimeInEnd.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Morning Time In closes (inclusive).
+
+                            </span>
+
+                            <span asp-validation-for="TimeInEnd"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <span class="window-example">
+                        <i class="bi bi-info-circle"></i>
+                        Example: 7:00–8:30 AM (Morning)
+                    </span>
+
+                </div>
+
+
+                <!-- MORNING TIME OUT -->
+
+                <div class="attendance-window-card session-morning">
+
+                    <div class="window-card-header">
+
+                        <div class="window-icon">
+                            <i class="bi bi-sunrise"></i>
+                        </div>
+
+                        <strong class="window-card-title">
+                            Morning Time Out
+                        </strong>
+
+                    </div>
+
+                    <div class="window-inputs schedule-picker-row">
+
+                        <div class="form-group">
+
+                            <label for="TimeOutStart">
+                                Start Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-box-arrow-right"></i>
+
+                                <input type="time"
+                                       name="TimeOutStart"
+                                       id="TimeOutStart"
+                                       class="form-control"
+                                       value="@Model.TimeOutStart.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Morning Time Out opens.
+
+                            </span>
+
+                            <span asp-validation-for="TimeOutStart"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="TimeOutEnd">
+                                End Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-hourglass-bottom"></i>
+
+                                <input type="time"
+                                       name="TimeOutEnd"
+                                       id="TimeOutEnd"
+                                       class="form-control"
+                                       value="@Model.TimeOutEnd.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Morning Time Out closes (inclusive).
+
+                            </span>
+
+                            <span asp-validation-for="TimeOutEnd"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <span class="window-example">
+                        <i class="bi bi-info-circle"></i>
+                        Example: 10:30–11:30 AM (Morning)
+                    </span>
+
+                </div>
+
+
+                <!-- AFTERNOON TIME IN -->
+
+                <div class="attendance-window-card session-afternoon">
+
+                    <div class="window-card-header">
+
+                        <div class="window-icon">
+                            <i class="bi bi-sun"></i>
+                        </div>
+
+                        <strong class="window-card-title">
+                            Afternoon Time In
+                        </strong>
+
+                    </div>
+
+                    <div class="window-inputs schedule-picker-row">
+
+                        <div class="form-group">
+
+                            <label for="AfternoonInStart">
+                                Start Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-box-arrow-in-right"></i>
+
+                                <input type="time"
+                                       name="AfternoonInStart"
+                                       id="AfternoonInStart"
+                                       class="form-control"
+                                       value="@Model.AfternoonInStart.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Afternoon Time In opens.
+
+                            </span>
+
+                            <span asp-validation-for="AfternoonInStart"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="AfternoonInEnd">
+                                End Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-hourglass-split"></i>
+
+                                <input type="time"
+                                       name="AfternoonInEnd"
+                                       id="AfternoonInEnd"
+                                       class="form-control"
+                                       value="@Model.AfternoonInEnd.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Afternoon Time In closes (inclusive).
+
+                            </span>
+
+                            <span asp-validation-for="AfternoonInEnd"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <span class="window-example">
+                        <i class="bi bi-info-circle"></i>
+                        Example: 1:00–2:00 PM (Afternoon)
+                    </span>
+
+                </div>
+
+
+                <!-- AFTERNOON TIME OUT -->
+
+                <div class="attendance-window-card session-afternoon">
+
+                    <div class="window-card-header">
+
+                        <div class="window-icon">
+                            <i class="bi bi-sun"></i>
+                        </div>
+
+                        <strong class="window-card-title">
+                            Afternoon Time Out
+                        </strong>
+
+                    </div>
+
+                    <div class="window-inputs schedule-picker-row">
+
+                        <div class="form-group">
+
+                            <label for="AfternoonOutStart">
+                                Start Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-box-arrow-right"></i>
+
+                                <input type="time"
+                                       name="AfternoonOutStart"
+                                       id="AfternoonOutStart"
+                                       class="form-control"
+                                       value="@Model.AfternoonOutStart.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Afternoon Time Out opens.
+
+                            </span>
+
+                            <span asp-validation-for="AfternoonOutStart"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="AfternoonOutEnd">
+                                End Time
+                            </label>
+
+                            <div class="field-wrapper">
+
+                                <i class="bi bi-hourglass-bottom"></i>
+
+                                <input type="time"
+                                       name="AfternoonOutEnd"
+                                       id="AfternoonOutEnd"
+                                       class="form-control"
+                                       value="@Model.AfternoonOutEnd.ToString("HH:mm")" />
+
+                            </div>
+
+                            <span class="field-help">
+
+                                <i class="bi bi-info-circle"></i>
+
+                                Afternoon Time Out closes (inclusive).
+
+                            </span>
+
+                            <span asp-validation-for="AfternoonOutEnd"
+                                  class="field-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <span class="window-example">
+                        <i class="bi bi-info-circle"></i>
+                        Example: 4:00–5:00 PM (Afternoon)
+                    </span>
+
+                </div>
+
+            </div>
+
+
             <!-- ==================================================
-                 CAPACITY / STATUS
+                 BARANGAY / CAPACITY / PROGRAM STATUS
+                 One aligned responsive row: Barangay widest,
+                 Capacity and Status medium.
                  ================================================== -->
 
-            <div class="form-row">
+            <div class="form-row meta-fields-row">
+
+                <!-- BARANGAY -->
+
+                <div class="form-group barangay-group">
+
+                    <label asp-for="Barangay">
+                        Barangay
+                        <span>*</span>
+                    </label>
+
+                    <div class="field-wrapper">
+
+                        <i class="bi bi-geo-alt-fill"></i>
+
+                        <input asp-for="Barangay"
+                               class="form-control"
+                               maxlength="100"
+                               placeholder="Enter Barangay" />
+
+                    </div>
+
+                    <span class="field-help">
+
+                        <i class="bi bi-magic"></i>
+
+                        Active youth participants from the same Barangay
+                        can be automatically assigned to this program.
+
+                    </span>
+
+                    <span asp-validation-for="Barangay"
+                          class="field-error">
+                    </span>
+
+                </div>
+
 
                 <!-- CAPACITY -->
 
@@ -521,7 +764,7 @@
                 </div>
 
 
-                <!-- STATUS -->
+                <!-- PROGRAM STATUS -->
 
                 <div class="form-group">
 
@@ -530,22 +773,28 @@
                         <span>*</span>
                     </label>
 
-                    <select asp-for="Status"
-                            class="form-control">
+                    <div class="field-wrapper">
 
-                        <option value="Active">
-                            Active
-                        </option>
+                        <i class="bi bi-toggle-on"></i>
 
-                        <option value="Inactive">
-                            Inactive
-                        </option>
+                        <select asp-for="Status"
+                                class="form-control">
 
-                    </select>
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
 
                     <span class="field-help">
 
-                        <i class="bi bi-toggle-on"></i>
+                        <i class="bi bi-info-circle"></i>
 
                         Active programs are available for current use.
 
@@ -562,6 +811,8 @@
 
             <!-- ==================================================
                  AUTO ASSIGNMENT PREVIEW
+                 Icon, heading, and flow stages on aligned rows
+                 with clear spacing.
                  ================================================== -->
 
             <div class="assignment-preview">
@@ -578,19 +829,28 @@
                         How automatic assignment works
                     </strong>
 
-                    <p>
+                    <div class="assignment-flow">
 
-                        Program Barangay
+                        <span>
+                            <i class="bi bi-geo-alt-fill"></i>
+                            Program Barangay
+                        </span>
 
-                        <strong>?</strong>
+                        <i class="bi bi-arrow-right"></i>
 
-                        Active Youth with matching Barangay
+                        <span>
+                            <i class="bi bi-people-fill"></i>
+                            Active Youth with matching Barangay
+                        </span>
 
-                        <strong>?</strong>
+                        <i class="bi bi-arrow-right"></i>
 
-                        Program Registration
+                        <span>
+                            <i class="bi bi-journal-check"></i>
+                            Program Registration
+                        </span>
 
-                    </p>
+                    </div>
 
                 </div>
 
@@ -598,7 +858,7 @@
 
 
             <!-- ==================================================
-                 ACTIONS
+                 ACTIONS (bottom-right, above the stepper)
                  ================================================== -->
 
             <div class="form-actions">
@@ -614,7 +874,8 @@
 
 
                 <button type="submit"
-                        class="save-button">
+                        class="save-button"
+                        id="createProgramSubmit">
 
                     <i class="bi bi-check-lg"></i>
 
@@ -710,28 +971,23 @@
 
         if (!form) { return; }
 
-        form.addEventListener('submit', function (event) {
-            var startInput = form.querySelector('[data-schedule-start]');
-            var endInput = form.querySelector('[data-schedule-end]');
+        // Prevent accidental duplicate submission when the "Create
+        // Program" button is clicked (or double-clicked) more than
+        // once. The button is only disabled after the form actually
+        // submits; a rejected validation keeps it clickable.
 
-            if (!startInput || !endInput || !startInput.value || !endInput.value) { return; }
+        form.addEventListener('submit', function () {
+            var submitButton =
+                document.getElementById('createProgramSubmit');
 
-            var start = new Date(startInput.value);
-            var end = new Date(endInput.value);
-
-            if (isNaN(start.getTime()) || isNaN(end.getTime())) { return; }
-
-            if (end <= start) {
-                event.preventDefault();
-
-                endInput.setCustomValidity(
-                    'The schedule end date/time must be after the start date/time.'
-                );
-
-                endInput.reportValidity();
+            if (submitButton &&
+                typeof form.checkValidity === 'function' &&
+                form.checkValidity()) {
+                submitButton.disabled = true;
             }
         });
-    })();
+
+
 </script>
 
 
@@ -747,6 +1003,12 @@
     padding: 12px 18px 18px;
     box-sizing: border-box;
 
+}
+
+/* Consistent box model for every element on this page only. */
+.program-form-page,
+.program-form-page * {
+    box-sizing: border-box;
 }
 
 
@@ -786,7 +1048,6 @@
 
 
 .form-header-icon {
-
     width: 38px;
     height: 38px;
 
@@ -816,7 +1077,7 @@
     display: block;
     margin-bottom: 4px;
     color: #A9D5DE;
-    font-size: 7px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
 }
@@ -825,7 +1086,7 @@
 .form-header h1 {
     margin: 0;
     color: #FFFFFF;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     line-height: 1.1;
 }
@@ -834,7 +1095,7 @@
 .form-header p {
     margin: 3px 0 0;
     color: #C5DDE2;
-    font-size: 8px;
+    font-size: 13px;
     line-height: 1.4;
 }
 
@@ -855,7 +1116,7 @@
     color: #C5DDE2;
 
     text-decoration: none;
-    font-size: 7px;
+    font-size: 14px;
     font-weight: 700;
     white-space: nowrap;
     transition: .16s ease;
@@ -886,7 +1147,7 @@
     border: 1px solid rgba(105,199,232,.14);
 }
 
-.info-box-icon { color: #69DDF2; font-size: 13px; flex-shrink: 0; }
+.info-box-icon { color: #69DDF2; font-size: 14px; flex-shrink: 0; }
 
 .info-box-content {
     min-width: 0;
@@ -896,13 +1157,13 @@
     display: block;
     margin-bottom: 2px;
     color: #FFFFFF;
-    font-size: 8px;
+    font-size: 13px;
 }
 
 .info-box-content p {
     margin: 0;
     color: #769BA3;
-    font-size: 6px;
+    font-size: 12px;
     line-height: 1.4;
 }
 
@@ -918,7 +1179,7 @@
     background: rgba(255,123,138,.10);
     border: 1px solid rgba(255,123,138,.18);
     color: #FF7B8A;
-    font-size: 6px;
+    font-size: 12px;
 }
 .validation-summary:empty { display: none; }
 
@@ -960,13 +1221,13 @@
     background: rgba(105,199,232,.10);
     border: 1px solid rgba(105,199,232,.12);
     color: #69DDF2;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .form-card-header h2 {
     margin: 0 0 1px;
     color: #FFFFFF;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1.1;
 }
@@ -974,7 +1235,7 @@
 .form-card-header p {
     margin: 0;
     color: #769BA3;
-    font-size: 7px;
+    font-size: 12px;
 }
 
 .form-card-body { padding: 10px 12px; }
@@ -988,6 +1249,155 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
+}
+
+/* Program Date / Start / End in one aligned row (3 columns). */
+.form-row.form-row-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Barangay (widest) + Capacity + Status on one aligned row. */
+.form-row.meta-fields-row {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+
+/* =========================================================
+   FORM SUBSECTION HEADING (Attendance Schedule)
+   ========================================================= */
+
+.form-subsection {
+    margin: 4px 0 8px;
+}
+
+.form-subsection-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.form-subsection-title i {
+    color: #69DDF2;
+    font-size: 14px;
+}
+
+.form-subsection-title strong {
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+
+.form-subsection .field-help {
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   ATTENDANCE SCHEDULE - four equal window cards in a
+   two-column grid (Morning In/Out, Afternoon In/Out).
+   Surface + text colors come from the theme layer via the
+   "-card" naming; this block owns geometry and accents.
+   ========================================================= */
+
+.attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.attendance-window-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 12px 10px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Session accent strip along the top edge of each card. */
+.attendance-window-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.session-morning::before {
+    background: linear-gradient(90deg, #69DDF2 0%, rgba(12,144,150,.55) 100%);
+}
+
+.session-afternoon::before {
+    background: linear-gradient(90deg, #FFD166 0%, rgba(255,209,102,.45) 100%);
+}
+
+.attendance-window-card .window-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.window-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+.session-morning .window-icon {
+    background: rgba(105,199,232,.14);
+    border: 1px solid rgba(105,199,232,.24);
+    color: #69DDF2;
+}
+
+.session-afternoon .window-icon {
+    background: rgba(255,209,102,.14);
+    border: 1px solid rgba(255,209,102,.26);
+    color: #FFD166;
+}
+
+.window-card-title {
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Start Time / End Time side by side inside every card. */
+.window-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.window-inputs .form-group {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+/* Example helper aligned below each input row. */
+.window-example {
+    display: block;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid rgba(183,215,229,.10);
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.window-example i {
+    color: #69DDF2;
+    margin-right: 3px;
 }
 
 
@@ -1013,12 +1423,6 @@
     box-shadow: 0 0 0 3px rgba(105,199,232,.15);
 }
 
-.schedule-picker-row input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-.schedule-picker-row input[type="datetime-local"]::-webkit-inner-spin-button {
-    filter: invert(88%) sepia(18%) saturate(1200%) hue-rotate(150deg) brightness(96%) contrast(88%);
-    cursor: pointer;
-}
-
 .form-group {
     margin-bottom: 10px;
 }
@@ -1027,12 +1431,13 @@
     display: block;
     margin-bottom: 4px;
     color: #A9D5DE;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .5px;
 }
 
-.required { color: #FF7B8A; }
+.required,
+.form-group label span { color: #FF7B8A; }
 
 
 /* =========================================================
@@ -1049,7 +1454,7 @@
     color: #69B8CB;
     pointer-events: none;
     z-index: 2;
-    font-size: 10px;
+    font-size: 14px;
 }
 
 .textarea-wrapper > i {
@@ -1067,7 +1472,7 @@
     background: rgba(255,255,255,.055);
     color: #D8EEF2;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 8px;
+    font-size: 15px;
     outline: none;
     transition: border-color .15s ease, box-shadow .15s ease;
 }
@@ -1089,14 +1494,14 @@
     display: block;
     margin-top: 3px;
     color: #FF7B8A;
-    font-size: 6px;
+    font-size: 12px;
 }
 
 .field-help {
     display: block;
     margin-top: 4px;
     color: #72969E;
-    font-size: 6px;
+    font-size: 12px;
     line-height: 1.4;
 }
 .field-help i { color: #69DDF2; margin-right: 3px; }
@@ -1110,7 +1515,7 @@
 .character-limit {
     margin-top: 3px;
     color: #72969E;
-    font-size: 6px;
+    font-size: 12px;
     white-space: nowrap;
 }
 
@@ -1141,24 +1546,44 @@
     border-radius: 7px;
     background: rgba(105,199,232,.10);
     color: #69DDF2;
-    font-size: 12px;
+    font-size: 14px;
 }
 
-.assignment-preview-content { min-width: 0; }
+.assignment-preview-content {
+    flex: 1;
+    min-width: 0;
+}
 
 .assignment-preview-content strong {
     display: block;
     margin-bottom: 2px;
     color: #FFFFFF;
-    font-size: 8px;
+    font-size: 13px;
 }
 
-.assignment-preview-content p {
-    margin: 0;
-    color: #769BA3;
-    font-size: 6px;
-    line-height: 1.4;
+/* Stages stay on one line when there is room and wrap
+   gracefully (never overflow) when there is not. */
+.assignment-flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    row-gap: 4px;
 }
+
+.assignment-flow > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #72969E;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.assignment-flow > span i { color: #69DDF2; }
+
+.assignment-flow > i { color: #628D96; font-size: 12px; }
 
 
 /* =========================================================
@@ -1184,7 +1609,7 @@
     justify-content: center;
     gap: 5px;
     border-radius: 7px;
-    font-size: 7px;
+    font-size: 14px;
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
@@ -1245,7 +1670,7 @@
     align-items: center;
     gap: 6px;
     color: #72969E;
-    font-size: 6px;
+    font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
 }
@@ -1261,7 +1686,7 @@
     border-radius: 50%;
     background: rgba(255,255,255,.07);
     color: #69DDF2;
-    font-size: 7px;
+    font-size: 12px;
     font-weight: 800;
 }
 
@@ -1285,10 +1710,13 @@
 @@media (max-width: 750px) {
     .program-form-page { padding: 8px; }
     .form-header { padding: 12px 15px; }
-    .form-header h1 { font-size: 18px; }
-    .form-header p { font-size: 7px; }
+    .form-header h1 { font-size: 19px; }
+    .form-header p { font-size: 12px; }
     .form-back-button { display: none; }
-    .form-row { grid-template-columns: 1fr; }
+    .form-row,
+    .form-row.form-row-three,
+    .form-row.meta-fields-row,
+    .attendance-grid { grid-template-columns: 1fr; }
     .form-card-header { padding: 9px 10px; }
     .form-card-body { padding: 9px 10px; }
     .form-actions { width: 100%; }
@@ -1303,5 +1731,40 @@ html[data-theme="light"] .schedule-picker-row .form-control {
     color: #10313F;
 }
 
+/* Light Mode accents for the attendance window cards (existing
+   light palette: teal #009FA3 / amber #A15C08). */
+html[data-theme="light"] .session-morning::before {
+    background: linear-gradient(90deg, #009FA3 0%, rgba(0,159,163,.40) 100%);
+}
+
+html[data-theme="light"] .session-afternoon::before {
+    background: linear-gradient(90deg, #A15C08 0%, rgba(161,92,8,.40) 100%);
+}
+
+html[data-theme="light"] .session-morning .window-icon {
+    background: rgba(0,159,163,.10);
+    border-color: rgba(0,159,163,.24);
+    color: #00787C;
+}
+
+html[data-theme="light"] .session-afternoon .window-icon {
+    background: rgba(161,92,8,.10);
+    border-color: rgba(161,92,8,.24);
+    color: #A15C08;
+}
+
+html[data-theme="light"] .window-example {
+    border-top-color: #E3EEEE;
+}
+
+
+@@media (max-width: 480px) {
+    .form-header { padding: 10px 12px; }
+    .form-card-header { padding: 9px 10px; }
+    .form-card-body { padding: 9px 10px; }
+    .attendance-window-card { padding: 11px 10px 9px; }
+    .window-inputs { grid-template-columns: 1fr; }
+    .window-card-header { margin-bottom: 8px; }
+}
 
 </style>

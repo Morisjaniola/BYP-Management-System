@@ -25,9 +25,14 @@ namespace BYPManagementSystem.Models
 
         // ==========================================================
         // SCHEDULE
+        //
+        // Legacy free-text description. The Create/Edit forms no
+        // longer offer an input for it; the controller generates
+        // this text from the structured start/end pickers so
+        // existing displays, searches, and saved records keep
+        // working unchanged.
         // ==========================================================
 
-        [Required]
         [StringLength(250)]
         public string Schedule { get; set; } = string.Empty;
 
@@ -55,36 +60,75 @@ namespace BYPManagementSystem.Models
 
 
         // ==========================================================
-        // ATTENDANCE WINDOWS (MORNING SCHEDULE)
+        // ATTENDANCE WINDOWS (MORNING SESSION)
         //
-        // Allowed submission windows in Philippine time
-        // (Asia/Manila). Defaults follow the barangay morning
-        // schedule: Time In 7:00 AM - 8:30 AM and Time Out
-        // 10:30 AM - 11:30 AM. Configurable per program.
+        // Allowed submission windows in the application time zone
+        // (Asia/Manila by default - see AttendanceTime in
+        // appsettings.json). Defaults follow the barangay default
+        // schedule: Morning Time In 7:00 AM - 8:30 AM and Morning
+        // Time Out 10:30 AM - 11:30 AM. Configurable per program.
+        //
+        // These two windows are the morning session of the
+        // four-window schedule; a legacy program whose rows were
+        // created before the afternoon columns existed keeps its
+        // saved morning times untouched.
         // ==========================================================
 
         [DataType(DataType.Time)]
-        [Display(Name = "Time In Window Start")]
+        [Display(Name = "Morning Time In Start")]
         public TimeOnly TimeInStart { get; set; } =
             new TimeOnly(7, 0);
 
 
         [DataType(DataType.Time)]
-        [Display(Name = "Time In Window End")]
+        [Display(Name = "Morning Time In End")]
         public TimeOnly TimeInEnd { get; set; } =
             new TimeOnly(8, 30);
 
 
         [DataType(DataType.Time)]
-        [Display(Name = "Time Out Window Start")]
+        [Display(Name = "Morning Time Out Start")]
         public TimeOnly TimeOutStart { get; set; } =
             new TimeOnly(10, 30);
 
 
         [DataType(DataType.Time)]
-        [Display(Name = "Time Out Window End")]
+        [Display(Name = "Morning Time Out End")]
         public TimeOnly TimeOutEnd { get; set; } =
             new TimeOnly(11, 30);
+
+
+        // ==========================================================
+        // ATTENDANCE WINDOWS (AFTERNOON SESSION)
+        //
+        // The second half of the four-window attendance
+        // schedule: Afternoon Time In 1:00 PM - 2:00 PM and
+        // Afternoon Time Out 4:00 PM - 5:00 PM by default,
+        // editable per program like the morning times.
+        // ==========================================================
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Afternoon Time In Start")]
+        public TimeOnly AfternoonInStart { get; set; } =
+            new TimeOnly(13, 0);
+
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Afternoon Time In End")]
+        public TimeOnly AfternoonInEnd { get; set; } =
+            new TimeOnly(14, 0);
+
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Afternoon Time Out Start")]
+        public TimeOnly AfternoonOutStart { get; set; } =
+            new TimeOnly(16, 0);
+
+
+        [DataType(DataType.Time)]
+        [Display(Name = "Afternoon Time Out End")]
+        public TimeOnly AfternoonOutEnd { get; set; } =
+            new TimeOnly(17, 0);
 
 
         // ==========================================================

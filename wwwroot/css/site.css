@@ -128,7 +128,7 @@ body {
 
 .brand-name {
     color: #073b78;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 800;
     line-height: 1.1;
 }
@@ -137,7 +137,7 @@ body {
 .brand-subtitle {
     margin-top: 4px;
     color: #276696;
-    font-size: 9px;
+    font-size: 13px;
     line-height: 1.2;
 }
 
@@ -155,7 +155,7 @@ body {
 .navigation-label {
     margin: 0 10px 12px;
     color: #1970b6;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 800;
     letter-spacing: .13em;
 }
@@ -172,7 +172,7 @@ body {
     border: 1px solid transparent;
     border-radius: 13px;
     color: #083f79;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     text-decoration: none;
     transition: all .18s ease;
@@ -215,7 +215,7 @@ body {
     align-items: center;
     justify-content: center;
     color: #0878cf;
-    font-size: 18px;
+    font-size: 19px;
 }
 
 
@@ -266,14 +266,14 @@ body {
     background: rgba(255,255,255,.45);
     color: #e92f3f;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
 }
 
 
     .logout-button i {
-        font-size: 18px;
+        font-size: 19px;
     }
 
 
@@ -329,7 +329,7 @@ body {
 
 .topbar-user-name {
     color: #0a315c;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 800;
 }
 
@@ -337,7 +337,7 @@ body {
 .topbar-user-role {
     margin-top: 3px;
     color: #5180a4;
-    font-size: 9px;
+    font-size: 13px;
 }
 
 
@@ -356,7 +356,7 @@ body {
     border-radius: 50%;
     background: linear-gradient( 135deg, #d9f2ff, #a7ddfa );
     color: #0879d7;
-    font-size: 20px;
+    font-size: 24px;
 }
 
 
@@ -370,7 +370,7 @@ body {
     border-radius: 9px;
     background: rgba(255,255,255,.55);
     color: #12609d;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 700;
     text-decoration: none;
 }
@@ -637,7 +637,7 @@ table {
         background: #e8f6ff !important;
         color: #1465a5 !important;
         border-bottom: 1px solid #c7e5f8 !important;
-        font-size: 10px;
+        font-size: 14px;
         font-weight: 800;
     }
 

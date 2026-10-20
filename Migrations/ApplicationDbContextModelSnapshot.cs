@@ -130,6 +130,12 @@ namespace BYPManagementSystem.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AfternoonInAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("AfternoonOutAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<DateTime>("AttendanceDate")
                         .HasColumnType("datetime(6)");
 
@@ -354,6 +360,26 @@ namespace BYPManagementSystem.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly>("AfternoonInEnd")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(14, 0, 0));
+
+                    b.Property<TimeOnly>("AfternoonInStart")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(13, 0, 0));
+
+                    b.Property<TimeOnly>("AfternoonOutEnd")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(17, 0, 0));
+
+                    b.Property<TimeOnly>("AfternoonOutStart")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time(6)")
+                        .HasDefaultValue(new TimeOnly(16, 0, 0));
 
                     b.Property<string>("Barangay")
                         .IsRequired()

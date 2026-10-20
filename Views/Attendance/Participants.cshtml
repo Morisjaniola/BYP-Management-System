@@ -1,17 +1,53 @@
-@model IEnumerable<BYPManagementSystem.Models.ProgramRegistration>
+@model List<BYPManagementSystem.ViewModels.ParticipantAttendanceRowViewModel>
+
+@using BYPManagementSystem.Services
 
 @{
-    ViewData["Title"] = "Attendance Participants";
+    ViewData["Title"] = "View Participants";
 
     var program = ViewBag.Program as BYPManagementSystem.Models.YouthProgram;
 
-    var registrations = Model?.ToList() ?? new List<BYPManagementSystem.Models.ProgramRegistration>();
+    var rows = Model ?? new List<BYPManagementSystem.ViewModels.ParticipantAttendanceRowViewModel>();
 
-    var participantCount = registrations.Count;
+    var search = ViewBag.Search as string;
 
-    var capacity = program?.Capacity ?? 0;
+    var statusFilter = ViewBag.StatusFilter as string ?? "All";
 
-    var remainingSlots = Math.Max(capacity - participantCount, 0);
+    var statusOptions =
+        ViewBag.StatusOptions as List<(string Value, string Label, int Count)>
+        ?? new List<(string Value, string Label, int Count)>();
+
+    var attendanceDate = (DateTime)(ViewBag.AttendanceDate ?? AttendanceSchedule.NowApp().Date);
+
+    var dateStr = attendanceDate.ToString("yyyy-MM-dd");
+
+    var page = (int)(ViewBag.Page ?? 1);
+
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+
+    var totalCount = (int)(ViewBag.TotalCount ?? rows.Count);
+
+
+    // Renders one attendance-action cell: an approved time, a
+    // Pending Review badge, a Rejected badge, or a dash.
+
+    Func<BYPManagementSystem.ViewModels.AttendanceActionCellViewModel, Microsoft.AspNetCore.Html.IHtmlContent> renderCell = cell =>
+    {
+        switch (cell.Kind)
+        {
+            case "Approved":
+                return Html.Raw($"<span class=\"cell-time\">{cell.TimeDisplay}</span>");
+
+            case "Pending":
+                return Html.Raw("<span class=\"cell-badge pending\"><i class=\"bi bi-hourglass-split\"></i>Pending Review</span>");
+
+            case "Rejected":
+                return Html.Raw("<span class=\"cell-badge rejected\"><i class=\"bi bi-x-circle\"></i>Rejected</span>");
+
+            default:
+                return Html.Raw("<span class=\"cell-dash\">&mdash;</span>");
+        }
+    };
 }
 
 
@@ -38,32 +74,9 @@
             </h1>
 
             <p>
-                Select an approved youth participant to record, view, or update attendance.
+                Review Morning and Afternoon attendance for every
+                approved participant of this program.
             </p>
-
-        </div>
-
-        <div class="form-header-actions">
-
-            <a asp-controller="Programs"
-               asp-action="Details"
-               asp-route-id="@(program?.Id)"
-               class="header-button secondary">
-
-                <i class="bi bi-calendar-event"></i>
-                Program Details
-
-            </a>
-
-
-            <a asp-controller="Attendance"
-               asp-action="Index"
-               class="header-button primary">
-
-                <i class="bi bi-list-ul"></i>
-                All Programs
-
-            </a>
 
         </div>
 
@@ -93,8 +106,8 @@
             <div class="program-meta">
 
                 <span>
-                    <i class="bi bi-clock"></i>
-                    @(program?.Schedule ?? "No schedule")
+                    <i class="bi bi-calendar-day"></i>
+                    @attendanceDate.ToString("MMM dd, yyyy")
                 </span>
 
                 @if (program != null)
@@ -152,13 +165,14 @@
         <div class="info-box-content">
 
             <strong>
-                Only approved registrations are shown.
+                Every approved participant is listed, including
+                participants without an attendance photo.
             </strong>
 
             <p>
-                Choose a youth participant below. From their
-                attendance page you can record a new entry or
-                review existing attendance records.
+                A time appears only after a photo is approved.
+                Submitted photos show Pending Review and are never
+                counted as Absent while waiting for staff review.
             </p>
 
         </div>
@@ -167,7 +181,76 @@
 
 
     <!-- =========================================================
-         PARTICIPANTS
+         FILTERS
+         ========================================================= -->
+
+    <section class="dashboard-panel">
+
+        <form asp-action="Participants"
+              method="get"
+              class="filter-bar">
+
+            <input type="hidden" name="id" value="@(program?.Id)" />
+
+            <div class="filter-field">
+                <label for="attendanceDate">Attendance Date</label>
+                <input type="date"
+                       id="attendanceDate"
+                       name="attendanceDate"
+                       value="@dateStr" />
+            </div>
+
+            <div class="filter-field grow">
+                <label for="search">Search</label>
+                <input type="text"
+                       id="search"
+                       name="search"
+                       value="@search"
+                       placeholder="Participant name or barangay" />
+            </div>
+
+            <div class="filter-field">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="All"
+                            selected="@(statusFilter == "All" ? "selected" : null)">
+                        All Statuses (@totalCount)
+                    </option>
+                    @foreach (var option in statusOptions)
+                    {
+                        <option value="@option.Value"
+                                selected="@(statusFilter == option.Value ? "selected" : null)">
+                            @option.Label (@option.Count)
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+
+                <button type="submit" class="filter-apply">
+                    <i class="bi bi-funnel"></i>
+                    Apply
+                </button>
+
+                <a asp-action="Participants"
+                   asp-route-id="@(program?.Id)"
+                   class="filter-reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =========================================================
+         MAIN TABLE
+         #, PARTICIPANT NAME, MORNING IN, MORNING OUT,
+         AFTERNOON IN, AFTERNOON OUT, STATUS, ACTION
          ========================================================= -->
 
     <section class="dashboard-panel">
@@ -177,128 +260,231 @@
             <div>
 
                 <span class="panel-eyebrow">
-                    APPROVED YOUTH
+                    APPROVED PARTICIPANTS
                 </span>
 
                 <h2>
-                    Select a Participant
+                    Participant Attendance
                 </h2>
 
                 <p>
-                    Click a participant to open their attendance records.
+                    Attendance status for @attendanceDate.ToString("MMMM dd, yyyy")
+                    (@AttendanceSchedule.ZoneLabel).
                 </p>
 
             </div>
 
             <div class="participant-count">
                 <i class="bi bi-people"></i>
-                @participantCount participant@(participantCount == 1 ? "" : "s")
+                @totalCount participant@(totalCount == 1 ? "" : "s")
             </div>
 
         </div>
 
 
-        @if (registrations.Any())
+        @if (rows.Any())
         {
-            <div class="participant-grid">
+            <div class="table-scroll">
 
-                @foreach (var registration in registrations)
-                {
-                    var youth = registration.YouthParticipant;
+                <table class="attendance-table">
 
-                    var firstInitial = !string.IsNullOrWhiteSpace(youth?.FirstName)
-                        ? youth.FirstName.Substring(0, 1).ToUpper() : "U";
+                    <thead>
 
-                    var lastInitial = !string.IsNullOrWhiteSpace(youth?.LastName)
-                        ? youth.LastName.Substring(0, 1).ToUpper() : "";
+                        <tr>
 
-                    <article class="participant-card">
+                            <th class="col-num">#</th>
 
-                        <div class="participant-card-top">
+                            <th class="col-name">Participant Name</th>
 
-                            <div class="participant-avatar">
-                                @firstInitial@lastInitial
-                            </div>
+                            <th>Morning Time In</th>
 
-                            <span class="approved-badge">
-                                <span></span>
-                                Approved
-                            </span>
+                            <th>Morning Time Out</th>
 
-                        </div>
+                            <th>Afternoon Time In</th>
 
-                        <div class="participant-information">
+                            <th>Afternoon Time Out</th>
 
-                            <h3>
-                                @(youth?.FullName ?? "Unknown Participant")
-                            </h3>
+                            <th>Status</th>
 
-                            <div class="participant-detail">
-                                <i class="bi bi-geo-alt"></i>
-                                <span>@(youth?.Barangay ?? "No barangay")</span>
-                            </div>
+                            <th class="col-action">Action</th>
 
-                            <div class="participant-detail">
-                                <i class="bi bi-telephone"></i>
-                                <span>
-                                    @(string.IsNullOrWhiteSpace(youth?.ContactNumber)
-                                        ? "No contact number"
-                                        : youth.ContactNumber)
-                                </span>
-                            </div>
+                        </tr>
 
-                            <div class="participant-detail">
-                                <i class="bi bi-calendar3"></i>
-                                <span>
-                                    Registered @registration.RegisteredAt.ToLocalTime().ToString("MMM dd, yyyy")
-                                </span>
-                            </div>
+                    </thead>
 
-                        </div>
+                    <tbody>
 
-                        <div class="participant-actions">
+                        @foreach (var row in rows)
+                        {
+                            <tr>
 
-                            <a asp-controller="Attendance"
-                               asp-action="Records"
-                               asp-route-programId="@registration.ProgramId"
-                               asp-route-youthParticipantId="@registration.YouthParticipantId"
-                               class="attendance-button">
+                                <td class="col-num">
+                                    @row.RowNumber
+                                </td>
 
-                                <i class="bi bi-clipboard-check"></i>
-                                View Attendance
+                                <td class="col-name">
 
-                            </a>
+                                    <span class="row-name">
+                                        @row.FullName
+                                    </span>
 
-                            <a asp-controller="Attendance"
-                               asp-action="Record"
-                               asp-route-programId="@registration.ProgramId"
-                               asp-route-youthParticipantId="@registration.YouthParticipantId"
-                               class="record-button">
+                                    <span class="row-sub">
+                                        @(string.IsNullOrWhiteSpace(row.Barangay) ? "No barangay" : row.Barangay)
+                                        &middot; Participant #@row.YouthParticipantId
+                                    </span>
 
-                                <i class="bi bi-plus-lg"></i>
-                                Record Attendance
+                                </td>
 
-                            </a>
+                                <td>@renderCell(row.MorningIn)</td>
 
-                        </div>
+                                <td>@renderCell(row.MorningOut)</td>
 
-                    </article>
-                }
+                                <td>@renderCell(row.AfternoonIn)</td>
+
+                                <td>@renderCell(row.AfternoonOut)</td>
+
+                                <td>
+
+                                    <span class="st-badge @row.StatusCss">
+                                        <span class="st-dot"></span>
+                                        @row.StatusLabel
+                                    </span>
+
+                                </td>
+
+                                <td class="col-action">
+
+                                    <a class="row-view"
+                                       asp-controller="Attendance"
+                                       asp-action="Records"
+                                       asp-route-programId="@(program?.Id)"
+                                       asp-route-youthParticipantId="@row.YouthParticipantId"
+                                       asp-route-attendanceDate="@dateStr"
+                                       title="View attendance details">
+
+                                        <i class="bi bi-eye"></i>
+                                        View
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
 
             </div>
+
+
+            <!-- =========================================================
+                 STATUS LEGEND (TEXT + COLOR, NEVER COLOR ALONE)
+                 ========================================================= -->
+
+            <div class="status-legend">
+
+                <span class="legend-title">Status guide:</span>
+
+                <span class="st-badge st-present"><span class="st-dot"></span>Present</span>
+
+                <span class="st-badge st-pending"><span class="st-dot"></span>Pending Review</span>
+
+                <span class="st-badge st-incomplete"><span class="st-dot"></span>Incomplete</span>
+
+                <span class="st-badge st-rejected"><span class="st-dot"></span>Rejected</span>
+
+                <span class="st-badge st-absent"><span class="st-dot"></span>Absent</span>
+
+                <span class="st-badge st-notyetdue"><span class="st-dot"></span>Not Yet Due</span>
+
+            </div>
+
+
+            <!-- =========================================================
+                 PAGINATION
+                 ========================================================= -->
+
+            @if (totalPages > 1)
+            {
+                <div class="pager">
+
+                    @if (page > 1)
+                    {
+                        <a class="page-link"
+                           href="@(Url.Action("Participants", "Attendance", new { id = program?.Id, search, status = statusFilter, attendanceDate = dateStr, page = page - 1 }))">
+                            <i class="bi bi-chevron-left"></i>
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-link disabled">
+                            <i class="bi bi-chevron-left"></i>
+                            Previous
+                        </span>
+                    }
+
+                    <span class="page-info">
+                        @($"Page {page} of {totalPages}")
+                    </span>
+
+                    @if (page < totalPages)
+                    {
+                        <a class="page-link"
+                           href="@(Url.Action("Participants", "Attendance", new { id = program?.Id, search, status = statusFilter, attendanceDate = dateStr, page = page + 1 }))">
+                            Next
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-link disabled">
+                            Next
+                            <i class="bi bi-chevron-right"></i>
+                        </span>
+                    }
+
+                </div>
+            }
         }
         else
         {
             <div class="empty-state">
+
                 <i class="bi bi-person-x"></i>
-                <span>No approved participants.</span>
-                <a asp-controller="Attendance" asp-action="Index" class="empty-button">
-                    <i class="bi bi-arrow-left"></i> Back to Attendance
-                </a>
+
+                <span>
+                    @(totalCount == 0 && string.IsNullOrWhiteSpace(search) && statusFilter == "All"
+                        ? "No approved participants."
+                        : "No participants match the current filters.")
+                </span>
+
+                @if (!(string.IsNullOrWhiteSpace(search) && statusFilter == "All"))
+                {
+                    <a asp-action="Participants"
+                       asp-route-id="@(program?.Id)"
+                       class="empty-button">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Clear Filters
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Attendance"
+                       asp-action="Index"
+                       class="empty-button">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Attendance
+                    </a>
+                }
+
             </div>
         }
 
     </section>
+
 
     <!-- =========================================================
          BOTTOM ACTIONS
@@ -307,11 +493,11 @@
     <div class="bottom-actions">
 
         <a asp-controller="Attendance" asp-action="Index" class="bottom-button secondary">
-            <i class="bi bi-arrow-left"></i> Back to Programs
+            <i class="bi bi-arrow-left"></i> Back to Attendance
         </a>
 
-        <a asp-controller="Programs" asp-action="Details" asp-route-id="@(program?.Id)" class="bottom-button primary">
-            <i class="bi bi-calendar-event"></i> View Program
+        <a asp-controller="Attendance" asp-action="PhotoReviews" class="bottom-button primary">
+            <i class="bi bi-images"></i> Photo Review Queue
         </a>
 
     </div>
@@ -365,32 +551,11 @@
 
 .form-header-kicker {
     display: block; margin-bottom: 4px;
-    color: #A9D5DE; font-size: 7px; font-weight: 700; letter-spacing: 1px.
+    color: #A9D5DE; font-size: 12px; font-weight: 700; letter-spacing: 1px;
 }
 
-.form-header h1 { margin: 0; color: #FFFFFF; font-size: 20px; font-weight: 700; line-height: 1.1; }
-.form-header p { margin: 3px 0 0; color: #C5DDE2; font-size: 8px; line-height: 1.4; }
-
-.form-header-actions {
-    display: flex; align-items: center; gap: 7px; flex-wrap: wrap; flex-shrink: 0;
-}
-
-.header-button {
-    min-height: 30px; padding: 0 10px;
-    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-    border-radius: 7px; font-size: 7px; font-weight: 700;
-    text-decoration: none; transition: .16s ease;
-}
-.header-button.secondary {
-    border: 1px solid rgba(183,215,229,.16);
-    background: rgba(255,255,255,.06); color: #C5DDE2;
-}
-.header-button.secondary:hover { background: rgba(255,255,255,.10); color: #FFFFFF; transform: translateY(-1px); }
-.header-button.primary {
-    border: 1px solid #0C9096; background: #0C9096; color: #FFFFFF;
-}
-.header-button.primary:hover { background: #0A7D82; border-color: #0A7D82; transform: translateY(-1px); }
-
+.form-header h1 { margin: 0; color: #FFFFFF; font-size: 24px; font-weight: 700; line-height: 1.1; }
+.form-header p { margin: 3px 0 0; color: #C5DDE2; font-size: 13px; line-height: 1.4; }
 
 /* =========================================================
    PROGRAM BANNER
@@ -407,22 +572,22 @@
 .program-banner-icon {
     width: 30px; height: 30px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    border-radius: 6px; background: rgba(105,199,232,.10); color: #69DDF2; font-size: 12px;
+    border-radius: 6px; background: rgba(105,199,232,.10); color: #69DDF2; font-size: 14px;
 }
 
 .program-banner-main { flex: 1; min-width: 0; }
-.banner-eyebrow { display: block; color: #69DDF2; font-size: 6px; font-weight: 700; letter-spacing: .8px; }
-.program-banner-main h2 { margin: 2px 0 4px; color: #FFFFFF; font-size: 10px; font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.banner-eyebrow { display: block; color: #69DDF2; font-size: 12px; font-weight: 700; letter-spacing: .8px; }
+.program-banner-main h2 { margin: 2px 0 4px; color: #FFFFFF; font-size: 14px; font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .program-meta { display: flex; flex-wrap: wrap; gap: 8px; }
-.program-meta span { display: inline-flex; align-items: center; gap: 3px; color: #72969E; font-size: 6px; }
-.program-meta i { color: #69DDF2; font-size: 7px; }
+.program-meta span { display: inline-flex; align-items: center; gap: 3px; color: #72969E; font-size: 12px; }
+.program-meta i { color: #69DDF2; font-size: 12px; }
 
 .program-status { align-self: flex-start; }
 .status-badge {
     min-height: 18px; padding: 0 6px;
     display: inline-flex; align-items: center; gap: 3px;
-    border-radius: 999px; font-size: 6px; font-weight: 700;
+    border-radius: 999px; font-size: 12px; font-weight: 700;
 }
 .status-badge.active { background: rgba(43,166,126,.12); color: #69F0AE; border: 1px solid rgba(105,240,174,.17); }
 .status-badge.inactive { background: rgba(183,215,229,.07); color: #A9BAC0; border: 1px solid rgba(183,215,229,.12); }
@@ -439,10 +604,10 @@
     border: 1px solid rgba(105,199,232,.14);
     border-radius: 8px; background: rgba(105,199,232,.08);
 }
-.info-box-icon { color: #69DDF2; font-size: 11px; flex-shrink: 0; }
+.info-box-icon { color: #69DDF2; font-size: 14px; flex-shrink: 0; }
 .info-box-content { min-width: 0; }
-.info-box-content strong { display: block; color: #FFFFFF; font-size: 7px; margin-bottom: 2px; }
-.info-box-content p { margin: 0; color: #769BA3; font-size: 6px; line-height: 1.4; }
+.info-box-content strong { display: block; color: #FFFFFF; font-size: 12px; margin-bottom: 2px; }
+.info-box-content p { margin: 0; color: #769BA3; font-size: 12px; line-height: 1.4; }
 
 
 /* =========================================================
@@ -454,100 +619,226 @@
     background: linear-gradient(135deg, rgba(5,45,46,.82), rgba(3,23,22,.94));
     border: 1px solid rgba(183,215,229,.14);
     box-shadow: 0 6px 16px rgba(0,0,0,.08);
+    margin-bottom: 8px;
 }
-.dashboard-panel + .dashboard-panel { margin-top: 8px; }
 
 .panel-header {
     min-height: 34px; display: flex; align-items: flex-start;
     justify-content: space-between; gap: 8px; margin-bottom: 8px;
 }
-.panel-eyebrow { display: block; color: #69DDF2; font-size: 6px; font-weight: 700; letter-spacing: .8px; }
-.panel-header h2 { margin: 2px 0 1px; color: #FFFFFF; font-size: 12px; line-height: 1.1; }
-.panel-header p { margin: 0; color: #769BA3; font-size: 7px; }
-.panel-icon-box {
-    width: 30px; height: 30px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 7px; color: #69DDF2;
-    background: rgba(105,199,232,.09); border: 1px solid rgba(105,199,232,.12);
-}
+.panel-eyebrow { display: block; color: #69DDF2; font-size: 12px; font-weight: 700; letter-spacing: .8px; }
+.panel-header h2 { margin: 2px 0 1px; color: #FFFFFF; font-size: 14px; line-height: 1.1; }
+.panel-header p { margin: 0; color: #769BA3; font-size: 12px; }
 .participant-count {
     padding: 4px 7px; display: flex; align-items: center; gap: 4px;
-    border-radius: 5px;
+    border-radius: 5px; white-space: nowrap;
     background: rgba(105,199,232,.08); border: 1px solid rgba(105,199,232,.14);
-    color: #8DDCF2; font-size: 7px; font-weight: 700;
+    color: #8DDCF2; font-size: 12px; font-weight: 700;
 }
 
 
 /* =========================================================
-   PARTICIPANT GRID
+   FILTER BAR
    ========================================================= */
 
-.participant-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+.filter-bar {
+    display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap;
 }
 
-.participant-card {
-    border-radius: 8px; border: 1px solid rgba(183,215,229,.10);
-    background: rgba(255,255,255,.035);
-    transition: .14s ease;
-}
-.participant-card:hover {
-    transform: translateY(-1px);
-    border-color: rgba(105,199,232,.22);
-    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+.filter-field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.filter-field.grow { flex: 1; min-width: 160px; }
+
+.filter-field label {
+    color: #A9D5DE; font-size: 12px; font-weight: 700; letter-spacing: .5px;
 }
 
-.participant-card-top {
-    display: flex; align-items: center; justify-content: space-between; gap: 6px;
-    padding: 7px 8px 0;
+.filter-field input,
+.filter-field select {
+    min-height: 30px; padding: 0 8px;
+    border: 1px solid rgba(183,215,229,.16);
+    border-radius: 7px;
+    background: rgba(255,255,255,.055);
+    color: #D8EEF2;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-.participant-avatar {
-    width: 26px; height: 26px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 6px; background: rgba(105,199,232,.12); color: #69DDF2; font-size: 9px; font-weight: 800;
+.filter-field input:focus,
+.filter-field select:focus {
+    border-color: #69C7E8;
+    box-shadow: 0 0 0 3px rgba(105,199,232,.15);
 }
 
-.approved-badge {
-    min-height: 18px; padding: 0 5px;
-    display: inline-flex; align-items: center; gap: 3px;
-    border-radius: 999px; font-size: 5px; font-weight: 700;
-    background: rgba(43,166,126,.12); color: #69F0AE;
-    border: 1px solid rgba(105,240,174,.17);
-}
-.approved-badge span { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.filter-actions { display: flex; align-items: center; gap: 6px; }
 
-.participant-information { padding: 8px 9px; }
-.participant-information h3 { margin: 0 0 6px; overflow: hidden; color: #FFFFFF; font-size: 8px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-
-.participant-detail {
-    display: flex; align-items: center; gap: 4px; margin-top: 3px; min-width: 0;
-}
-.participant-detail i { width: 11px; flex-shrink: 0; color: #69DDF2; font-size: 7px; text-align: center; }
-.participant-detail span { overflow: hidden; color: #72969E; font-size: 6px; text-overflow: ellipsis; white-space: nowrap; }
-
-
-/* =========================================================
-   ACTIONS
-   ========================================================= */
-
-.participant-actions {
-    display: flex; gap: 5px; padding: 0 8px 8px;
+.filter-apply, .filter-reset {
+    min-height: 30px; padding: 0 10px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    border-radius: 7px; font-size: 12px; font-weight: 700;
+    text-decoration: none; cursor: pointer; transition: .15s ease;
 }
 
-.attendance-button, .record-button {
-    flex: 1; min-height: 26px; padding: 0 5px;
-    display: inline-flex; align-items: center; justify-content: center; gap: 3px;
-    border-radius: 5px; font-size: 6px; font-weight: 700; text-decoration: none;
-}
-.attendance-button {
-    border: 1px solid rgba(105,199,232,.20); background: rgba(105,199,232,.10); color: #69DDF2;
-}
-.attendance-button:hover { background: rgba(105,199,232,.18); color: #FFFFFF; }
-.record-button {
+.filter-apply {
     border: 1px solid #0C9096; background: #0C9096; color: #FFFFFF;
 }
-.record-button:hover { background: #0A7D82; border-color: #0A7D82; }
+.filter-apply:hover { background: #0A7D82; border-color: #0A7D82; }
+
+.filter-reset {
+    border: 1px solid rgba(183,215,229,.16);
+    background: rgba(255,255,255,.06); color: #C5DDE2;
+}
+.filter-reset:hover { background: rgba(255,255,255,.10); color: #FFFFFF; text-decoration: none; }
+
+
+/* =========================================================
+   MAIN TABLE
+   ========================================================= */
+
+.table-scroll { overflow-x: auto; }
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.attendance-table thead th {
+    padding: 7px 8px;
+    text-align: left;
+    color: #A9D5DE;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(183,215,229,.14);
+    white-space: nowrap;
+}
+
+.attendance-table tbody td {
+    padding: 8px;
+    color: #D8EEF2;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(183,215,229,.08);
+    vertical-align: middle;
+}
+
+.attendance-table tbody tr:hover { background: rgba(255,255,255,.03); }
+
+.attendance-table .col-num { width: 34px; color: #72969E; }
+
+.attendance-table .col-name { min-width: 170px; }
+
+.attendance-table .col-action { width: 74px; }
+
+.row-name { display: block; color: #FFFFFF; font-weight: 700; }
+
+.row-sub { display: block; margin-top: 2px; color: #72969E; font-size: 12px; }
+
+
+/* Attendance-action cell contents */
+
+.cell-time {
+    color: #8DDCF2;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.cell-dash { color: #668A92; }
+
+.cell-badge {
+    min-height: 17px; padding: 0 5px;
+    display: inline-flex; align-items: center; gap: 3px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    white-space: nowrap;
+}
+.cell-badge.pending {
+    background: rgba(241,163,61,.10); color: #F1A33C;
+    border: 1px solid rgba(241,163,61,.18);
+}
+.cell-badge.rejected {
+    background: rgba(241,91,103,.10); color: #F56D78;
+    border: 1px solid rgba(241,91,103,.18);
+}
+.cell-badge i { font-size: 12px; }
+
+
+/* Overall status badge - color + text, never color alone */
+
+.st-badge {
+    min-height: 18px; padding: 0 6px;
+    display: inline-flex; align-items: center; gap: 3px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    white-space: nowrap;
+}
+.st-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+.st-present { background: rgba(43,166,126,.12); color: #69F0AE; border: 1px solid rgba(105,240,174,.17); }
+.st-pending { background: rgba(241,163,61,.10); color: #F1A33C; border: 1px solid rgba(241,163,61,.18); }
+.st-incomplete { background: rgba(241,163,61,.10); color: #F1A33C; border: 1px solid rgba(241,163,61,.18); }
+.st-rejected { background: rgba(241,91,103,.10); color: #F56D78; border: 1px solid rgba(241,91,103,.18); }
+.st-absent { background: rgba(241,91,103,.10); color: #F56D78; border: 1px solid rgba(241,91,103,.18); }
+.st-notyetdue { background: rgba(105,199,232,.10); color: #8DDCF2; border: 1px solid rgba(105,199,232,.16); }
+.st-late { background: rgba(241,163,61,.10); color: #F1A33C; border: 1px solid rgba(241,163,61,.18); }
+.st-excused { background: rgba(105,199,232,.10); color: #8DDCF2; border: 1px solid rgba(105,199,232,.16); }
+.st-other { background: rgba(183,215,229,.07); color: #A9BAC0; border: 1px solid rgba(183,215,229,.12); }
+
+
+/* Row action */
+
+.row-view {
+    min-height: 24px; padding: 0 7px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+    border-radius: 5px;
+    border: 1px solid rgba(105,199,232,.20);
+    background: rgba(105,199,232,.10);
+    color: #69DDF2;
+    font-size: 12px; font-weight: 700; text-decoration: none;
+    transition: .14s ease;
+}
+.row-view:hover { background: rgba(105,199,232,.18); color: #FFFFFF; text-decoration: none; }
+
+
+/* =========================================================
+   STATUS LEGEND
+   ========================================================= */
+
+.status-legend {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+    margin-top: 8px;
+}
+.legend-title { color: #769BA3; font-size: 12px; font-weight: 700; }
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.pager {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 8px; margin-top: 8px;
+}
+
+.page-link {
+    min-height: 26px; padding: 0 8px;
+    display: inline-flex; align-items: center; gap: 4px;
+    border-radius: 6px;
+    border: 1px solid rgba(183,215,229,.15);
+    background: rgba(255,255,255,.05);
+    color: #8DDCF2;
+    font-size: 12px; font-weight: 700; text-decoration: none;
+    transition: .14s ease;
+}
+.page-link:hover { background: rgba(105,199,232,.10); color: #FFFFFF; text-decoration: none; }
+
+.page-link.disabled {
+    opacity: .4; pointer-events: none;
+}
+
+.page-info { color: #769BA3; font-size: 12px; font-weight: 700; }
 
 
 /* =========================================================
@@ -559,14 +850,14 @@
     align-items: center; justify-content: center; gap: 5px;
     color: #668A92; text-align: center;
 }
-.empty-state i { color: #69C7E8; font-size: 18px; }
-.empty-state span { font-size: 7px; }
+.empty-state i { color: #69C7E8; font-size: 19px; }
+.empty-state span { font-size: 12px; }
 
 .empty-button {
-    min-height: 26px; padding: 0 9px;
-    display: flex; align-items: center; gap: 4px;
+    min-height: 30px; padding: 0 9px;
+    display: inline-flex; align-items: center; gap: 4px;
     border-radius: 6px; color: #052D2E; background: #69C7E8;
-    font-size: 6px; font-weight: 700; text-decoration: none;
+    font-size: 14px; font-weight: 700; text-decoration: none;
 }
 .empty-button:hover { color: #052D2E; background: #8DDCF2; }
 
@@ -577,44 +868,82 @@
 
 .bottom-actions { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .bottom-button {
-    min-height: 26px; padding: 0 9px;
+    min-height: 30px; padding: 0 9px;
     display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    border-radius: 6px; font-size: 6px; font-weight: 700; text-decoration: none; transition: .13s ease;
+    border-radius: 6px; font-size: 14px; font-weight: 700; text-decoration: none; transition: .13s ease;
 }
 .bottom-button.secondary {
     border: 1px solid rgba(183,215,229,.15);
     background: linear-gradient(135deg, rgba(5,45,46,.82), rgba(3,23,22,.94));
     color: #8DDCF2;
 }
-.bottom-button.secondary:hover { color: #69DDF2; background: rgba(105,199,232,.08); }
+.bottom-button.secondary:hover { color: #69DDF2; background: rgba(105,199,232,.08); text-decoration: none; }
 .bottom-button.primary { border: 1px solid #0C9096; background: #0C9096; color: #FFFFFF; }
-.bottom-button.primary:hover { background: #0A7D82; border-color: #0A7D82; transform: translateY(-1px); }
+.bottom-button.primary:hover { background: #0A7D82; border-color: #0A7D82; transform: translateY(-1px); text-decoration: none; }
+
+
+/* =========================================================
+   LIGHT MODE
+   ========================================================= */
+
+html[data-theme="light"] .filter-field input,
+html[data-theme="light"] .filter-field select {
+    background: #F4FAFD;
+    border-color: rgba(12,144,150,.25);
+    color: #10313F;
+}
+
+html[data-theme="light"] .cell-time { color: #00787C; }
+html[data-theme="light"] .cell-dash { color: #7A949B; }
+
+html[data-theme="light"] .cell-badge.pending,
+html[data-theme="light"] .st-pending,
+html[data-theme="light"] .st-incomplete,
+html[data-theme="light"] .st-late {
+    background: #FDF3E0; color: #A15C08; border-color: #F0DCB4;
+}
+
+html[data-theme="light"] .cell-badge.rejected,
+html[data-theme="light"] .st-rejected,
+html[data-theme="light"] .st-absent {
+    background: #FDECEE; color: #C0334D; border-color: #F3C9CF;
+}
+
+html[data-theme="light"] .st-present {
+    background: #E6F7EE; color: #0E7A43; border-color: #BFE8D2;
+}
+
+html[data-theme="light"] .st-notyetdue,
+html[data-theme="light"] .st-excused {
+    background: #E6F5FB; color: #0E6E8C; border-color: #BFE0EE;
+}
+
+html[data-theme="light"] .st-other {
+    background: #EFF3F5; color: #4A6570; border-color: #DCE5E8;
+}
 
 
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
-@@media (max-width: 1050px) {
-    .participant-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
 @@media (max-width: 800px) {
     .form-header { flex-direction: column; align-items: stretch; }
     .form-header-content { order: 1; }
-    .form-header-actions { order: 2; width: 100%; }
-    .header-button { flex: 1; }
-    .participant-grid { grid-template-columns: 1fr; }
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .filter-field.grow { min-width: 0; }
+    .filter-actions { width: 100%; }
+    .filter-apply, .filter-reset { flex: 1; }
+    .panel-header { flex-direction: column; }
 }
 
 @@media (max-width: 600px) {
     .form-header { padding: 12px 15px; }
-    .form-header h1 { font-size: 18px; }
-    .form-header p { font-size: 7px; }
-    .form-header-actions { flex-direction: column; }
-    .header-button { width: 100%; }
+    .form-header h1 { font-size: 19px; }
+    .form-header p { font-size: 12px; }
     .bottom-actions { flex-direction: column; }
     .bottom-button { width: 100%; }
+    .pager { justify-content: center; }
 }
 
 </style>

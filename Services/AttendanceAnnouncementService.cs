@@ -13,13 +13,19 @@ namespace BYPManagementSystem.Services
     // programs. Runs inside the web host, so it works even when
     // no Admin browser is open.
     //
-    // For every active program the service tracks four triggers
-    // per attendance day (Philippine time):
+    // For every active program the service tracks eight triggers
+    // per attendance day (application time zone), one open and
+    // one closing-soon trigger for each of the four saved
+    // windows:
     //
-    //   TimeInOpen  at TimeInStart          "Morning Time In is now open."
-    //   TimeInSoon  15 min before TimeInEnd "Morning Time In will close soon."
-    //   TimeOutOpen at TimeOutStart         "Morning Time Out is now open."
-    //   TimeOutSoon 15 min before TimeOutEnd"Morning Time Out will close soon."
+    //   TimeInOpen        at TimeInStart          Morning In open
+    //   TimeInSoon        15 min before TimeInEnd Morning In closing
+    //   TimeOutOpen       at TimeOutStart         Morning Out open
+    //   TimeOutSoon       15 min before TimeOutEnd Morning Out closing
+    //   AfternoonInOpen   at AfternoonInStart     Afternoon In open
+    //   AfternoonInSoon   15 min before AfternoonInEnd
+    //   AfternoonOutOpen  at AfternoonOutStart    Afternoon Out open
+    //   AfternoonOutSoon  15 min before AfternoonOutEnd
     //
     // A trigger fires when the current Manila time has reached
     // it and is still within a 30 minute grace window (which
@@ -116,7 +122,7 @@ namespace BYPManagementSystem.Services
             CancellationToken cancellationToken)
         {
             var manilaNow =
-                AttendanceSchedule.NowManila();
+                AttendanceSchedule.NowApp();
 
             var attendanceDate =
                 manilaNow.Date;
@@ -194,7 +200,13 @@ namespace BYPManagementSystem.Services
 
 
         // ==========================================================
-        // TRIGGERS FOR ONE PROGRAM
+        // TRIGGERS FOR ONE PROGRAM (EIGHT KINDS)
+        //
+        // Open + closing-soon for each of the four saved windows:
+        // Morning In/Out and Afternoon In/Out. Morning kinds keep
+        // their historical log values (TimeInOpen, TimeInSoon,
+        // TimeOutOpen, TimeOutSoon) so the idempotency log never
+        // double-fires across the upgrade.
         // ==========================================================
 
         private static List<AnnouncementTrigger> BuildTriggers(
@@ -212,6 +224,18 @@ namespace BYPManagementSystem.Services
                         -ClosingSoonMinutes),
                     program.TimeOutStart);
 
+            var afternoonInSoon =
+                ClampAfter(
+                    program.AfternoonInEnd.AddMinutes(
+                        -ClosingSoonMinutes),
+                    program.AfternoonInStart);
+
+            var afternoonOutSoon =
+                ClampAfter(
+                    program.AfternoonOutEnd.AddMinutes(
+                        -ClosingSoonMinutes),
+                    program.AfternoonOutStart);
+
 
             return new List<AnnouncementTrigger>
             {
@@ -219,41 +243,81 @@ namespace BYPManagementSystem.Services
                     "TimeInOpen",
                     program.TimeInStart,
                     "Morning Time In Open",
-                    "Morning Time In is now open. You may submit your Time In photo for \""
+                    "Morning Time In is now open. You may submit your Morning Time In photo for \""
                         + program.Name
                         + "\" until "
                         + AttendanceSchedule.FormatTime(program.TimeInEnd)
-                        + " (Philippine time)."),
+                        + " (" + AttendanceSchedule.ZoneLabel + ")."),
 
                 new AnnouncementTrigger(
                     "TimeInSoon",
                     timeInSoon,
                     "Morning Time In Closing Soon",
-                    "Morning Time In will close soon. The Time In window for \""
+                    "Morning Time In will close soon. The window for \""
                         + program.Name
                         + "\" ends at "
                         + AttendanceSchedule.FormatTime(program.TimeInEnd)
-                        + " (Philippine time)."),
+                        + " (" + AttendanceSchedule.ZoneLabel + ")."),
 
                 new AnnouncementTrigger(
                     "TimeOutOpen",
                     program.TimeOutStart,
                     "Morning Time Out Open",
-                    "Morning Time Out is now open. You may submit your Time Out photo for \""
+                    "Morning Time Out is now open. You may submit your Morning Time Out photo for \""
                         + program.Name
                         + "\" until "
                         + AttendanceSchedule.FormatTime(program.TimeOutEnd)
-                        + " (Philippine time)."),
+                        + " (" + AttendanceSchedule.ZoneLabel + ")."),
 
                 new AnnouncementTrigger(
                     "TimeOutSoon",
                     timeOutSoon,
                     "Morning Time Out Closing Soon",
-                    "Morning Time Out will close soon. The Time Out window for \""
+                    "Morning Time Out will close soon. The window for \""
                         + program.Name
                         + "\" ends at "
                         + AttendanceSchedule.FormatTime(program.TimeOutEnd)
-                        + " (Philippine time).")
+                        + " (" + AttendanceSchedule.ZoneLabel + ")."),
+
+                new AnnouncementTrigger(
+                    "AfternoonInOpen",
+                    program.AfternoonInStart,
+                    "Afternoon Time In Open",
+                    "Afternoon Time In is now open. You may submit your Afternoon Time In photo for \""
+                        + program.Name
+                        + "\" until "
+                        + AttendanceSchedule.FormatTime(program.AfternoonInEnd)
+                        + " (" + AttendanceSchedule.ZoneLabel + ")."),
+
+                new AnnouncementTrigger(
+                    "AfternoonInSoon",
+                    afternoonInSoon,
+                    "Afternoon Time In Closing Soon",
+                    "Afternoon Time In will close soon. The window for \""
+                        + program.Name
+                        + "\" ends at "
+                        + AttendanceSchedule.FormatTime(program.AfternoonInEnd)
+                        + " (" + AttendanceSchedule.ZoneLabel + ")."),
+
+                new AnnouncementTrigger(
+                    "AfternoonOutOpen",
+                    program.AfternoonOutStart,
+                    "Afternoon Time Out Open",
+                    "Afternoon Time Out is now open. You may submit your Afternoon Time Out photo for \""
+                        + program.Name
+                        + "\" until "
+                        + AttendanceSchedule.FormatTime(program.AfternoonOutEnd)
+                        + " (" + AttendanceSchedule.ZoneLabel + ")."),
+
+                new AnnouncementTrigger(
+                    "AfternoonOutSoon",
+                    afternoonOutSoon,
+                    "Afternoon Time Out Closing Soon",
+                    "Afternoon Time Out will close soon. The window for \""
+                        + program.Name
+                        + "\" ends at "
+                        + AttendanceSchedule.FormatTime(program.AfternoonOutEnd)
+                        + " (" + AttendanceSchedule.ZoneLabel + ").")
             };
         }
 

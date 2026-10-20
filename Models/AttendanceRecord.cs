@@ -26,17 +26,25 @@ namespace BYPManagementSystem.Models
 
 
         // ==========================================================
-        // APPROVED TIME IN / TIME OUT (UTC)
+        // APPROVED ATTENDANCE TIMES (UTC)
         //
         // Filled only from approved photo submissions, always
         // using the original validated server-recorded submission
         // time - never the later approval time, and never typed
         // in manually. Null means not yet recorded.
+        //
+        // TimeInAt / TimeOutAt are the morning session; the
+        // afternoon columns were added with the four-window
+        // schedule. Legacy records only ever have morning times.
         // ==========================================================
 
         public DateTime? TimeInAt { get; set; }
 
         public DateTime? TimeOutAt { get; set; }
+
+        public DateTime? AfternoonInAt { get; set; }
+
+        public DateTime? AfternoonOutAt { get; set; }
 
         [StringLength(500)]
         public string? Notes { get; set; }

@@ -271,8 +271,31 @@ namespace BYPManagementSystem.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            YouthProgram program)
+            YouthProgram program,
+            DateTime? programDate,
+            TimeOnly? scheduleStartTime,
+            TimeOnly? scheduleEndTime)
         {
+            // ------------------------------------------------------
+            // PRESERVE TYPED SCHEDULE PICKER VALUES
+            //
+            // ScheduleStart/ScheduleEnd on the model are only set
+            // when all three pickers bind together. When any one
+            // of them is missing or invalid the model stays stale,
+            // so stash the attempted values for the views to
+            // re-render on every failed POST round-trip.
+            // ------------------------------------------------------
+
+            ViewBag.ProgramDate =
+                programDate?.ToString("yyyy-MM-dd");
+
+            ViewBag.ScheduleStartTime =
+                scheduleStartTime?.ToString("HH:mm");
+
+            ViewBag.ScheduleEndTime =
+                scheduleEndTime?.ToString("HH:mm");
+
+
             // ------------------------------------------------------
             // SAFETY CHECK
             // ------------------------------------------------------
@@ -320,36 +343,6 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
-            // SCHEDULE TEXT AUTO-FILL (PHASE 6)
-            //
-            // The legacy Schedule field remains the free-text
-            // description. When it is left blank but the structured
-            // start/end date-times were picked, generate the text
-            // once so the same information is never typed twice.
-            // Existing descriptions are never overwritten.
-            // ------------------------------------------------------
-
-            if (string.IsNullOrWhiteSpace(
-                    program.Schedule) &&
-                (program.ScheduleStart.HasValue ||
-                 program.ScheduleEnd.HasValue))
-            {
-                program.Schedule =
-                    BuildScheduleText(
-                        program.ScheduleStart,
-                        program.ScheduleEnd
-                    );
-
-
-                // Clear the [Required] binding error so the
-                // generated text is accepted.
-                ModelState.Remove(
-                    nameof(program.Schedule)
-                );
-            }
-
-
-            // ------------------------------------------------------
             // DEFAULT STATUS
             // ------------------------------------------------------
 
@@ -361,31 +354,99 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
-            // SCHEDULE DATE/TIME VALIDATION
+            // STRUCTURED PROGRAM SCHEDULE
             //
-            // The end date/time must be after the start date/time
-            // when both pickers were used.
+            // The Program Date and Program Start/End Time pickers
+            // are the authoritative schedule for attendance
+            // validation and automatic announcements. The free-text
+            // Schedule field is a description only and is never
+            // used to validate attendance.
             // ------------------------------------------------------
 
-            if (program.ScheduleStart.HasValue &&
-                program.ScheduleEnd.HasValue &&
-                program.ScheduleEnd <= program.ScheduleStart)
+            if (!programDate.HasValue)
             {
                 ModelState.AddModelError(
-                    nameof(program.ScheduleEnd),
-                    "The schedule end date/time must be after the start date/time."
+                    "ProgramDate",
+                    "The program date is required."
                 );
+            }
+
+
+            if (!scheduleStartTime.HasValue)
+            {
+                ModelState.AddModelError(
+                    "ScheduleStartTime",
+                    "The program start time is required."
+                );
+            }
+
+
+            if (!scheduleEndTime.HasValue)
+            {
+                ModelState.AddModelError(
+                    "ScheduleEndTime",
+                    "The program end time is required."
+                );
+            }
+
+
+            if (programDate.HasValue &&
+                scheduleStartTime.HasValue &&
+                scheduleEndTime.HasValue)
+            {
+                program.ScheduleStart =
+                    programDate.Value.Date
+                    + scheduleStartTime.Value.ToTimeSpan();
+
+                program.ScheduleEnd =
+                    programDate.Value.Date
+                    + scheduleEndTime.Value.ToTimeSpan();
+
+
+                // --------------------------------------------------
+                // SCHEDULE TEXT AUTO-FILL
+                //
+                // The legacy Schedule column feeds the read-only
+                // displays, dashboards, and search, but the
+                // Create/Edit forms no longer offer an input for
+                // it. When no text was posted, generate it from
+                // the pickers. Existing descriptions are never
+                // overwritten.
+                // --------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                        program.Schedule))
+                {
+                    program.Schedule =
+                        BuildScheduleText(
+                            program.ScheduleStart,
+                            program.ScheduleEnd
+                        );
+                }
+
+
+                if (program.ScheduleEnd <= program.ScheduleStart)
+                {
+                    ModelState.AddModelError(
+                        "ScheduleEndTime",
+                        "The program end time must be after the program start time."
+                    );
+                }
             }
 
 
             // ------------------------------------------------------
             // ATTENDANCE WINDOW VALIDATION
-            // Shared by Create and Edit: each window must be
-            // ordered, and the Time In window must end before the
-            // Time Out window starts.
+            // Shared by Create and Edit: each of the four windows
+            // must be ordered, the windows must not overlap, and
+            // they must fit inside the overall program schedule.
             // ------------------------------------------------------
 
             ValidateAttendanceWindows(
+                program,
+                ModelState);
+
+            ValidateWindowsAgainstSchedule(
                 program,
                 ModelState);
 
@@ -421,6 +482,53 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
+            // PERSIST EXACT-MIDNIGHT WINDOW VALUES ON INSERT
+            //
+            // The window columns carry database defaults (the
+            // barangay default schedule) so rows that existed
+            // before the windows feature received sensible times.
+            // On INSERT, however, EF Core treats a value-generated
+            // property that equals its CLR default -
+            // TimeOnly.MinValue, exactly 00:00 - as "not
+            // supplied": it replaces the entity value with the
+            // configured default and stores that instead. A
+            // program validated with a midnight boundary (e.g.
+            // TimeInStart 00:00-23:58) would silently store 7:00,
+            // breaking the submission window the admin picked.
+            //
+            // All eight boundaries and the sentinel flag are
+            // therefore captured BEFORE SaveChanges (EF rewrites
+            // the entity values during SaveChanges) and any
+            // midnight boundary is written explicitly right after
+            // the insert. Edits are unaffected: EF includes
+            // changed columns in UPDATE statements.
+            // ------------------------------------------------------
+
+            var boundTimeInStart     = program.TimeInStart;
+            var boundTimeInEnd       = program.TimeInEnd;
+            var boundTimeOutStart    = program.TimeOutStart;
+            var boundTimeOutEnd      = program.TimeOutEnd;
+            var boundAfternoonInStart  =
+                program.AfternoonInStart;
+            var boundAfternoonInEnd    =
+                program.AfternoonInEnd;
+            var boundAfternoonOutStart =
+                program.AfternoonOutStart;
+            var boundAfternoonOutEnd   =
+                program.AfternoonOutEnd;
+
+            var hasMidnightBoundary =
+                boundTimeInStart        == default ||
+                boundTimeInEnd          == default ||
+                boundTimeOutStart       == default ||
+                boundTimeOutEnd         == default ||
+                boundAfternoonInStart   == default ||
+                boundAfternoonInEnd     == default ||
+                boundAfternoonOutStart  == default ||
+                boundAfternoonOutEnd    == default;
+
+
+            // ------------------------------------------------------
             // SAVE PROGRAM
             // ------------------------------------------------------
 
@@ -428,20 +536,105 @@ namespace BYPManagementSystem.Controllers
                 program
             );
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Nothing was persisted: re-render the form with
+                // every attempted value intact.
+
+                _logger.LogError(
+                    ex,
+                    "Failed to create program {ProgramName}.",
+                    program.Name
+                );
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "The program could not be saved because of a temporary database problem. Please try again. Your entered values have been kept."
+                );
+
+                return View(program);
+            }
+
+
+            var scheduleWriteWarning = string.Empty;
+
+            if (hasMidnightBoundary)
+            {
+                try
+                {
+                    await _context.Database.ExecuteSqlRawAsync(
+                        "UPDATE YouthPrograms SET TimeInStart = {0}, TimeInEnd = {1}, TimeOutStart = {2}, TimeOutEnd = {3}, AfternoonInStart = {4}, AfternoonInEnd = {5}, AfternoonOutStart = {6}, AfternoonOutEnd = {7} WHERE Id = {8}",
+                        boundTimeInStart,
+                        boundTimeInEnd,
+                        boundTimeOutStart,
+                        boundTimeOutEnd,
+                        boundAfternoonInStart,
+                        boundAfternoonInEnd,
+                        boundAfternoonOutStart,
+                        boundAfternoonOutEnd,
+                        program.Id);
+                }
+                catch (Exception ex)
+                {
+                    // The row already exists here. Fail forward
+                    // with an explicit warning instead of an
+                    // error that would wrongly suggest the
+                    // program was never saved.
+
+                    _logger.LogError(
+                        ex,
+                        "Program {ProgramId} was created but exact-midnight attendance window values could not be written.",
+                        program.Id
+                    );
+
+                    scheduleWriteWarning =
+                        " Warning: exact-midnight attendance window values could not be verified - please review the attendance windows.";
+                }
+            }
 
 
             // ------------------------------------------------------
             // AUTOMATIC BARANGAY ASSIGNMENT
+            // The program row is already committed; an assignment
+            // failure must never look like a failed save.
             // ------------------------------------------------------
 
-            await AutomaticallyAssignYouthToProgram(
-                program.Id
-            );
+            AssignmentCounts? assignmentCounts = null;
+
+            var assignmentWarning = string.Empty;
+
+            try
+            {
+                assignmentCounts =
+                    await AutomaticallyAssignYouthToProgram(
+                        program.Id
+                    );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Program {ProgramId} was created but automatic Barangay assignment failed.",
+                    program.Id
+                );
+
+                assignmentWarning =
+                    " Automatic youth assignment could not be completed for a technical reason - use Manage Participants to assign participants manually.";
+            }
 
 
             TempData["Success"] =
-                "Program created successfully. Matching registration requests, if any, are now waiting for approval.";
+                (assignmentCounts != null
+                    ? BuildAssignmentMessage(
+                        "Program created successfully.",
+                        assignmentCounts)
+                    : "Program created successfully.")
+                + scheduleWriteWarning
+                + assignmentWarning;
 
 
             return RedirectToAction(
@@ -483,8 +676,30 @@ namespace BYPManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             int id,
-            YouthProgram program)
+            YouthProgram program,
+            DateTime? programDate,
+            TimeOnly? scheduleStartTime,
+            TimeOnly? scheduleEndTime)
         {
+            // ------------------------------------------------------
+            // PRESERVE TYPED SCHEDULE PICKER VALUES
+            //
+            // On a failed POST the model's ScheduleStart/End only
+            // exist when all three pickers bound together, so the
+            // stale stored values would repaint the form. Stash
+            // the attempted values for every failed round-trip.
+            // ------------------------------------------------------
+
+            ViewBag.ProgramDate =
+                programDate?.ToString("yyyy-MM-dd");
+
+            ViewBag.ScheduleStartTime =
+                scheduleStartTime?.ToString("HH:mm");
+
+            ViewBag.ScheduleEndTime =
+                scheduleEndTime?.ToString("HH:mm");
+
+
             if (program == null)
             {
                 return NotFound();
@@ -522,57 +737,97 @@ namespace BYPManagementSystem.Controllers
 
 
             // ------------------------------------------------------
-            // SCHEDULE TEXT AUTO-FILL (PHASE 6)
-            //
-            // Only fills the free-text description when it is blank
-            // AND structured date-times were provided. Existing
-            // legacy schedule descriptions are preserved as-is.
+            // STRUCTURED PROGRAM SCHEDULE (SAME RULES AS CREATE)
+            // The saved program values load into the pickers on
+            // GET and remain the source of truth unless the admin
+            // explicitly changes them here; nothing is reset to
+            // defaults on load.
             // ------------------------------------------------------
 
-            if (string.IsNullOrWhiteSpace(
-                    program.Schedule) &&
-                (program.ScheduleStart.HasValue ||
-                 program.ScheduleEnd.HasValue))
+            if (!programDate.HasValue)
             {
-                program.Schedule =
-                    BuildScheduleText(
-                        program.ScheduleStart,
-                        program.ScheduleEnd
-                    );
-
-
-                ModelState.Remove(
-                    nameof(program.Schedule)
+                ModelState.AddModelError(
+                    "ProgramDate",
+                    "The program date is required."
                 );
             }
 
 
-            // ------------------------------------------------------
-            // SCHEDULE DATE/TIME VALIDATION
-            //
-            // The end date/time must be after the start date/time
-            // when both pickers were used.
-            // ------------------------------------------------------
-
-            if (program.ScheduleStart.HasValue &&
-                program.ScheduleEnd.HasValue &&
-                program.ScheduleEnd <= program.ScheduleStart)
+            if (!scheduleStartTime.HasValue)
             {
                 ModelState.AddModelError(
-                    nameof(program.ScheduleEnd),
-                    "The schedule end date/time must be after the start date/time."
+                    "ScheduleStartTime",
+                    "The program start time is required."
                 );
+            }
+
+
+            if (!scheduleEndTime.HasValue)
+            {
+                ModelState.AddModelError(
+                    "ScheduleEndTime",
+                    "The program end time is required."
+                );
+            }
+
+
+            if (programDate.HasValue &&
+                scheduleStartTime.HasValue &&
+                scheduleEndTime.HasValue)
+            {
+                program.ScheduleStart =
+                    programDate.Value.Date
+                    + scheduleStartTime.Value.ToTimeSpan();
+
+                program.ScheduleEnd =
+                    programDate.Value.Date
+                    + scheduleEndTime.Value.ToTimeSpan();
+
+
+                // --------------------------------------------------
+                // SCHEDULE TEXT AUTO-FILL
+                //
+                // The legacy Schedule column feeds the read-only
+                // displays, dashboards, and search, but the
+                // Create/Edit forms no longer offer an input for
+                // it. When no text was posted, generate it from
+                // the pickers. Existing descriptions are never
+                // overwritten.
+                // --------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                        program.Schedule))
+                {
+                    program.Schedule =
+                        BuildScheduleText(
+                            program.ScheduleStart,
+                            program.ScheduleEnd
+                        );
+                }
+
+
+                if (program.ScheduleEnd <= program.ScheduleStart)
+                {
+                    ModelState.AddModelError(
+                        "ScheduleEndTime",
+                        "The program end time must be after the program start time."
+                    );
+                }
             }
 
 
             // ------------------------------------------------------
             // ATTENDANCE WINDOW VALIDATION
-            // Shared by Create and Edit: each window must be
-            // ordered, and the Time In window must end before the
-            // Time Out window starts.
+            // Shared by Create and Edit: each of the four windows
+            // must be ordered, the windows must not overlap, and
+            // they must fit inside the overall program schedule.
             // ------------------------------------------------------
 
             ValidateAttendanceWindows(
+                program,
+                ModelState);
+
+            ValidateWindowsAgainstSchedule(
                 program,
                 ModelState);
 
@@ -646,6 +901,18 @@ namespace BYPManagementSystem.Controllers
             existingProgram.TimeOutEnd =
                 program.TimeOutEnd;
 
+            existingProgram.AfternoonInStart =
+                program.AfternoonInStart;
+
+            existingProgram.AfternoonInEnd =
+                program.AfternoonInEnd;
+
+            existingProgram.AfternoonOutStart =
+                program.AfternoonOutStart;
+
+            existingProgram.AfternoonOutEnd =
+                program.AfternoonOutEnd;
+
             existingProgram.Status =
                 string.IsNullOrWhiteSpace(
                     program.Status)
@@ -659,20 +926,68 @@ namespace BYPManagementSystem.Controllers
                 program.Barangay;
 
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Nothing was persisted: re-render the posted
+                // values so the admin can retry safely.
+
+                _logger.LogError(
+                    ex,
+                    "Failed to update program {ProgramId} ({ProgramName}).",
+                    id,
+                    existingProgram.Name
+                );
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "The program could not be saved because of a temporary database problem. Please try again. Your entered values have been kept."
+                );
+
+                return View(program);
+            }
 
 
             // ------------------------------------------------------
             // AUTOMATICALLY ASSIGN NEW MATCHING YOUTH
+            // The update is already committed; an assignment
+            // failure must never look like a failed save.
             // ------------------------------------------------------
 
-            await AutomaticallyAssignYouthToProgram(
-                id
-            );
+            AssignmentCounts? updateCounts = null;
+
+            var updateAssignmentWarning = string.Empty;
+
+            try
+            {
+                updateCounts =
+                    await AutomaticallyAssignYouthToProgram(
+                        id
+                    );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Program {ProgramId} was updated but automatic Barangay assignment failed.",
+                    id
+                );
+
+                updateAssignmentWarning =
+                    " Automatic youth assignment could not be completed for a technical reason - use Manage Participants to assign participants manually.";
+            }
 
 
             TempData["Success"] =
-                "Program updated successfully. Matching registration requests, if any, are now waiting for approval.";
+                (updateCounts != null
+                    ? BuildAssignmentMessage(
+                        "Program updated successfully.",
+                        updateCounts)
+                    : "Program updated successfully.")
+                + updateAssignmentWarning;
 
 
             return RedirectToAction(
@@ -710,12 +1025,44 @@ namespace BYPManagementSystem.Controllers
         //
         // Attendance is NOT created here.
         // Attendance is recorded later using RegistrationId.
+        //
+        // CONCURRENCY: the whole matching + creation pass runs
+        // inside one transaction that first locks the program row
+        // (SELECT ... FOR UPDATE) and then re-reads everything it
+        // needs. Two simultaneous assignment requests therefore
+        // serialize: the second one re-reads fresh registrations
+        // and cannot create duplicate rows or push past capacity.
         // ==========================================================
 
-        private async Task
+        private async Task<AssignmentCounts>
             AutomaticallyAssignYouthToProgram(
                 int programId)
         {
+            var counts =
+                new AssignmentCounts();
+
+
+            // --------------------------------------------------
+            // SERIALIZE ASSIGNMENTS PER PROGRAM
+            // The program row is locked before anything is read,
+            // so a concurrent Create/Edit/AssignMatchingYouth for
+            // the same program waits here.
+            // --------------------------------------------------
+
+            await using var transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
+
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "SELECT Id FROM YouthPrograms WHERE Id = {0} FOR UPDATE",
+                programId);
+
+
+            // Re-read AFTER acquiring the lock so this request
+            // always works on the program state the concurrent
+            // request committed.
+
             var program =
                 await _context.YouthPrograms
                     .FirstOrDefaultAsync(
@@ -724,19 +1071,19 @@ namespace BYPManagementSystem.Controllers
 
             if (program == null)
             {
-                return;
+                return counts;
             }
 
 
             if (string.IsNullOrWhiteSpace(
                     program.Barangay))
             {
-                return;
+                return counts;
             }
 
 
             var programBarangay =
-                NormalizeBarangayForComparison(
+                BarangayNormalizer.ForComparison(
                     program.Barangay
                 );
 
@@ -744,7 +1091,7 @@ namespace BYPManagementSystem.Controllers
             if (string.IsNullOrWhiteSpace(
                     programBarangay))
             {
-                return;
+                return counts;
             }
 
 
@@ -772,7 +1119,7 @@ namespace BYPManagementSystem.Controllers
                 activeYouth
                     .Where(
                         y =>
-                            NormalizeBarangayForComparison(
+                            BarangayNormalizer.ForComparison(
                                 y.Barangay
                             )
                             ==
@@ -781,9 +1128,12 @@ namespace BYPManagementSystem.Controllers
                     .ToList();
 
 
+            counts.MatchedCount =
+                matchingYouth.Count;
+
             if (!matchingYouth.Any())
             {
-                return;
+                return counts;
             }
 
 
@@ -811,6 +1161,12 @@ namespace BYPManagementSystem.Controllers
 
             // ------------------------------------------------------
             // ASSIGN EACH MATCHING YOUTH
+            //
+            // confirmedCount is capacity tracked over Approved +
+            // Pending registrations: a Pending request already
+            // occupies a seat for this assignment pass, so a
+            // repeated run can never stack unbounded Pending rows
+            // past the configured capacity.
             // ------------------------------------------------------
 
             var createdRegistrations =
@@ -861,6 +1217,8 @@ namespace BYPManagementSystem.Controllers
 
                 if (existingRegistration != null)
                 {
+                    counts.AlreadyRegisteredCount++;
+
                     continue;
                 }
 
@@ -869,18 +1227,25 @@ namespace BYPManagementSystem.Controllers
                 // CAPACITY CHECK
                 // --------------------------------------------------
 
-                var approvedCount =
+                var committedSeats =
                     existingRegistrations
                         .Count(
                             r =>
                                 r.Status ==
-                                "Approved"
+                                    "Approved"
+
+                                ||
+
+                                r.Status ==
+                                    "Pending"
                         );
 
 
-                if (approvedCount >=
+                if (committedSeats >=
                     program.Capacity)
                 {
+                    counts.AtCapacityCount++;
+
                     break;
                 }
 
@@ -934,7 +1299,27 @@ namespace BYPManagementSystem.Controllers
             }
 
 
+            counts.AssignedCount =
+                createdRegistrations.Count;
+
+
+            if (!createdRegistrations.Any())
+            {
+                return counts;
+            }
+
+
+            // --------------------------------------------------
+            // COMMIT REGISTRATIONS INSIDE THE SAME TRANSACTION
+            // The row lock plus the fresh registration read above
+            // already serialized concurrent assignments; a single
+            // SaveChanges here means all matched rows commit
+            // together or not at all.
+            // --------------------------------------------------
+
             await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
 
 
             // ------------------------------------------------------
@@ -974,12 +1359,24 @@ namespace BYPManagementSystem.Controllers
                 {
                     await _context.SaveChangesAsync();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // A notification problem must not undo
-                    // successful registration requests.
+                    // successful registration requests - but it
+                    // must never be silent either.
+
+                    counts.NotificationFailed = true;
+
+                    _logger.LogWarning(
+                        ex,
+                        "Registration requests were created for program {ProgramId} but notification persistence failed.",
+                        program.Id
+                    );
                 }
             }
+
+
+            return counts;
         }
 
 
@@ -1092,6 +1489,16 @@ namespace BYPManagementSystem.Controllers
             // AVAILABLE SLOTS
             // ------------------------------------------------------
 
+            var approvedIds =
+                ViewBag.ApprovedParticipantIds
+                    as HashSet<int>
+                ?? new HashSet<int>();
+
+            var pendingIds =
+                ViewBag.PendingParticipantIds
+                    as HashSet<int>
+                ?? new HashSet<int>();
+
             var approvedCount =
                 registrations
                     .Count(
@@ -1110,6 +1517,72 @@ namespace BYPManagementSystem.Controllers
                     program.Capacity -
                     approvedCount
                 );
+
+
+            // --------------------------------------------------
+            // BARANGAY MATCH PREVIEW
+            // Matched = active participants whose Barangay matches
+            // the program's Barangay through the shared canonical
+            // normalizer, BEFORE any registration exists. The
+            // view shows the pending/approved split of that
+            // match set so the Admin can preview the effect of
+            // "Assign Matching Youth" without any state change.
+            // --------------------------------------------------
+
+            var programBarangay =
+                BarangayNormalizer.ForComparison(
+                    program.Barangay
+                );
+
+            if (!string.IsNullOrWhiteSpace(
+                    programBarangay))
+            {
+                var matchedIds =
+                    participants
+                        .Where(
+                            y =>
+                                BarangayNormalizer
+                                    .ForComparison(
+                                        y.Barangay
+                                    )
+                                ==
+                                programBarangay
+                        )
+                        .Select(y => y.Id)
+                        .ToHashSet();
+
+
+                ViewBag.MatchedCount =
+                    matchedIds.Count;
+
+                ViewBag.MatchedApprovedCount =
+                    matchedIds
+                        .Count(
+                            approvedIds
+                                .Contains
+                        );
+
+                ViewBag.MatchedPendingCount =
+                    matchedIds
+                        .Count(
+                            pendingIds
+                                .Contains
+                        );
+
+                ViewBag.MatchedWithoutApprovalCount =
+                    matchedIds.Count
+                    - ViewBag.MatchedApprovedCount;
+            }
+            else
+            {
+                ViewBag.MatchedCount = 0;
+
+                ViewBag.MatchedApprovedCount = 0;
+
+                ViewBag.MatchedPendingCount = 0;
+
+                ViewBag.MatchedWithoutApprovalCount = 0;
+            }
 
 
             return View(participants);
@@ -1150,13 +1623,16 @@ namespace BYPManagementSystem.Controllers
             }
 
 
-            await AutomaticallyAssignYouthToProgram(
-                id
-            );
+            var assignCounts =
+                await AutomaticallyAssignYouthToProgram(
+                    id
+                );
 
 
             TempData["Success"] =
-                "Matching youth were assigned to this program. New registrations are pending approval.";
+                BuildAssignmentMessage(
+                    "Matching youth were assigned to this program.",
+                    assignCounts);
 
 
             return RedirectToAction(
@@ -1724,10 +2200,13 @@ namespace BYPManagementSystem.Controllers
         // ATTENDANCE WINDOW VALIDATION
         // ==========================================================
         //
-        // Each window must be ordered (start strictly before end)
-        // and the Time In window must end at or before the Time
-        // Out window starts, so the two windows can never
-        // overlap.
+        // Each of the four windows (Morning In/Out, Afternoon
+        // In/Out) must be ordered (start strictly before end) and
+        // consecutive windows must not overlap: Morning In ends
+        // at or before Morning Out starts, Morning Out ends at or
+        // before Afternoon In starts, and Afternoon In ends at or
+        // before Afternoon Out starts. Deliberate same-moment
+        // hand-offs are allowed; genuine overlaps are rejected.
         // ==========================================================
 
         private static void ValidateAttendanceWindows(
@@ -1738,7 +2217,7 @@ namespace BYPManagementSystem.Controllers
             {
                 modelState.AddModelError(
                     nameof(program.TimeInEnd),
-                    "The Time In window end must be after its start."
+                    "The Morning Time In window end must be after its start."
                 );
             }
 
@@ -1747,7 +2226,27 @@ namespace BYPManagementSystem.Controllers
             {
                 modelState.AddModelError(
                     nameof(program.TimeOutEnd),
-                    "The Time Out window end must be after its start."
+                    "The Morning Time Out window end must be after its start."
+                );
+            }
+
+
+            if (program.AfternoonInStart >=
+                program.AfternoonInEnd)
+            {
+                modelState.AddModelError(
+                    nameof(program.AfternoonInEnd),
+                    "The Afternoon Time In window end must be after its start."
+                );
+            }
+
+
+            if (program.AfternoonOutStart >=
+                program.AfternoonOutEnd)
+            {
+                modelState.AddModelError(
+                    nameof(program.AfternoonOutEnd),
+                    "The Afternoon Time Out window end must be after its start."
                 );
             }
 
@@ -1756,9 +2255,228 @@ namespace BYPManagementSystem.Controllers
             {
                 modelState.AddModelError(
                     nameof(program.TimeOutStart),
-                    "The Time Out window must start after the Time In window ends."
+                    "The Morning Time Out window must start after the Morning Time In window ends."
                 );
             }
+
+
+            if (program.TimeOutEnd >
+                program.AfternoonInStart)
+            {
+                modelState.AddModelError(
+                    nameof(program.AfternoonInStart),
+                    "The Afternoon Time In window must start after the Morning Time Out window ends."
+                );
+            }
+
+
+            if (program.AfternoonInEnd >
+                program.AfternoonOutStart)
+            {
+                modelState.AddModelError(
+                    nameof(program.AfternoonOutStart),
+                    "The Afternoon Time Out window must start after the Afternoon Time In window ends."
+                );
+            }
+        }
+
+
+        // ==========================================================
+        // ATTENDANCE WINDOWS VS SCHEDULE COMPATIBILITY
+        // ==========================================================
+        //
+        // When the schedule is a single day, the overall program
+        // Start/End times must encompass every attendance window:
+        // a window that opens before the program starts or ends
+        // after it ends is a conflicting configuration and is
+        // rejected up front.
+        // ==========================================================
+
+        private static void ValidateWindowsAgainstSchedule(
+            YouthProgram program,
+            ModelStateDictionary modelState)
+        {
+            if (!program.ScheduleStart.HasValue ||
+                !program.ScheduleEnd.HasValue ||
+                program.ScheduleStart.Value.Date !=
+                    program.ScheduleEnd.Value.Date)
+            {
+                // Multi-day (or dateless) schedule: windows are
+                // evaluated per scheduled day, nothing to check.
+                return;
+            }
+
+
+            var scheduledEnd =
+                TimeOnly.FromDateTime(
+                    program.ScheduleEnd.Value);
+
+
+            var checks = new (TimeOnly End, string Key,
+                string Message)[]
+            {
+                (program.TimeInEnd,
+                    nameof(program.TimeInStart),
+                    "The Morning Time In window must end within the overall program schedule."),
+                (program.TimeOutEnd,
+                    nameof(program.TimeOutStart),
+                    "The Morning Time Out window must end within the overall program schedule."),
+                (program.AfternoonInEnd,
+                    nameof(program.AfternoonInStart),
+                    "The Afternoon Time In window must end within the overall program schedule."),
+                (program.AfternoonOutEnd,
+                    nameof(program.AfternoonOutStart),
+                    "The Afternoon Time Out window must end within the overall program schedule.")
+            };
+
+
+            foreach (var check in checks)
+            {
+                if (check.End > scheduledEnd)
+                {
+                    modelState.AddModelError(
+                        check.Key,
+                        check.Message);
+                }
+            }
+
+
+            // --------------------------------------------------
+            // START SIDE: no window may open before the overall
+            // program start time.
+            // --------------------------------------------------
+
+            var scheduledStart =
+                TimeOnly.FromDateTime(
+                    program.ScheduleStart.Value);
+
+
+            var startChecks = new (TimeOnly Start, string Key,
+                string Message)[]
+            {
+                (program.TimeInStart,
+                    nameof(program.TimeInStart),
+                    "The Morning Time In window must start within the overall program schedule."),
+                (program.TimeOutStart,
+                    nameof(program.TimeOutStart),
+                    "The Morning Time Out window must start within the overall program schedule."),
+                (program.AfternoonInStart,
+                    nameof(program.AfternoonInStart),
+                    "The Afternoon Time In window must start within the overall program schedule."),
+                (program.AfternoonOutStart,
+                    nameof(program.AfternoonOutStart),
+                    "The Afternoon Time Out window must start within the overall program schedule.")
+            };
+
+
+            foreach (var check in startChecks)
+            {
+                if (check.Start < scheduledStart)
+                {
+                    modelState.AddModelError(
+                        check.Key,
+                        check.Message);
+                }
+            }
+        }
+
+
+        // ==========================================================
+        // ASSIGNMENT COUNTS
+        // ==========================================================
+        //
+        // Accurate feedback for the Match Barangay / Assign Youth
+        // steps: how many active participants matched, how many
+        // already had ANY registration row for the program
+        // (Pending or Approved - never duplicated), how many were
+        // skipped because the program had no room left, and how
+        // many new Pending requests were actually created.
+        // ==========================================================
+
+        private sealed class AssignmentCounts
+        {
+            public int MatchedCount { get; set; }
+
+            public int AlreadyRegisteredCount { get; set; }
+
+            public int AssignedCount { get; set; }
+
+            public int AtCapacityCount { get; set; }
+
+            // True when registrations were committed but the
+            // follow-up notification save failed.
+
+            public bool NotificationFailed { get; set; }
+        }
+
+
+        private static string BuildAssignmentMessage(
+            string prefix,
+            AssignmentCounts counts)
+        {
+            if (counts == null ||
+                counts.MatchedCount == 0)
+            {
+                return prefix
+                    + " No active youth participants currently match this program's Barangay.";
+            }
+
+
+            var message =
+                prefix
+                + " "
+                + counts.MatchedCount
+                + " matching active participant(s): ";
+
+            if (counts.AssignedCount > 0)
+            {
+                message +=
+                    counts.AssignedCount
+                    + " new registration request(s) created (Pending approval)";
+            }
+
+            if (counts.AlreadyRegisteredCount > 0)
+            {
+                if (counts.AssignedCount > 0)
+                {
+                    message += ", ";
+                }
+
+                message +=
+                    counts.AlreadyRegisteredCount
+                    + " already registered (skipped)";
+            }
+
+            if (counts.AtCapacityCount > 0)
+            {
+                if (counts.AssignedCount > 0 ||
+                    counts.AlreadyRegisteredCount > 0)
+                {
+                    message += ", ";
+                }
+
+                message +=
+                    counts.AtCapacityCount
+                    + " skipped - program at capacity";
+            }
+
+            if (counts.AssignedCount == 0 &&
+                counts.AlreadyRegisteredCount == 0 &&
+                counts.AtCapacityCount == 0)
+            {
+                message += "all were already covered by existing registrations";
+            }
+
+
+            var finalMessage = message + ".";
+
+            if (counts.NotificationFailed)
+            {
+                finalMessage +=
+                    " Registration requests were saved, but automatic notifications could not be sent.";
+            }
+
+            return finalMessage;
         }
 
 
@@ -1778,26 +2496,10 @@ namespace BYPManagementSystem.Controllers
 
         private static string
             NormalizeBarangayForStorage(
-                string? barangay)
-        {
-            if (string.IsNullOrWhiteSpace(
-                    barangay))
-            {
-                return string.Empty;
-            }
-
-
-            return string.Join(
-                " ",
+                string? barangay) =>
+            BarangayNormalizer.ForStorage(
                 barangay
-                    .Trim()
-                    .Split(
-                        ' ',
-                        StringSplitOptions
-                            .RemoveEmptyEntries
-                    )
             );
-        }
 
 
         // ==========================================================
@@ -1819,26 +2521,9 @@ namespace BYPManagementSystem.Controllers
 
         private static string
             NormalizeBarangayForComparison(
-                string? barangay)
-        {
-            var value =
-                NormalizeBarangayForStorage(
-                    barangay
-                );
-
-            if (value.StartsWith(
-                    "Barangay ",
-                    StringComparison
-                        .OrdinalIgnoreCase))
-            {
-                value =
-                    value.Substring(
-                        "Barangay ".Length
-                    ).Trim();
-            }
-
-
-            return value.ToLowerInvariant();
-        }
+                string? barangay) =>
+            BarangayNormalizer.ForComparison(
+                barangay
+            );
     }
 }

@@ -6,6 +6,22 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ============================================================
+// APPLICATION TIME ZONE
+// ============================================================
+// The attendance module evaluates program dates and Time In /
+// Time Out windows, records timestamps and labels every
+// user-facing time using ONE application time zone, configured
+// here from "AttendanceTime:TimeZoneId" (appsettings.json).
+// When the setting is missing, the zone defaults to Asia/
+// Manila (UTC+8) - the documented policy for this system.
+// This must be configured before any request or background
+// service runs, so it happens first in startup.
+
+AttendanceSchedule.Configure(
+    builder.Configuration[
+        "AttendanceTime:TimeZoneId"]);
+
+// ============================================================
 // DATABASE
 // ============================================================
 
@@ -54,6 +70,17 @@ builder.Services
 
         // ----------------------------------------------------
         // SIGN IN
+        // ----------------------------------------------------
+        // This application has no outbound email or
+        // confirmation-token workflow, so confirmed accounts
+        // cannot be required: accounts must be able to sign in
+        // immediately after registration.
+        //
+        // EmailConfirmed therefore stays FALSE for self-registered
+        // accounts (see AccountController.Register). The system
+        // never claims an unverified address was confirmed; only
+        // trusted sources may set it (for example development
+        // seed accounts created by the developer).
         // ----------------------------------------------------
 
         options.SignIn.RequireConfirmedAccount = false;
@@ -461,3 +488,16 @@ using (var scope = app.Services.CreateScope())
 // ============================================================
 
 app.Run();
+
+
+// ============================================================
+// TESTING HOOK
+// ============================================================
+// Exposes the implicit top-level entry point type to the
+// integration test project (WebApplicationFactory<Program>).
+// This does not change runtime behavior.
+// ============================================================
+
+public partial class Program
+{
+}
